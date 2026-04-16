@@ -3,8 +3,10 @@ import { workAPI } from '../services/api';
 import Loading from '../components/common/Loading';
 import Pagination from '../components/common/Pagination';
 import { useToast } from '../components/common/Toast';
+import { useLocation } from 'react-router-dom';
 
 const EmployeeWorks = () => {
+  const location = useLocation();
   const [works, setWorks] = useState([]);
   const [workItems, setWorkItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,8 +22,9 @@ const EmployeeWorks = () => {
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
     customerName: '',
-    workItemId: '',
-    workTitle: '',
+    customerPhone: '',
+    paymentMethod: 'Hand Cash',
+    items: [{ workItemId: '', workTitle: '' }],
     amount: '',
     paymentStatus: 'Pending',
     workStatus: 'In Progress',
@@ -33,6 +36,21 @@ const EmployeeWorks = () => {
     fetchWorks();
     fetchWorkItems();
   }, [filters.page, filters.limit, filters.status]);
+
+  useEffect(() => {
+    const status = location.state?.status;
+    if (status) {
+      const newFilters = {
+        page: 1,
+        limit: 10,
+        date: '',
+        status: status
+      };
+      setFilters(newFilters);
+      // Fetch works immediately with the new filters
+      fetchWorksWithFilters(newFilters);
+    }
+  }, [location.state]);
 
   const fetchWorkItems = async () => {
     try {
@@ -56,6 +74,31 @@ const EmployeeWorks = () => {
       });
       params.page = filters.page;
       params.limit = filters.limit;
+
+      const response = await workAPI.getMyWorks(params);
+      if (response.data.success) {
+        setWorks(response.data.works);
+        setPagination(response.data.pagination);
+      }
+    } catch (err) {
+      console.error('Error fetching works:', err);
+      error('Failed to fetch works');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchWorksWithFilters = async (filterParams) => {
+    try {
+      setLoading(true);
+      const params = {};
+      Object.keys(filterParams).forEach(key => {
+        if (filterParams[key] && key !== 'page' && key !== 'limit') {
+          params[key] = filterParams[key];
+        }
+      });
+      params.page = filterParams.page;
+      params.limit = filterParams.limit;
 
       const response = await workAPI.getMyWorks(params);
       if (response.data.success) {
@@ -107,7 +150,9 @@ const EmployeeWorks = () => {
 
           <p>Date: ${new Date(work.date).toLocaleString()}</p>
           <p>Customer: ${work.customerName}</p>
-          <p>Work: ${work.workTitle}</p>
+          ${work.customerPhone ? `<p>Phone: ${work.customerPhone}</p>` : ''}
+          <p>Payment Method: ${work.paymentMethod || 'Hand Cash'}</p>
+          <p>Work: ${work.items && work.items.length > 0 ? work.items.map(i => i.title).join(', ') : work.workTitle}</p>
 
           <div class="line"></div>
 
@@ -150,8 +195,9 @@ const EmployeeWorks = () => {
       setFormData({
         date: new Date(work.date).toISOString().split('T')[0],
         customerName: work.customerName,
-        workItemId: work.workItem || '',
-        workTitle: work.workTitle,
+        customerPhone: work.customerPhone || '',
+        paymentMethod: work.paymentMethod || 'Hand Cash',
+        items: work.items && work.items.length > 0 ? work.items.map(i => ({ workItemId: i.workItemId || '', workTitle: i.title || '' })) : [{ workItemId: '', workTitle: '' }],
         amount: work.amount.toString(),
         paymentStatus: work.paymentStatus,
         workStatus: work.workStatus,
@@ -162,8 +208,7 @@ const EmployeeWorks = () => {
       setFormData({
         date: new Date().toISOString().split('T')[0],
         customerName: '',
-        workItemId: '',
-        workTitle: '',
+        items: [{ workItemId: '', workTitle: '' }],
         amount: '',
         paymentStatus: 'Pending',
         workStatus: 'In Progress',
@@ -180,23 +225,52 @@ const EmployeeWorks = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
-    // Automatically set amount if work item selected and amount is empty
-    if (name === 'workItemId' && value) {
-      const selectedItem = workItems.find(item => item._id === value);
-      if (selectedItem) {
-        setFormData(prev => ({
-          ...prev,
-          [name]: value,
-          amount: prev.amount ? prev.amount : selectedItem.price.toString()
-        }));
-        return;
-      }
-    }
-
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  const handleItemChange = (index, field, value) => {
+    const newItems = [...formData.items];
+    newItems[index] = { ...newItems[index], [field]: value };
+    
+    let totalAmount = newItems.reduce((sum, item) => {
+      if (item.workItemId) {
+        const i = workItems.find(w => w._id === item.workItemId);
+        return sum + (i ? i.price : 0);
+      }
+      return sum;
+    }, 0);
+    
+    setFormData(prev => ({ 
+      ...prev, 
+      items: newItems, 
+      amount: totalAmount > 0 ? totalAmount.toString() : prev.amount 
+    }));
+  };
+
+  const addItemRow = () => {
+    setFormData(prev => ({
+      ...prev,
+      items: [...prev.items, { workItemId: '', workTitle: '' }]
+    }));
+  };
+
+  const removeItemRow = (index) => {
+    const newItems = formData.items.filter((_, i) => i !== index);
+    let totalAmount = newItems.reduce((sum, item) => {
+      if (item.workItemId) {
+        const i = workItems.find(w => w._id === item.workItemId);
+        return sum + (i ? i.price : 0);
+      }
+      return sum;
+    }, 0);
+
+    setFormData(prev => ({
+      ...prev,
+      items: newItems.length ? newItems : [{ workItemId: '', workTitle: '' }],
+      amount: totalAmount.toString()
     }));
   };
 
@@ -342,6 +416,7 @@ const EmployeeWorks = () => {
         <tr>
           <th style={styles.th}>Date</th>
           <th style={styles.th}>Customer</th>
+          <th style={styles.th}>Payment Method</th>
           <th style={styles.th}>Work Title</th>
           <th style={styles.th}>Amount</th>
           <th style={styles.th}>Payment</th>
@@ -364,9 +439,13 @@ const EmployeeWorks = () => {
               </div>
             </td>
 
+            <td style={styles.td}>
+              {work.paymentMethod || 'Hand Cash'}
+            </td>
+
             <td style={{ ...styles.td, maxWidth: "180px" }}>
               <div className="text-truncate">
-                {work.workTitle}
+                {work.items && work.items.length > 0 ? work.items.map(i => i.title).join(', ') : work.workTitle}
               </div>
             </td>
 
@@ -493,36 +572,65 @@ const EmployeeWorks = () => {
                 />
               </div>
               <div className="d-flex flex-column gap-2">
-                <label style={styles.label}>Work Select</label>
+                <label style={styles.label}>Customer Phone</label>
+                <input
+                  type="text"
+                  name="customerPhone"
+                  value={formData.customerPhone}
+                  onChange={handleInputChange}
+                  className="form-control"
+                  placeholder="Enter customer phone number"
+                />
+              </div>
+              <div className="d-flex flex-column gap-2">
+                <label style={styles.label}>Payment Method</label>
                 <select
-                  name="workItemId"
-                  value={formData.workItemId}
+                  name="paymentMethod"
+                  value={formData.paymentMethod}
                   onChange={handleInputChange}
                   className="form-select"
-                  required={!formData.workTitle && !formData.workItemId}
                 >
-                  <option value="">Select a Work Item...</option>
-                  {workItems.map(item => (
-                    <option key={item._id} value={item._id}>
-                      {item.name} 
-                    </option>
-                  ))}
+                  <option value="Hand Cash">Hand Cash</option>
+                  <option value="GPay">GPay</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Card">Card</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
-              
-              {!formData.workItemId && (
-                <div className="d-flex flex-column gap-2">
-                  <label style={styles.label}>Or Custom Work Title</label>
-                  <input
-                    type="text"
-                    name="workTitle"
-                    value={formData.workTitle}
-                    onChange={handleInputChange}
-                    className="form-control"
-                    placeholder="Enter custom work title"
-                  />
-                </div>
-              )}
+              <div className="d-flex flex-column gap-2 mb-3 mt-3">
+                <label style={styles.label}>Selected Works</label>
+                {formData.items.map((item, index) => (
+                  <div key={index} className="d-flex flex-column flex-sm-row gap-2 align-items-start align-items-sm-center mb-2">
+                    <select
+                      value={item.workItemId}
+                      onChange={(e) => handleItemChange(index, 'workItemId', e.target.value)}
+                      className="form-select flex-grow-1"
+                      required={!item.workTitle && !item.workItemId}
+                    >
+                      <option value="">Select a Work Item...</option>
+                      {workItems.map(wi => (
+                        <option key={wi._id} value={wi._id}>{wi.name}</option>
+                      ))}
+                    </select>
+                    {!item.workItemId && (
+                      <input
+                        type="text"
+                        value={item.workTitle}
+                        onChange={(e) => handleItemChange(index, 'workTitle', e.target.value)}
+                        className="form-control flex-grow-1"
+                        placeholder="Custom Title"
+                      />
+                    )}
+                    {formData.items.length > 1 && (
+                      <button type="button" className="btn btn-danger btn-sm" onClick={() => removeItemRow(index)}>X</button>
+                    )}
+                  </div>
+                ))}
+                <button type="button" className="btn btn-outline-primary btn-sm align-self-start" onClick={addItemRow}>
+                  + Add Another Work
+                </button>
+              </div>
               <div className="row g-3">
                 <div className="col-12 col-md-6 d-flex flex-column gap-2">
                   <label style={styles.label}>Payment Status</label>

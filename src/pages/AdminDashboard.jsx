@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { adminAPI } from '../services/api';
 import Loading from '../components/common/Loading.jsx';
 import { useToast } from '../components/common/Toast.jsx';
-
+import { useNavigate } from 'react-router-dom';
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -11,6 +12,9 @@ const AdminDashboard = () => {
   useEffect(() => {
     fetchStats();
   }, []);
+
+
+  const navigate = useNavigate();
 
   const fetchStats = async () => {
     try {
@@ -72,7 +76,7 @@ const AdminDashboard = () => {
       <div className="mb-4">
         <h2 style={styles.sectionTitle} className="fs-4 fs-md-3 mb-3">Revenue Overview</h2>
         <div className="row g-3">
-          <div className="col-12 col-md-6">
+          <div className="col-12 col-md-4">
             <div style={styles.revenueCard} className="p-3 p-md-4 h-100">
               <h3 style={styles.revenueTitle}>This Month</h3>
               <div style={styles.revenueValue}>
@@ -83,7 +87,9 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
-          <div className="col-12 col-md-6">
+          <div className="col-12 col-md-4"
+            onClick={() => navigate('/admin/works', { state: { paymentStatus: 'Pending', workStatus: 'In Progress' } })}
+            style={{ cursor: 'pointer' }}>
             <div style={styles.revenueCard} className="p-3 p-md-4 h-100">
               <h3 style={styles.revenueTitle}>Pending Payments</h3>
               <div style={{ ...styles.revenueValue, color: '#e74c3c' }}>
@@ -94,6 +100,19 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
+          <div className="col-12 col-md-4"
+            onClick={() => navigate('/admin/works', { state: { workStatus: 'In Progress' } })}
+            style={{ cursor: 'pointer' }}>
+            <div style={styles.revenueCard} className="p-3 p-md-4 h-100">
+              <h3 style={styles.revenueTitle}>Pending Works</h3>
+              <div style={{ ...styles.revenueValue, color: '#f39c12' }}>
+                {stats?.works.pending || 0}
+              </div>
+              <div style={styles.revenueWorks}>
+                In progress
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -101,22 +120,22 @@ const AdminDashboard = () => {
         <h2 style={styles.sectionTitle} className="fs-4 fs-md-3 mb-3">Quick Actions</h2>
         <div className="row g-3">
           <div className="col-12 col-md-4">
-            <a href="/e-sevai-final-frontend/admin/works" style={styles.actionBtn} className="w-100 d-flex align-items-center justify-content-center justify-content-md-start">
+            <Link to="/admin/works" style={styles.actionBtn} className="w-100 d-flex align-items-center justify-content-center justify-content-md-start">
               <span style={styles.actionIcon}>📋</span>
               <span>Manage Works</span>
-            </a>
+            </Link>
           </div>
           <div className="col-12 col-md-4">
-            <a href="/e-sevai-final-frontend/admin/employees" style={styles.actionBtn} className="w-100 d-flex align-items-center justify-content-center justify-content-md-start">
+            <Link to="/admin/employees" style={styles.actionBtn} className="w-100 d-flex align-items-center justify-content-center justify-content-md-start">
               <span style={styles.actionIcon}>👥</span>
               <span>Manage Employees</span>
-            </a>
+            </Link>
           </div>
           <div className="col-12 col-md-4">
-            <a href="/e-sevai-final-frontend/admin/reports" style={styles.actionBtn} className="w-100 d-flex align-items-center justify-content-center justify-content-md-start">
+            <Link to="/admin/reports" style={styles.actionBtn} className="w-100 d-flex align-items-center justify-content-center justify-content-md-start">
               <span style={styles.actionIcon}>📊</span>
               <span>View Reports</span>
-            </a>
+            </Link>
           </div>
         </div>
       </div>

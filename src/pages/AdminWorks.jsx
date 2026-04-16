@@ -3,8 +3,10 @@ import { adminAPI, userAPI } from '../services/api';
 import Loading from '../components/common/Loading.jsx';
 import Pagination from '../components/common/Pagination.jsx';
 import { useToast } from '../components/common/Toast.jsx';
+import { useLocation } from 'react-router-dom';
 
 const AdminWorks = () => {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('entries');
   const [works, setWorks] = useState([]);
   const [workItems, setWorkItems] = useState([]);
@@ -32,6 +34,41 @@ const AdminWorks = () => {
       fetchWorkItems();
     }
   }, [activeTab, filters.page, filters.limit, filters.paymentStatus, filters.workStatus, filters.search, filters.startDate, filters.endDate, filters.employeeId]);
+
+
+  // new added for filter
+
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const paymentStatus = params.get('paymentStatus');
+    const workStatus = params.get('workStatus');
+
+    // Also check location.state for navigation from dashboard
+    const statePaymentStatus = location.state?.paymentStatus;
+    const stateWorkStatus = location.state?.workStatus;
+
+    const finalPaymentStatus = paymentStatus || statePaymentStatus;
+    const finalWorkStatus = workStatus || stateWorkStatus;
+
+    if (finalPaymentStatus || finalWorkStatus) {
+      setActiveTab('entries'); // ensure correct tab
+      const newFilters = {
+        page: 1,
+        limit: 10,
+        search: '',
+        startDate: '',
+        endDate: '',
+        employeeId: '',
+        paymentStatus: finalPaymentStatus || '',
+        workStatus: finalWorkStatus || ''
+      };
+      setFilters(newFilters);
+      // Fetch works immediately with the new filters
+      fetchWorksWithFilters(newFilters);
+    }
+  }, [location.search, location.state]);
+
 
   const fetchWorkItems = async () => {
     try {
@@ -99,6 +136,31 @@ const AdminWorks = () => {
     }
   };
 
+  const fetchWorksWithFilters = async (filterParams) => {
+    try {
+      setLoading(true);
+      const params = {};
+      Object.keys(filterParams).forEach(key => {
+        if (filterParams[key] && key !== 'page' && key !== 'limit') {
+          params[key] = filterParams[key];
+        }
+      });
+      params.page = filterParams.page;
+      params.limit = filterParams.limit;
+
+      const response = await adminAPI.getAllWorks(params);
+      if (response.data.success) {
+        setWorks(response.data.works);
+        setPagination(response.data.pagination);
+      }
+    } catch (err) {
+      console.error('Error fetching works:', err);
+      error('Failed to fetch works');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchEmployees = async () => {
     try {
       const response = await userAPI.getEmployees({ page: 1, limit: 100 });
@@ -136,11 +198,11 @@ const AdminWorks = () => {
     const isPayment = type === 'payment';
     const paid = status === 'Paid';
     const completed = status === 'Completed';
-    
+
     return (
       <span style={{
         ...styles.badge,
-        backgroundColor: isPayment 
+        backgroundColor: isPayment
           ? (paid ? '#27ae60' : '#e74c3c')
           : (completed ? '#27ae60' : '#f39c12'),
         color: 'white'
@@ -187,165 +249,169 @@ const AdminWorks = () => {
       {activeTab === 'entries' && (
         <>
           <div style={styles.filtersCard} className="p-3 p-md-4">
-        <form onSubmit={handleSearch} className="d-flex flex-column gap-3">
-          <div className="row g-3">
-            <div className="col-12 col-md-4 d-flex flex-column gap-2">
-              <label style={styles.label}>Search</label>
-              <input
-                type="text"
-                name="search"
-                value={filters.search}
-                onChange={handleFilterChange}
-                placeholder="Customer name or work title"
-                className="form-control"
-              />
-            </div>
-            <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
-              <label style={styles.label}>From Date</label>
-              <input
-                type="date"
-                name="startDate"
-                value={filters.startDate}
-                onChange={handleFilterChange}
-                className="form-control"
-              />
-            </div>
-            <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
-              <label style={styles.label}>To Date</label>
-              <input
-                type="date"
-                name="endDate"
-                value={filters.endDate}
-                onChange={handleFilterChange}
-                className="form-control"
-              />
-            </div>
+            <form onSubmit={handleSearch} className="d-flex flex-column gap-3">
+              <div className="row g-3">
+                <div className="col-12 col-md-4 d-flex flex-column gap-2">
+                  <label style={styles.label}>Search</label>
+                  <input
+                    type="text"
+                    name="search"
+                    value={filters.search}
+                    onChange={handleFilterChange}
+                    placeholder="Customer name or work title"
+                    className="form-control"
+                  />
+                </div>
+                <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
+                  <label style={styles.label}>From Date</label>
+                  <input
+                    type="date"
+                    name="startDate"
+                    value={filters.startDate}
+                    onChange={handleFilterChange}
+                    className="form-control"
+                  />
+                </div>
+                <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
+                  <label style={styles.label}>To Date</label>
+                  <input
+                    type="date"
+                    name="endDate"
+                    value={filters.endDate}
+                    onChange={handleFilterChange}
+                    className="form-control"
+                  />
+                </div>
+              </div>
+              <div className="row g-3">
+                <div className="col-12 col-md-4 d-flex flex-column gap-2">
+                  <label style={styles.label}>Employee</label>
+                  <select
+                    name="employeeId"
+                    value={filters.employeeId}
+                    onChange={handleFilterChange}
+                    className="form-select"
+                  >
+                    <option value="">All Employees</option>
+                    {employees.map(emp => (
+                      <option key={emp._id} value={emp._id}>
+                        {emp.name} ({emp.employeeId})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
+                  <label style={styles.label}>Payment Status</label>
+                  <select
+                    name="paymentStatus"
+                    value={filters.paymentStatus}
+                    onChange={handleFilterChange}
+                    className="form-select"
+                  >
+                    <option value="">All</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Pending">Pending</option>
+                  </select>
+                </div>
+                <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
+                  <label style={styles.label}>Work Status</label>
+                  <select
+                    name="workStatus"
+                    value={filters.workStatus}
+                    onChange={handleFilterChange}
+                    className="form-select"
+                  >
+                    <option value="">All</option>
+                    <option value="Completed">Completed</option>
+                    <option value="In Progress">In Progress</option>
+                  </select>
+                </div>
+              </div>
+              <div className="d-flex flex-column flex-sm-row gap-2 mt-2">
+                <button type="submit" style={styles.searchBtn} className="btn w-100 w-sm-auto text-white">
+                  Apply Filters
+                </button>
+                <button
+                  type="button"
+                  style={styles.resetBtn}
+                  className="btn w-100 w-sm-auto text-white"
+                  onClick={() => setFilters({
+                    page: 1,
+                    limit: 10,
+                    search: '',
+                    startDate: '',
+                    endDate: '',
+                    employeeId: '',
+                    paymentStatus: '',
+                    workStatus: ''
+                  })}
+                >
+                  Reset
+                </button>
+              </div>
+            </form>
           </div>
-          <div className="row g-3">
-            <div className="col-12 col-md-4 d-flex flex-column gap-2">
-              <label style={styles.label}>Employee</label>
-              <select
-                name="employeeId"
-                value={filters.employeeId}
-                onChange={handleFilterChange}
-                className="form-select"
-              >
-                <option value="">All Employees</option>
-                {employees.map(emp => (
-                  <option key={emp._id} value={emp._id}>
-                    {emp.name} ({emp.employeeId})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
-              <label style={styles.label}>Payment Status</label>
-              <select
-                name="paymentStatus"
-                value={filters.paymentStatus}
-                onChange={handleFilterChange}
-                className="form-select"
-              >
-                <option value="">All</option>
-                <option value="Paid">Paid</option>
-                <option value="Pending">Pending</option>
-              </select>
-            </div>
-            <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
-              <label style={styles.label}>Work Status</label>
-              <select
-                name="workStatus"
-                value={filters.workStatus}
-                onChange={handleFilterChange}
-                className="form-select"
-              >
-                <option value="">All</option>
-                <option value="Completed">Completed</option>
-                <option value="In Progress">In Progress</option>
-              </select>
-            </div>
-          </div>
-          <div className="d-flex flex-column flex-sm-row gap-2 mt-2">
-            <button type="submit" style={styles.searchBtn} className="btn w-100 w-sm-auto text-white">
-              Apply Filters
-            </button>
-            <button 
-              type="button" 
-              style={styles.resetBtn}
-              className="btn w-100 w-sm-auto text-white"
-              onClick={() => setFilters({
-                page: 1,
-                limit: 10,
-                search: '',
-                startDate: '',
-                endDate: '',
-                employeeId: '',
-                paymentStatus: '',
-                workStatus: ''
-              })}
-            >
-              Reset
-            </button>
-          </div>
-        </form>
-      </div>
 
-      <div style={styles.tableCard}>
-        <div className="table-responsive">
-          <table className="table table-hover mb-0" style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>Employee</th>
-                <th style={styles.th}>Date</th>
-                <th style={styles.th}>Customer</th>
-                <th style={styles.th}>Work Title</th>
-                <th style={styles.th}>Amount</th>
-                <th style={styles.th}>Payment</th>
-                <th style={styles.th}>Work Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {works.map(work => (
-                <tr key={work._id}>
-                  <td style={styles.td}>
-                    <div style={styles.employeeInfo}>
-                      <div style={styles.employeeName}>{work.employee?.name}</div>
-                      <div style={styles.employeeId}>{work.employee?.employeeId}</div>
-                    </div>
-                  </td>
-                  <td style={styles.td}>{formatDate(work.date)}</td>
-                  <td style={styles.td}>{work.customerName}</td>
-                  <td style={styles.td}>{work.workTitle}</td>
-                  <td style={styles.td}>₹{work.amount.toLocaleString()}</td>
-                  <td style={styles.td}>
-                    {getStatusBadge(work.paymentStatus, 'payment')}
-                  </td>
-                  <td style={styles.td}>
-                    {getStatusBadge(work.workStatus, 'work')}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        
-        {works.length === 0 && (
-          <div style={styles.noData}>No works found</div>
-        )}
+          <div style={styles.tableCard}>
+            <div className="table-responsive">
+              <table className="table table-hover mb-0" style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}>Employee</th>
+                    <th style={styles.th}>Date</th>
+                    <th style={styles.th}>Customer</th>
+                    <th style={styles.th}>Phone</th>
+                    <th style={styles.th}>Payment Method</th>
+                    <th style={styles.th}>Work Title</th>
+                    <th style={styles.th}>Amount</th>
+                    <th style={styles.th}>Payment</th>
+                    <th style={styles.th}>Work Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {works.map(work => (
+                    <tr key={work._id}>
+                      <td style={styles.td}>
+                        <div style={styles.employeeInfo}>
+                          <div style={styles.employeeName}>{work.employee?.name}</div>
+                          <div style={styles.employeeId}>{work.employee?.employeeId}</div>
+                        </div>
+                      </td>
+                      <td style={styles.td}>{formatDate(work.date)}</td>
+                      <td style={styles.td}>{work.customerName}</td>
+                      <td style={styles.td}>{work.customerPhone || '-'}</td>
+                      <td style={styles.td}>{work.paymentMethod || 'Hand Cash'}</td>
+                      <td style={styles.td}>{work.items && work.items.length > 0 ? work.items.map(i => i.title).join(', ') : work.workTitle}</td>
+                      <td style={styles.td}>₹{work.amount.toLocaleString()}</td>
+                      <td style={styles.td}>
+                        {getStatusBadge(work.paymentStatus, 'payment')}
+                      </td>
+                      <td style={styles.td}>
+                        {getStatusBadge(work.workStatus, 'work')}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-        {pagination.totalWorks > 0 && (
-          <div className="p-3">
-            <Pagination
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPages}
-              totalItems={pagination.totalWorks}
-              itemsPerPage={pagination.limit}
-              onPageChange={(page) => setFilters(prev => ({ ...prev, page }))}
-            />
+            {works.length === 0 && (
+              <div style={styles.noData}>No works found</div>
+            )}
+
+            {pagination.totalWorks > 0 && (
+              <div className="p-3">
+                <Pagination
+                  currentPage={pagination.currentPage}
+                  totalPages={pagination.totalPages}
+                  totalItems={pagination.totalWorks}
+                  itemsPerPage={pagination.limit}
+                  onPageChange={(page) => setFilters(prev => ({ ...prev, page }))}
+                />
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      </>
+        </>
       )}
 
       {activeTab === 'items' && (

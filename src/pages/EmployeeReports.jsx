@@ -289,7 +289,7 @@ const EmployeeReports = () => {
                         {dayData.works.map(work => (
                           <tr key={work._id}>
                             <td style={styles.td}>{work.customerName}</td>
-                            <td style={styles.td}>{work.workTitle}</td>
+                            <td style={styles.td}>{work.items && work.items.length > 0 ? work.items.map(i => i.title).join(', ') : work.workTitle}</td>
                             <td style={styles.td}>{formatCurrency(work.amount)}</td>
                             <td style={styles.td}>
                               {getStatusBadge(work.paymentStatus)}

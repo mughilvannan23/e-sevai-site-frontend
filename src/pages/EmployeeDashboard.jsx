@@ -3,12 +3,14 @@ import { workAPI } from '../services/api';
 import Loading from '../components/common/Loading';
 import { useToast } from '../components/common/Toast';
 import { useAuth } from '../context/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
 
 const EmployeeDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { success, error } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchStats();
@@ -74,7 +76,9 @@ const EmployeeDashboard = () => {
       <div className="mb-4">
         <h2 style={styles.sectionTitle} className="fs-4 fs-md-3 mb-3">This Month Overview</h2>
         <div className="row g-3">
-          <div className="col-12 col-md-6">
+          <div className="col-12 col-md-6"
+            onClick={() => navigate('/employee/works', { state: { status: 'Completed' } })}
+            style={{ cursor: 'pointer' }}>
             <div style={styles.detailCard} className="h-100 p-3 p-md-4">
               <h3 style={styles.detailTitle}>Works Completed</h3>
               <div style={styles.detailValue}>
@@ -85,14 +89,16 @@ const EmployeeDashboard = () => {
               </div>
             </div>
           </div>
-          <div className="col-12 col-md-6">
+          <div className="col-12 col-md-6"
+            onClick={() => navigate('/employee/works', { state: { status: 'In Progress' } })}
+            style={{ cursor: 'pointer' }}>
             <div style={styles.detailCard} className="h-100 p-3 p-md-4">
-              <h3 style={styles.detailTitle}>Earnings</h3>
+              <h3 style={styles.detailTitle}>Pending Works</h3>
               <div style={styles.detailValue}>
-                ₹{stats?.monthEarnings.toLocaleString() || '0'}
+                {stats?.pendingWorks || 0}
               </div>
               <div style={styles.detailSubtext}>
-                Pending: ₹{stats?.pendingPayments?.toLocaleString() || '0'}
+                In progress
               </div>
             </div>
           </div>
@@ -103,22 +109,22 @@ const EmployeeDashboard = () => {
         <h2 style={styles.sectionTitle} className="fs-4 fs-md-3 mb-3">Quick Actions</h2>
         <div className="row g-3">
           <div className="col-12 col-md-4">
-            <a href="/e-sevai-final-frontend/employee/works" style={styles.actionBtn} className="w-100 d-flex align-items-center justify-content-center justify-content-md-start">
+            <Link to="/employee/works" style={styles.actionBtn} className="w-100 d-flex align-items-center justify-content-center justify-content-md-start">
               <span style={styles.actionIcon}>➕</span>
               <span>Add New Work</span>
-            </a>
+            </Link>
           </div>
           <div className="col-12 col-md-4">
-            <a href="/e-sevai-final-frontend/employee/works" style={styles.actionBtn} className="w-100 d-flex align-items-center justify-content-center justify-content-md-start">
+            <Link to="/employee/works" style={styles.actionBtn} className="w-100 d-flex align-items-center justify-content-center justify-content-md-start">
               <span style={styles.actionIcon}>📋</span>
               <span>View My Works</span>
-            </a>
+            </Link>
           </div>
           <div className="col-12 col-md-4">
-            <a href="/e-sevai-final-frontend/employee/reports" style={styles.actionBtn} className="w-100 d-flex align-items-center justify-content-center justify-content-md-start">
+            <Link to="/employee/reports" style={styles.actionBtn} className="w-100 d-flex align-items-center justify-content-center justify-content-md-start">
               <span style={styles.actionIcon}>📊</span>
               <span>View Reports</span>
-            </a>
+            </Link>
           </div>
         </div>
       </div>

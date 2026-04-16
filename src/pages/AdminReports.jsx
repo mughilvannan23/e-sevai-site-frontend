@@ -8,6 +8,7 @@ const AdminReports = () => {
   const [loading, setLoading] = useState(false);
   const [revenueData, setRevenueData] = useState([]);
   const [performanceData, setPerformanceData] = useState([]);
+  const [detailedWorks, setDetailedWorks] = useState([]);
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -18,6 +19,7 @@ const AdminReports = () => {
   useEffect(() => {
     if (activeTab === 'revenue' && filters.startDate && filters.endDate) {
       fetchRevenueReport();
+      fetchDetailedWorks();
     } else if (activeTab === 'performance') {
       fetchPerformanceReport();
     }
@@ -37,6 +39,24 @@ const AdminReports = () => {
       error('Failed to fetch revenue report');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDetailedWorks = async () => {
+    if (!filters.startDate || !filters.endDate) return;
+
+    try {
+      const response = await adminAPI.getAllWorks({
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+        limit: 1000 // Get all works for the period
+      });
+      if (response.data.success) {
+        setDetailedWorks(response.data.works);
+      }
+    } catch (err) {
+      console.error('Error fetching detailed works:', err);
+      error('Failed to fetch detailed work data');
     }
   };
 
@@ -63,6 +83,7 @@ const AdminReports = () => {
   const handleRevenueReport = (e) => {
     e.preventDefault();
     fetchRevenueReport();
+    fetchDetailedWorks();
   };
 
   const handleDownloadExcel = async () => {
@@ -121,24 +142,17 @@ const AdminReports = () => {
     return `₹${amount.toLocaleString()}`;
   };
 
-  const getRevenueChartData = () => {
-    if (!revenueData.length) return null;
-
-    const labels = revenueData.map(item => item.period);
-    const totalRevenue = revenueData.map(item => item.totalRevenue);
-    const pendingRevenue = revenueData.map(item => item.pendingRevenue);
-
-    return { labels, totalRevenue, pendingRevenue };
+  const calculateExpectedRevenue = (work) => {
+    return work.items ? work.items.reduce((sum, item) => sum + (item.adminPriceAtTime || 0), 0) : 0;
   };
 
-  const getPerformanceChartData = () => {
-    if (!performanceData.length) return null;
+  const calculateProfitLoss = (work) => {
+    const expected = calculateExpectedRevenue(work);
+    return work.amount - expected;
+  };
 
-    const labels = performanceData.map(emp => emp.employee.name);
-    const totalWorks = performanceData.map(emp => emp.stats.totalWorks);
-    const completedWorks = performanceData.map(emp => emp.stats.completedWorks);
-
-    return { labels, totalWorks, completedWorks };
+  const getWorkTitles = (work) => {
+    return work.items ? work.items.map(item => item.title).join(', ') : '';
   };
 
   return (
@@ -282,7 +296,7 @@ const AdminReports = () => {
                     <div style={styles.summaryItem} className="h-100">
                       <span style={styles.summaryLabel} className="d-block mb-1">Expected Revenue</span>
                       <span style={styles.summaryValue}>
-                        {formatCurrency(revenueData.reduce((sum, item) => sum + item.totalRevenue, 0))}
+                        {formatCurrency(detailedWorks.filter(w => w.paymentStatus === 'Paid').reduce((sum, w) => sum + calculateExpectedRevenue(w), 0))}
                       </span>
                     </div>
                   </div>
@@ -291,9 +305,9 @@ const AdminReports = () => {
                       <span style={styles.summaryLabel} className="d-block mb-1">Actual Revenue</span>
                       <span style={{
                         ...styles.summaryValue,
-                        color: revenueData.reduce((sum, item) => sum + item.totalRevenue, 0) !== revenueData.reduce((sum, item) => sum + item.enteredTotalRevenue, 0) ? '#e67e22' : '#2c3e50'
+                        color: detailedWorks.filter(w => w.paymentStatus === 'Paid').reduce((sum, w) => sum + calculateExpectedRevenue(w), 0) !== detailedWorks.filter(w => w.paymentStatus === 'Paid').reduce((sum, w) => sum + w.amount, 0) ? '#e67e22' : '#2c3e50'
                       }}>
-                        {formatCurrency(revenueData.reduce((sum, item) => sum + item.enteredTotalRevenue, 0))}
+                        {formatCurrency(detailedWorks.filter(w => w.paymentStatus === 'Paid').reduce((sum, w) => sum + w.amount, 0))}
                       </span>
                     </div>
                   </div>
@@ -301,7 +315,7 @@ const AdminReports = () => {
                     <div style={styles.summaryItem} className="h-100">
                       <span style={styles.summaryLabel} className="d-block mb-1">Pending Expected</span>
                       <span style={{ ...styles.summaryValue, color: '#e74c3c' }}>
-                        {formatCurrency(revenueData.reduce((sum, item) => sum + item.pendingRevenue, 0))}
+                        {formatCurrency(detailedWorks.filter(w => w.paymentStatus === 'Pending').reduce((sum, w) => sum + calculateExpectedRevenue(w), 0))}
                       </span>
                     </div>
                   </div>
@@ -309,7 +323,7 @@ const AdminReports = () => {
                     <div style={styles.summaryItem} className="h-100">
                       <span style={styles.summaryLabel} className="d-block mb-1">Total Works</span>
                       <span style={styles.summaryValue}>
-                        {revenueData.reduce((sum, item) => sum + item.totalWorks, 0)}
+                        {detailedWorks.length}
                       </span>
                     </div>
                   </div>
@@ -317,7 +331,7 @@ const AdminReports = () => {
                     <div style={styles.summaryItem} className="h-100">
                       <span style={styles.summaryLabel} className="d-block mb-1">Paid Works</span>
                       <span style={styles.summaryValue}>
-                        {revenueData.reduce((sum, item) => sum + item.paidWorks, 0)}
+                        {detailedWorks.filter(w => w.paymentStatus === 'Paid').length}
                       </span>
                     </div>
                   </div>
@@ -330,37 +344,53 @@ const AdminReports = () => {
                   <table className="table table-hover mb-0" style={styles.table}>
                     <thead>
                       <tr>
-                        <th style={styles.th}>Period</th>
-                        <th style={styles.th}>Expected (Admin)</th>
-                        <th style={styles.th}>Actual (Employee)</th>
-                        <th style={styles.th}>Expected Pending</th>
-                        <th style={styles.th}>Total Works</th>
-                        <th style={styles.th}>Paid Works</th>
-                        <th style={styles.th}>Pending Works</th>
+                        <th style={styles.th}>Date</th>
+                        <th style={styles.th}>Customer Name</th>
+                        <th style={styles.th}>Customer Phone</th>
+                        <th style={styles.th}>Payment Method</th>
+                        <th style={styles.th}>Employee Name</th>
+                        <th style={styles.th}>Employee ID</th>
+                        <th style={styles.th}>Work Title</th>
+                        <th style={styles.th}>Expected Revenue (Admin)</th>
+                        <th style={styles.th}>Actual Revenue (Employee)</th>
+                        <th style={styles.th}>Profit/Loss</th>
+                        <th style={styles.th}>Payment Status</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {revenueData.map((item) => (
-                        <tr key={item.period}>
-                          <td style={styles.td}>{item.period}</td>
-                          <td style={styles.td}>{formatCurrency(item.totalRevenue)}</td>
-                          <td style={{ ...styles.td, color: item.totalRevenue !== item.enteredTotalRevenue ? '#e67e22' : 'inherit', fontWeight: item.totalRevenue !== item.enteredTotalRevenue ? 'bold' : 'normal' }}>
-                            {formatCurrency(item.enteredTotalRevenue)}
-                            {item.totalRevenue !== item.enteredTotalRevenue && (
-                              <div style={{ fontSize: '11px' }}>
-                                Diff: {formatCurrency(item.enteredTotalRevenue - item.totalRevenue)}
-                              </div>
-                            )}
-                          </td>
-                          <td style={{ ...styles.td, color: '#e74c3c' }}>{formatCurrency(item.pendingRevenue)}</td>
-                          <td style={styles.td}>{item.totalWorks}</td>
-                          <td style={styles.td}>{item.paidWorks}</td>
-                          <td style={styles.td}>{item.pendingWorks}</td>
-                        </tr>
-                      ))}
+                      {detailedWorks.map((work) => {
+                        const expectedRevenue = calculateExpectedRevenue(work);
+                        const profitLoss = calculateProfitLoss(work);
+                        return (
+                          <tr key={work._id}>
+                            <td style={styles.td}>{formatDate(work.date)}</td>
+                            <td style={styles.td}>{work.customerName}</td>
+                            <td style={styles.td}>{work.customerPhone || '-'}</td>
+                            <td style={styles.td}>{work.paymentMethod || 'Hand Cash'}</td>
+                            <td style={styles.td}>{work.employee?.name || 'Unknown'}</td>
+                            <td style={styles.td}>{work.employee?.employeeId || 'N/A'}</td>
+                            <td style={styles.td}>{getWorkTitles(work)}</td>
+                            <td style={styles.td}>{formatCurrency(expectedRevenue)}</td>
+                            <td style={{ ...styles.td, color: work.paymentStatus === 'Paid' ? 'inherit' : '#e74c3c' }}>
+                              {formatCurrency(work.amount)}
+                            </td>
+                            <td style={{ ...styles.td, color: profitLoss >= 0 ? '#27ae60' : '#e74c3c', fontWeight: 'bold' }}>
+                              {profitLoss >= 0 ? '+' : ''}{formatCurrency(profitLoss)}
+                            </td>
+                            <td style={{ ...styles.td, color: work.paymentStatus === 'Paid' ? '#27ae60' : '#e74c3c' }}>
+                              {work.paymentStatus}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
+                {detailedWorks.length === 0 && (
+                  <div style={styles.noData}>
+                    <p>No work entries found for the selected date range.</p>
+                  </div>
+                )}
               </div>
             </>
           ) : (

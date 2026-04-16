@@ -42,16 +42,16 @@ const Login = () => {
   };
 
   return (
-    <div style={{...styles.container, overflowX: 'hidden'}}>
+    <div style={{...styles.container, }}>
       <div style={styles.card} className="m-3 p-3 p-md-4">
-        <h2 style={styles.title} className="fs-4 fs-md-3">e-Sevai Login</h2>
+        <h2 style={styles.title} style={{color:"#fff", fontWeight:"bold", fontSize:"40px"}} className=" fs-md-3">Sevagan</h2>
 
         {/* ================= LOGIN FORM ================= */}
         <form onSubmit={handleSubmit} style={styles.form}>
           <div className="mb-3">
-            <label className="fw-bold mb-2">Login Type</label><br />
-            <div className="d-flex justify-content-center gap-3">
-              <label className="d-flex align-items-center">
+            <label className="fw-bold mb-2" style={{color:"#fff", fontWeight:"bold", fontSize:"20px"}}>Login Type</label><br />
+            <div className="d-flex justify-content-center gap-3" style={{color:"#fff", fontSize:"16px"}} >
+              <label className="d-flex align-items-center" >
                 <input
                   type="radio"
                   checked={!isEmployee}
@@ -104,29 +104,32 @@ const Login = () => {
 const styles = {
   container: {
     minHeight: "100vh",
+    maxWidth: "100%",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    background: "#f5f5f5"
+    background: "linear-gradient(135deg, #6EE7B7, #11c28f, #047857)"
   },
   card: {
-    background: "#fff",
-    borderRadius: 10,
+    // background: "#11c28f",
+    // borderRadius: 10,
     width: "100%",
     maxWidth: "400px",
     textAlign: "center",
-    boxShadow: "0 4px 10px rgba(0,0,0,0.1)"
+    // boxShadow: "0 4px 10px rgba(0,0,0,0.1)"
   },
   title: {
-    marginBottom: 20
+    marginBottom: 20,
+    color: "#fff"
   },
   form: {
     display: "flex",
-    flexDirection: "column"
+    flexDirection: "column",
+    maxWidth: "100%"
   },
   button: {
     padding: 10,
-    background: "#007bff",
+    background: "#065F46",
     color: "#fff",
     border: "none",
     borderRadius: 5,
@@ -141,3 +144,6 @@ const styles = {
 };
 
 export default Login;
+
+
+// ithula irukkura desgin exact ha venu cemara image vena content and logic ethuvom change pannatha ellame exact ha irukku desgin
