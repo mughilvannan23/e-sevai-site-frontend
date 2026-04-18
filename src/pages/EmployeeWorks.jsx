@@ -148,7 +148,7 @@ const EmployeeWorks = () => {
 
           <div class="line"></div>
 
-          <p>Date: ${new Date(work.date).toLocaleString()}</p>
+          <p>Date: ${formatDateTime(work.date)}</p>
           <p>Customer: ${work.customerName}</p>
           ${work.customerPhone ? `<p>Phone: ${work.customerPhone}</p>` : ''}
           <p>Payment Method: ${work.paymentMethod || 'Hand Cash'}</p>
@@ -313,12 +313,21 @@ const EmployeeWorks = () => {
     }
   };
 
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-IN', {
+  const formatDateTime = (date) => {
+    if (!date) return '-';
+    const formatted = new Date(date).toLocaleString('en-IN', {
+      day: '2-digit',
+      month: '2-digit',
       year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
     });
+    return formatted
+      .replace(/\//g, '-')
+      .replace(/, /g, ' ')
+      .replace(/am/i, 'AM')
+      .replace(/pm/i, 'PM');
   };
 
   const getStatusBadge = (status, type) => {
@@ -430,7 +439,7 @@ const EmployeeWorks = () => {
           <tr key={work._id}>
             
             <td style={{ ...styles.td, whiteSpace: "nowrap" }}>
-              {formatDate(work.date)}
+              {formatDateTime(work.date)}
             </td>
 
             <td style={{ ...styles.td, maxWidth: "150px" }}>

@@ -145,11 +145,20 @@ const AdminReports = () => {
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-IN', {
+    if (!date) return '-';
+    const formatted = new Date(date).toLocaleString('en-IN', {
+      day: '2-digit',
+      month: '2-digit',
       year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
     });
+    return formatted
+      .replace(/\//g, '-')
+      .replace(/, /g, ' ')
+      .replace(/am/i, 'AM')
+      .replace(/pm/i, 'PM');
   };
 
   const formatCurrency = (amount) => {
@@ -383,9 +392,9 @@ const AdminReports = () => {
                         <th style={styles.th}>Employee Name</th>
                         <th style={styles.th}>Employee ID</th>
                         <th style={styles.th}>Work Title</th>
-                        <th style={styles.th}>Work Charge</th>
+                        <th style={styles.th}>Apply Charge</th>
                         <th style={styles.th}>Service Charge</th>
-                        <th style={styles.th}>Expected Base Cost</th>
+                        <th style={styles.th}>Other Charges</th>
                         <th style={styles.th}>Actual Collected</th>
                         <th style={styles.th}>Net Profit</th>
                         <th style={styles.th}>Payment Status</th>

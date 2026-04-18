@@ -57,11 +57,11 @@ const ProtectedRoute = ({ requiredRole }) => {
           <Link to="/admin/dashboard" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/dashboard') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar}>
             Dashboard
           </Link>
-          <Link to="/admin/works" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/works') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar}>
-            All Works
-          </Link>
           <Link to="/admin/employees" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/employees') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar}>
             Employees
+          </Link>
+          <Link to="/admin/works" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/works') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar}>
+            Works List
           </Link>
           <Link to="/admin/reports" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/reports') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar}>
             Reports
@@ -91,8 +91,8 @@ const ProtectedRoute = ({ requiredRole }) => {
   const SidebarContent = () => (
     <>
       <Link to={dashboardPath} style={styles.brandLink}>
-        <span style={styles.brandIcon}>🏢</span>
-        <span style={styles.brandText}>e-Sevai Office</span>
+        {/* <span style={styles.brandIcon}>🏢</span> */}
+        <span style={styles.brandText}>SEVAGAN CSC & E SEVA CENTRE</span>
       </Link>
 
       <nav className="nav nav-pills flex-column gap-2 mt-4">
@@ -117,8 +117,8 @@ const ProtectedRoute = ({ requiredRole }) => {
       <header className="d-md-none sticky-top w-100" style={styles.mobileHeader}>
         <div className="d-flex align-items-center justify-content-between p-3">
           <Link to={dashboardPath} style={styles.mobileBrandLink}>
-            <span style={styles.brandIcon}>🏢</span>
-            <span style={{ fontSize: '14px', fontWeight: '700', color: 'white' }}>e-Sevai</span>
+            {/* <span style={styles.brandIcon}>🏢</span> */}
+            <span style={{ fontSize: '14px', fontWeight: '700', color: 'white' }}>SEVAGAN</span>
           </Link>
           <button className="btn btn-light" onClick={() => setSidebarOpen(true)} style={styles.hamburgerBtn}>
             ☰

@@ -10,7 +10,8 @@ const AdminWorks = () => {
   const [activeTab, setActiveTab] = useState('entries');
   const [works, setWorks] = useState([]);
   const [workItems, setWorkItems] = useState([]);
-  const [newItem, setNewItem] = useState({ name: '', workCharge: '', serviceCharge: '' });
+  const [newItem, setNewItem] = useState({ name: '', workCharge: '', serviceCharge: '', status: true });
+  const [editingPreset, setEditingPreset] = useState(null);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({});
   const [filters, setFilters] = useState({
@@ -85,13 +86,14 @@ const AdminWorks = () => {
     }
   };
 
-  const handleCreateWorkItem = async (e) => {
+  const handleSaveWorkItem = async (e) => {
     e.preventDefault();
 
     const payload = {
       name: newItem.name.trim(),
       workCharge: Number(newItem.workCharge),
-      serviceCharge: Number(newItem.serviceCharge)
+      serviceCharge: Number(newItem.serviceCharge),
+      status: newItem.status
     };
 
     if (!payload.name || Number.isNaN(payload.workCharge) || Number.isNaN(payload.serviceCharge)) {
@@ -99,29 +101,59 @@ const AdminWorks = () => {
     }
 
     try {
-      const response = await adminAPI.createWorkItem(payload);
+      let response;
+
+      if (editingPreset) {
+        response = await adminAPI.updateWorkItem(editingPreset._id, payload);
+      } else {
+        response = await adminAPI.createWorkItem(payload);
+      }
+
       if (response.data.success) {
-        success('Work Item created successfully');
-        setNewItem({ name: '', workCharge: '', serviceCharge: '' });
+        success(editingPreset ? 'Work Item updated successfully' : 'Work Item created successfully');
+        setNewItem({ name: '', workCharge: '', serviceCharge: '', status: true });
+        setEditingPreset(null);
         fetchWorkItems();
       }
     } catch (err) {
-      const message = err.response?.data?.message || 'Failed to create Work Item';
+      const message = err.response?.data?.message || 'Failed to save Work Item';
       error(message);
-      console.error('Create work item failed:', err.response?.data || err);
+      console.error('Save work item failed:', err.response?.data || err);
     }
   };
 
-  const handleDeleteWorkItem = async (id) => {
-    if (window.confirm('Are you sure you want to delete this work item preset?')) {
-      try {
-        await adminAPI.deleteWorkItem(id);
-        success('Work Item deleted');
+  const handleEditWorkItem = (item) => {
+    setEditingPreset(item);
+    setNewItem({
+      name: item.name,
+      workCharge: item.workCharge?.toString() || '',
+      serviceCharge: item.serviceCharge?.toString() || '',
+      status: item.status !== undefined ? item.status : item.isActive
+    });
+  };
+
+  const handleTogglePresetStatus = async (item) => {
+    try {
+      const response = await adminAPI.updateWorkItem(item._id, {
+        status: !item.status,
+        workCharge: item.workCharge,
+        serviceCharge: item.serviceCharge,
+        name: item.name
+      });
+
+      if (response.data.success) {
+        success(`Work Item marked ${!item.status ? 'Active' : 'Inactive'}`);
         fetchWorkItems();
-      } catch (err) {
-        error('Failed to delete work item');
       }
+    } catch (err) {
+      console.error('Error toggling preset status:', err);
+      error('Failed to update preset status');
     }
+  };
+
+  const handleCancelPresetEdit = () => {
+    setEditingPreset(null);
+    setNewItem({ name: '', workCharge: '', serviceCharge: '', status: true });
   };
 
   const fetchWorks = async () => {
@@ -200,11 +232,20 @@ const AdminWorks = () => {
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-IN', {
+    if (!date) return '-';
+    const formatted = new Date(date).toLocaleString('en-IN', {
+      day: '2-digit',
+      month: '2-digit',
       year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
     });
+    return formatted
+      .replace(/\//g, '-')
+      .replace(/, /g, ' ')
+      .replace(/am/i, 'AM')
+      .replace(/pm/i, 'PM');
   };
 
   const getStatusBadge = (status, type) => {
@@ -430,9 +471,9 @@ const AdminWorks = () => {
       {activeTab === 'items' && (
         <div style={styles.tableCard}>
           <div className="p-3 p-md-4 border-bottom">
-            <h3 className="fs-5 mb-3">Add New Work Item Preset</h3>
-            <form onSubmit={handleCreateWorkItem} className="row g-3 align-items-end">
-              <div className="col-12 col-md-4 d-flex flex-column gap-2">
+            <h3 className="fs-5 mb-3">{editingPreset ? 'Edit Work Item Preset' : 'Add New Work Item Preset'}</h3>
+            <form onSubmit={handleSaveWorkItem} className="row g-3 align-items-end">
+              <div className="col-12 col-md-3 d-flex flex-column gap-2">
                 <label style={styles.label}>Work Name</label>
                 <input
                   type="text"
@@ -443,7 +484,7 @@ const AdminWorks = () => {
                   className="form-control"
                 />
               </div>
-              <div className="col-12 col-md-3 d-flex flex-column gap-2">
+              <div className="col-12 col-md-2 d-flex flex-column gap-2">
                 <label style={styles.label}>Work Charge (₹)</label>
                 <input
                   type="number"
@@ -455,7 +496,7 @@ const AdminWorks = () => {
                   className="form-control"
                 />
               </div>
-              <div className="col-12 col-md-3 d-flex flex-column gap-2">
+              <div className="col-12 col-md-2 d-flex flex-column gap-2">
                 <label style={styles.label}>Service Charge (₹)</label>
                 <input
                   type="number"
@@ -467,8 +508,26 @@ const AdminWorks = () => {
                   className="form-control"
                 />
               </div>
-              <div className="col-12 col-md-2">
-                <button type="submit" style={styles.addBtn} className="btn w-100 text-white">Add Preset</button>
+              <div className="col-12 col-md-2 d-flex flex-column gap-2">
+                <label style={styles.label}>Status</label>
+                <select
+                  value={newItem.status ? 'active' : 'inactive'}
+                  onChange={(e) => setNewItem({ ...newItem, status: e.target.value === 'active' })}
+                  className="form-select"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+              <div className="col-12 col-md-3 d-flex gap-2">
+                <button type="submit" style={styles.addBtn} className="btn w-100 text-white">
+                  {editingPreset ? 'Update Preset' : 'Add Preset'}
+                </button>
+                {editingPreset && (
+                  <button type="button" style={styles.resetBtn} className="btn w-100 text-white" onClick={handleCancelPresetEdit}>
+                    Cancel
+                  </button>
+                )}
               </div>
             </form>
           </div>
@@ -481,6 +540,7 @@ const AdminWorks = () => {
                   <th style={styles.th}>Work Charge (₹)</th>
                   <th style={styles.th}>Service Charge (₹)</th>
                   <th style={styles.th}>Total (₹)</th>
+                  <th style={styles.th}>Status</th>
                   <th style={styles.th}>Actions</th>
                 </tr>
               </thead>
@@ -492,7 +552,23 @@ const AdminWorks = () => {
                     <td style={styles.td}>₹{item.serviceCharge?.toLocaleString() || '0'}</td>
                     <td style={styles.td}><strong>₹{(item.workCharge + item.serviceCharge)?.toLocaleString() || '0'}</strong></td>
                     <td style={styles.td}>
-                      <button style={styles.deleteBtn} className="btn btn-sm" onClick={() => handleDeleteWorkItem(item._id)}>Delete</button>
+                      <span style={{
+                        ...styles.badge,
+                        backgroundColor: (item.status !== undefined ? item.status : item.isActive) ? '#27ae60' : '#95a5a6',
+                        color: 'white'
+                      }}>
+                        {(item.status !== undefined ? item.status : item.isActive) ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td style={styles.td}>
+                      <div className="d-flex gap-2 flex-wrap">
+                        <button style={styles.editBtn} className="btn btn-sm text-white" onClick={() => handleEditWorkItem(item)}>
+                          Edit
+                        </button>
+                        <button style={{ ...styles.editBtn, backgroundColor: '#f39c12' }} className="btn btn-sm text-white" onClick={() => handleTogglePresetStatus(item)}>
+                          {(item.status !== undefined ? item.status : item.isActive) ? 'Set Inactive' : 'Set Active'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

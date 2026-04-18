@@ -21,8 +21,8 @@ const NavigationBar = () => {
       <Container fluid="lg" className="px-3">
         
         <Navbar.Brand as={Link} to="/" style={styles.brandLink}>
-          <span style={styles.brandIcon}>🏢</span>
-          <span style={styles.brandText}>e-Sevai Office</span>
+          {/* <span style={styles.brandIcon}>🏢</span> */}
+          <span style={styles.brandText}>SEVAGAN CSC & E SEVA CENTRE</span>
         </Navbar.Brand>
         
         {user && <Navbar.Toggle aria-controls="basic-navbar-nav" />}
