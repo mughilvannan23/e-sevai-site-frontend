@@ -76,7 +76,7 @@ const AdminDashboard = () => {
       <div className="mb-4">
         <h2 style={styles.sectionTitle} className="fs-4 fs-md-3 mb-3">Revenue Overview</h2>
         <div className="row g-3">
-          <div className="col-12 col-md-4">
+          <div className="col-12 col-md-6 col-lg-3">
             <div style={styles.revenueCard} className="p-3 p-md-4 h-100">
               <h3 style={styles.revenueTitle}>This Month</h3>
               <div style={styles.revenueValue}>
@@ -87,7 +87,7 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
-          <div className="col-12 col-md-4"
+          <div className="col-12 col-md-6 col-lg-3"
             onClick={() => navigate('/admin/works', { state: { paymentStatus: 'Pending', workStatus: 'In Progress' } })}
             style={{ cursor: 'pointer' }}>
             <div style={styles.revenueCard} className="p-3 p-md-4 h-100">
@@ -100,7 +100,7 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
-          <div className="col-12 col-md-4"
+          <div className="col-12 col-md-6 col-lg-3"
             onClick={() => navigate('/admin/works', { state: { workStatus: 'In Progress' } })}
             style={{ cursor: 'pointer' }}>
             <div style={styles.revenueCard} className="p-3 p-md-4 h-100">
@@ -110,6 +110,19 @@ const AdminDashboard = () => {
               </div>
               <div style={styles.revenueWorks}>
                 In progress
+              </div>
+            </div>
+          </div>
+          <div className="col-12 col-md-6 col-lg-3"
+            onClick={() => navigate('/admin/works', { state: { workStatus: 'Completed' } })}
+            style={{ cursor: 'pointer' }}>
+            <div style={{ ...styles.revenueCard, borderColor: '#27ae60', backgroundColor: '#f8fff9' }} className="p-3 p-md-4 h-100">
+              <h3 style={{ ...styles.revenueTitle, color: '#27ae60' }}>Completed Works</h3>
+              <div style={{ ...styles.revenueValue, color: '#27ae60' }}>
+                {stats?.works.completed || 0}
+              </div>
+              <div style={styles.revenueWorks}>
+                Successfully finished
               </div>
             </div>
           </div>

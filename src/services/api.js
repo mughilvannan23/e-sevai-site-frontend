@@ -80,6 +80,7 @@ export const adminAPI = {
   getWorkItems: () => api.get('/admin/work-items'),
   updateWorkItem: (id, data) => api.put(`/admin/work-items/${id}`, data),
   deleteWorkItem: (id) => api.delete(`/admin/work-items/${id}`),
+  updateProfile: (data) => api.put('/admin/profile', data),
 };
 
 export default api;

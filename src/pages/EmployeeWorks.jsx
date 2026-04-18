@@ -231,22 +231,22 @@ const EmployeeWorks = () => {
     }));
   };
 
-  const handleItemChange = (index, field, value) => {
-    const newItems = [...formData.items];
-    newItems[index] = { ...newItems[index], [field]: value };
-    
-    let totalAmount = newItems.reduce((sum, item) => {
+  const calculateMinimumBasePrice = (items) => {
+    return items.reduce((sum, item) => {
       if (item.workItemId) {
-        const i = workItems.find(w => w._id === item.workItemId);
-        return sum + (i ? i.price : 0);
+        const selected = workItems.find(w => w._id === item.workItemId);
+        return sum + (selected ? (selected.workCharge + selected.serviceCharge) : 0);
       }
       return sum;
     }, 0);
-    
-    setFormData(prev => ({ 
-      ...prev, 
-      items: newItems, 
-      amount: totalAmount > 0 ? totalAmount.toString() : prev.amount 
+  };
+
+  const handleItemChange = (index, field, value) => {
+    const newItems = [...formData.items];
+    newItems[index] = { ...newItems[index], [field]: value };
+    setFormData(prev => ({
+      ...prev,
+      items: newItems
     }));
   };
 
@@ -262,7 +262,7 @@ const EmployeeWorks = () => {
     let totalAmount = newItems.reduce((sum, item) => {
       if (item.workItemId) {
         const i = workItems.find(w => w._id === item.workItemId);
-        return sum + (i ? i.price : 0);
+        return sum + (i ? (i.workCharge + i.serviceCharge) : 0);
       }
       return sum;
     }, 0);
@@ -630,6 +630,11 @@ const EmployeeWorks = () => {
                 <button type="button" className="btn btn-outline-primary btn-sm align-self-start" onClick={addItemRow}>
                   + Add Another Work
                 </button>
+                {/* {calculateMinimumBasePrice(formData.items) > 0 && (
+                  <div style={styles.referenceText}>
+                    Minimum Base Price: <strong>₹{calculateMinimumBasePrice(formData.items).toLocaleString()}</strong> (Work Charge + Service Charge)
+                  </div>
+                )} */}
               </div>
               <div className="row g-3">
                 <div className="col-12 col-md-6 d-flex flex-column gap-2">
@@ -892,6 +897,12 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '16px'
+  },
+  referenceText: {
+    color: '#2c3e50',
+    fontSize: '14px',
+    fontWeight: '600',
+    marginTop: '8px'
   },
   formRow: {
     display: 'grid',

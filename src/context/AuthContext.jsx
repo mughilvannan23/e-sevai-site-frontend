@@ -81,6 +81,13 @@ export const AuthProvider = ({ children }) => {
     setError(null);
   };
 
+  const updateUser = (updatedUserData) => {
+    console.log('[AuthContext] updateUser called with:', updatedUserData);
+    const updatedUser = { ...user, ...updatedUserData };
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  };
+
   const clearError = () => {
     setError(null);
   };
@@ -91,6 +98,7 @@ export const AuthProvider = ({ children }) => {
     error,
     login,
     logout,
+    updateUser,
     clearError,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',

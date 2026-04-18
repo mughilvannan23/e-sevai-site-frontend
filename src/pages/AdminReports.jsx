@@ -9,6 +9,13 @@ const AdminReports = () => {
   const [revenueData, setRevenueData] = useState([]);
   const [performanceData, setPerformanceData] = useState([]);
   const [detailedWorks, setDetailedWorks] = useState([]);
+  const [reportSummary, setReportSummary] = useState({
+    totalWorkCharge: 0,
+    totalServiceCharge: 0,
+    totalBaseCost: 0,
+    totalActualCollected: 0,
+    totalNetProfit: 0
+  });
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -33,6 +40,13 @@ const AdminReports = () => {
       const response = await adminAPI.getRevenueReport(filters);
       if (response.data.success) {
         setRevenueData(response.data.revenueData);
+        setReportSummary(response.data.summary || {
+          totalWorkCharge: 0,
+          totalServiceCharge: 0,
+          totalBaseCost: 0,
+          totalActualCollected: 0,
+          totalNetProfit: 0
+        });
       }
     } catch (err) {
       console.error('Error fetching revenue report:', err);
@@ -142,13 +156,21 @@ const AdminReports = () => {
     return `₹${amount.toLocaleString()}`;
   };
 
-  const calculateExpectedRevenue = (work) => {
-    return work.items ? work.items.reduce((sum, item) => sum + (item.adminPriceAtTime || 0), 0) : 0;
+  const calculateWorkCharge = (work) => {
+    return work.items ? work.items.reduce((sum, item) => sum + (item.workChargeAtTime || 0), 0) : 0;
   };
 
-  const calculateProfitLoss = (work) => {
-    const expected = calculateExpectedRevenue(work);
-    return work.amount - expected;
+  const calculateServiceCharge = (work) => {
+    return work.items ? work.items.reduce((sum, item) => sum + (item.serviceChargeAtTime || 0), 0) : 0;
+  };
+
+  const calculateExpectedBaseCost = (work) => {
+    return calculateWorkCharge(work) + calculateServiceCharge(work);
+  };
+
+  const calculateNetProfit = (work) => {
+    const expectedBaseCost = calculateExpectedBaseCost(work);
+    return work.amount - expectedBaseCost;
   };
 
   const getWorkTitles = (work) => {
@@ -294,44 +316,54 @@ const AdminReports = () => {
                 <div className="row g-3">
                   <div className="col-12 col-sm-6 col-md-4 col-lg">
                     <div style={styles.summaryItem} className="h-100">
-                      <span style={styles.summaryLabel} className="d-block mb-1">Expected Revenue</span>
+                      <span style={styles.summaryLabel} className="d-block mb-1">Total Work Charge</span>
                       <span style={styles.summaryValue}>
-                        {formatCurrency(detailedWorks.filter(w => w.paymentStatus === 'Paid').reduce((sum, w) => sum + calculateExpectedRevenue(w), 0))}
+                        {formatCurrency(reportSummary.totalWorkCharge ?? detailedWorks.reduce((sum, w) => sum + calculateWorkCharge(w), 0))}
                       </span>
                     </div>
                   </div>
                   <div className="col-12 col-sm-6 col-md-4 col-lg">
                     <div style={styles.summaryItem} className="h-100">
-                      <span style={styles.summaryLabel} className="d-block mb-1">Actual Revenue</span>
+                      <span style={styles.summaryLabel} className="d-block mb-1">Total Service Charge</span>
+                      <span style={styles.summaryValue}>
+                        {formatCurrency(reportSummary.totalServiceCharge ?? detailedWorks.reduce((sum, w) => sum + calculateServiceCharge(w), 0))}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="col-12 col-sm-6 col-md-4 col-lg">
+                    <div style={styles.summaryItem} className="h-100">
+                      <span style={styles.summaryLabel} className="d-block mb-1">Total Expected Base Cost</span>
+                      <span style={styles.summaryValue}>
+                        {formatCurrency(reportSummary.totalBaseCost ?? detailedWorks.reduce((sum, w) => sum + calculateExpectedBaseCost(w), 0))}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="col-12 col-sm-6 col-md-4 col-lg">
+                    <div style={styles.summaryItem} className="h-100">
+                      <span style={styles.summaryLabel} className="d-block mb-1">Total Actual Collected</span>
+                      <span style={styles.summaryValue}>
+                        {formatCurrency(reportSummary.totalActualCollected ?? detailedWorks.reduce((sum, w) => sum + w.amount, 0))}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="col-12 col-sm-6 col-md-4 col-lg">
+                    <div style={styles.summaryItem} className="h-100">
+                      <span style={styles.summaryLabel} className="d-block mb-1">Total Profit</span>
                       <span style={{
                         ...styles.summaryValue,
-                        color: detailedWorks.filter(w => w.paymentStatus === 'Paid').reduce((sum, w) => sum + calculateExpectedRevenue(w), 0) !== detailedWorks.filter(w => w.paymentStatus === 'Paid').reduce((sum, w) => sum + w.amount, 0) ? '#e67e22' : '#2c3e50'
+                        color: (reportSummary.totalNetProfit ?? detailedWorks.reduce((sum, w) => sum + calculateNetProfit(w), 0)) >= 0 ? '#27ae60' : '#e74c3c',
+                        fontWeight: 'bold'
                       }}>
-                        {formatCurrency(detailedWorks.filter(w => w.paymentStatus === 'Paid').reduce((sum, w) => sum + w.amount, 0))}
+                        {(reportSummary.totalNetProfit ?? detailedWorks.reduce((sum, w) => sum + calculateNetProfit(w), 0)) >= 0 ? '+' : ''}
+                        {formatCurrency(reportSummary.totalNetProfit ?? detailedWorks.reduce((sum, w) => sum + calculateNetProfit(w), 0))}
                       </span>
                     </div>
                   </div>
                   <div className="col-12 col-sm-6 col-md-4 col-lg">
-                    <div style={styles.summaryItem} className="h-100">
-                      <span style={styles.summaryLabel} className="d-block mb-1">Pending Expected</span>
-                      <span style={{ ...styles.summaryValue, color: '#e74c3c' }}>
-                        {formatCurrency(detailedWorks.filter(w => w.paymentStatus === 'Pending').reduce((sum, w) => sum + calculateExpectedRevenue(w), 0))}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="col-12 col-sm-6 col-md-6 col-lg">
                     <div style={styles.summaryItem} className="h-100">
                       <span style={styles.summaryLabel} className="d-block mb-1">Total Works</span>
                       <span style={styles.summaryValue}>
                         {detailedWorks.length}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="col-12 col-sm-12 col-md-6 col-lg">
-                    <div style={styles.summaryItem} className="h-100">
-                      <span style={styles.summaryLabel} className="d-block mb-1">Paid Works</span>
-                      <span style={styles.summaryValue}>
-                        {detailedWorks.filter(w => w.paymentStatus === 'Paid').length}
                       </span>
                     </div>
                   </div>
@@ -351,16 +383,20 @@ const AdminReports = () => {
                         <th style={styles.th}>Employee Name</th>
                         <th style={styles.th}>Employee ID</th>
                         <th style={styles.th}>Work Title</th>
-                        <th style={styles.th}>Expected Revenue (Admin)</th>
-                        <th style={styles.th}>Actual Revenue (Employee)</th>
-                        <th style={styles.th}>Profit/Loss</th>
+                        <th style={styles.th}>Work Charge</th>
+                        <th style={styles.th}>Service Charge</th>
+                        <th style={styles.th}>Expected Base Cost</th>
+                        <th style={styles.th}>Actual Collected</th>
+                        <th style={styles.th}>Net Profit</th>
                         <th style={styles.th}>Payment Status</th>
                       </tr>
                     </thead>
                     <tbody>
                       {detailedWorks.map((work) => {
-                        const expectedRevenue = calculateExpectedRevenue(work);
-                        const profitLoss = calculateProfitLoss(work);
+                        const workCharge = calculateWorkCharge(work);
+                        const serviceCharge = calculateServiceCharge(work);
+                        const expectedBaseCost = calculateExpectedBaseCost(work);
+                        const netProfit = calculateNetProfit(work);
                         return (
                           <tr key={work._id}>
                             <td style={styles.td}>{formatDate(work.date)}</td>
@@ -370,12 +406,14 @@ const AdminReports = () => {
                             <td style={styles.td}>{work.employee?.name || 'Unknown'}</td>
                             <td style={styles.td}>{work.employee?.employeeId || 'N/A'}</td>
                             <td style={styles.td}>{getWorkTitles(work)}</td>
-                            <td style={styles.td}>{formatCurrency(expectedRevenue)}</td>
+                            <td style={styles.td}>{formatCurrency(workCharge)}</td>
+                            <td style={styles.td}>{formatCurrency(serviceCharge)}</td>
+                            <td style={styles.td}>{formatCurrency(expectedBaseCost)}</td>
                             <td style={{ ...styles.td, color: work.paymentStatus === 'Paid' ? 'inherit' : '#e74c3c' }}>
                               {formatCurrency(work.amount)}
                             </td>
-                            <td style={{ ...styles.td, color: profitLoss >= 0 ? '#27ae60' : '#e74c3c', fontWeight: 'bold' }}>
-                              {profitLoss >= 0 ? '+' : ''}{formatCurrency(profitLoss)}
+                            <td style={{ ...styles.td, color: netProfit >= 0 ? '#27ae60' : '#e74c3c', fontWeight: 'bold' }}>
+                              {netProfit >= 0 ? '+' : ''}{formatCurrency(netProfit)}
                             </td>
                             <td style={{ ...styles.td, color: work.paymentStatus === 'Paid' ? '#27ae60' : '#e74c3c' }}>
                               {work.paymentStatus}

@@ -10,7 +10,7 @@ const AdminWorks = () => {
   const [activeTab, setActiveTab] = useState('entries');
   const [works, setWorks] = useState([]);
   const [workItems, setWorkItems] = useState([]);
-  const [newItem, setNewItem] = useState({ name: '', price: '' });
+  const [newItem, setNewItem] = useState({ name: '', workCharge: '', serviceCharge: '' });
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({});
   const [filters, setFilters] = useState({
@@ -87,15 +87,28 @@ const AdminWorks = () => {
 
   const handleCreateWorkItem = async (e) => {
     e.preventDefault();
+
+    const payload = {
+      name: newItem.name.trim(),
+      workCharge: Number(newItem.workCharge),
+      serviceCharge: Number(newItem.serviceCharge)
+    };
+
+    if (!payload.name || Number.isNaN(payload.workCharge) || Number.isNaN(payload.serviceCharge)) {
+      return error('Please enter a valid name, work charge, and service charge.');
+    }
+
     try {
-      const response = await adminAPI.createWorkItem(newItem);
+      const response = await adminAPI.createWorkItem(payload);
       if (response.data.success) {
         success('Work Item created successfully');
-        setNewItem({ name: '', price: '' });
+        setNewItem({ name: '', workCharge: '', serviceCharge: '' });
         fetchWorkItems();
       }
     } catch (err) {
-      error('Failed to create Work Item');
+      const message = err.response?.data?.message || 'Failed to create Work Item';
+      error(message);
+      console.error('Create work item failed:', err.response?.data || err);
     }
   };
 
@@ -419,7 +432,7 @@ const AdminWorks = () => {
           <div className="p-3 p-md-4 border-bottom">
             <h3 className="fs-5 mb-3">Add New Work Item Preset</h3>
             <form onSubmit={handleCreateWorkItem} className="row g-3 align-items-end">
-              <div className="col-12 col-md-5 d-flex flex-column gap-2">
+              <div className="col-12 col-md-4 d-flex flex-column gap-2">
                 <label style={styles.label}>Work Name</label>
                 <input
                   type="text"
@@ -430,19 +443,31 @@ const AdminWorks = () => {
                   className="form-control"
                 />
               </div>
-              <div className="col-12 col-md-4 d-flex flex-column gap-2">
-                <label style={styles.label}>Fixed Price (₹)</label>
+              <div className="col-12 col-md-3 d-flex flex-column gap-2">
+                <label style={styles.label}>Work Charge (₹)</label>
                 <input
                   type="number"
                   required
                   min="0"
-                  value={newItem.price}
-                  onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
+                  value={newItem.workCharge}
+                  onChange={(e) => setNewItem({ ...newItem, workCharge: e.target.value })}
                   placeholder="0.00"
                   className="form-control"
                 />
               </div>
-              <div className="col-12 col-md-3">
+              <div className="col-12 col-md-3 d-flex flex-column gap-2">
+                <label style={styles.label}>Service Charge (₹)</label>
+                <input
+                  type="number"
+                  required
+                  min="0"
+                  value={newItem.serviceCharge}
+                  onChange={(e) => setNewItem({ ...newItem, serviceCharge: e.target.value })}
+                  placeholder="0.00"
+                  className="form-control"
+                />
+              </div>
+              <div className="col-12 col-md-2">
                 <button type="submit" style={styles.addBtn} className="btn w-100 text-white">Add Preset</button>
               </div>
             </form>
@@ -453,7 +478,9 @@ const AdminWorks = () => {
               <thead>
                 <tr>
                   <th style={styles.th}>Work Name</th>
-                  <th style={styles.th}>Admin Fixed Price</th>
+                  <th style={styles.th}>Work Charge (₹)</th>
+                  <th style={styles.th}>Service Charge (₹)</th>
+                  <th style={styles.th}>Total (₹)</th>
                   <th style={styles.th}>Actions</th>
                 </tr>
               </thead>
@@ -461,7 +488,9 @@ const AdminWorks = () => {
                 {workItems.map(item => (
                   <tr key={item._id}>
                     <td style={styles.td}><strong>{item.name}</strong></td>
-                    <td style={styles.td}>₹{item.price.toLocaleString()}</td>
+                    <td style={styles.td}>₹{item.workCharge?.toLocaleString() || '0'}</td>
+                    <td style={styles.td}>₹{item.serviceCharge?.toLocaleString() || '0'}</td>
+                    <td style={styles.td}><strong>₹{(item.workCharge + item.serviceCharge)?.toLocaleString() || '0'}</strong></td>
                     <td style={styles.td}>
                       <button style={styles.deleteBtn} className="btn btn-sm" onClick={() => handleDeleteWorkItem(item._id)}>Delete</button>
                     </td>
@@ -629,7 +658,7 @@ const styles = {
   activeTab: {
     backgroundColor: '#3498db',
     color: 'white',
-    borderColor: '#3498db'
+    border: '1px solid #3498db'
   },
   addBtn: {
     padding: '10px 24px',
