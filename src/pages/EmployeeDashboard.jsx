@@ -76,7 +76,7 @@ const EmployeeDashboard = () => {
       <div className="mb-4">
         <h2 style={styles.sectionTitle} className="fs-4 fs-md-3 mb-3">This Month Overview</h2>
         <div className="row g-3">
-          <div className="col-12 col-md-6"
+          <div className="col-12 col-md-4"
             onClick={() => navigate('/employee/works', { state: { status: 'Completed' } })}
             style={{ cursor: 'pointer' }}>
             <div style={styles.detailCard} className="h-100 p-3 p-md-4">
@@ -89,7 +89,7 @@ const EmployeeDashboard = () => {
               </div>
             </div>
           </div>
-          <div className="col-12 col-md-6"
+          <div className="col-12 col-md-4"
             onClick={() => navigate('/employee/works', { state: { status: 'In Progress' } })}
             style={{ cursor: 'pointer' }}>
             <div style={styles.detailCard} className="h-100 p-3 p-md-4">
@@ -99,6 +99,19 @@ const EmployeeDashboard = () => {
               </div>
               <div style={styles.detailSubtext}>
                 In progress
+              </div>
+            </div>
+          </div>
+          <div className="col-12 col-md-4"
+            onClick={() => navigate('/employee/works', { state: { paymentStatus: 'Pending' } })}
+            style={{ cursor: 'pointer' }}>
+            <div style={{ ...styles.detailCard, borderColor: '#e74c3c' }} className="h-100 p-3 p-md-4">
+              <h3 style={{ ...styles.detailTitle, color: '#e74c3c' }}>Pending Payments</h3>
+              <div style={{ ...styles.detailValue, color: '#e74c3c' }}>
+                ₹{stats?.pendingAmount?.toLocaleString() || '0'}
+              </div>
+              <div style={styles.detailSubtext}>
+                Follow up required
               </div>
             </div>
           </div>

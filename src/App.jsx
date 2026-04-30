@@ -16,6 +16,7 @@ import AdminProfile from './pages/AdminProfile';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import EmployeeWorks from './pages/EmployeeWorks';
 import EmployeeReports from './pages/EmployeeReports';
+import AddWork from './pages/AddWork';
 
 
 
@@ -78,7 +79,7 @@ const ProtectedRoute = ({ requiredRole }) => {
             Dashboard
           </Link>
           <Link to="/employee/works" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/works') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar}>
-            My Works
+            Sales Entries
           </Link>
           <Link to="/employee/reports" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/reports') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar}>
             Reports
@@ -176,6 +177,7 @@ function App() {
                 <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
                 <Route path="/employee/works" element={<EmployeeWorks />} />
                 <Route path="/employee/reports" element={<EmployeeReports />} />
+                <Route path="/add-work" element={<AddWork />} />
               </Route>
 
               {/* Redirects */}

@@ -46,13 +46,23 @@ const EmployeeReports = () => {
 
       setWorks(worksData);
 
+
       // Calculate stats
       const allWorks = worksData.flatMap(d => d.works);
       const totalWorks = allWorks.length;
       const totalEarnings = allWorks.filter(w => w.paymentStatus === 'Paid').reduce((sum, w) => sum + w.amount, 0);
       const pendingAmount = allWorks.filter(w => w.paymentStatus === 'Pending').reduce((sum, w) => sum + w.amount, 0);
 
-      setStats({ totalWorks, totalEarnings, pendingAmount });
+      const completedWorks = allWorks.filter(w => w.workStatus === 'Completed').length;
+      const inProgressWorks = allWorks.filter(w => w.workStatus === 'In Progress').length;
+
+      setStats({
+        totalWorks,
+        totalEarnings,
+        pendingAmount,
+        completedWorks,
+        inProgressWorks
+      });
     } catch (err) {
       console.error('Error fetching daily report:', err);
       error('Failed to fetch daily report');
@@ -95,8 +105,16 @@ const EmployeeReports = () => {
         const totalWorks = response.data.works.length;
         const totalEarnings = response.data.works.filter(w => w.paymentStatus === 'Paid').reduce((sum, w) => sum + w.amount, 0);
         const pendingAmount = response.data.works.filter(w => w.paymentStatus === 'Pending').reduce((sum, w) => sum + w.amount, 0);
+        const completedWorks = response.data.works.filter(w => w.workStatus === 'Completed').length;
+        const inProgressWorks = response.data.works.filter(w => w.workStatus === 'In Progress').length;
 
-        setStats({ totalWorks, totalEarnings, pendingAmount });
+        setStats({
+          totalWorks,
+          totalEarnings,
+          pendingAmount,
+          completedWorks,
+          inProgressWorks
+        });
       }
     } catch (err) {
       console.error('Error fetching monthly report:', err);
@@ -264,6 +282,23 @@ const EmployeeReports = () => {
                     </span>
                   </div>
                 </div>
+                <div className="col-12 col-sm-6 col-lg-3">
+                  <div style={styles.summaryItem}>
+                    <span style={styles.summaryLabel}>Completed Works</span>
+                    <span style={{ ...styles.summaryValue, color: '#27ae60' }}>
+                      {stats?.completedWorks || 0}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="col-12 col-sm-6 col-lg-3">
+                  <div style={styles.summaryItem}>
+                    <span style={styles.summaryLabel}>Pending</span>
+                    <span style={{ ...styles.summaryValue, color: '#f39c12' }}>
+                      {stats?.inProgressWorks || 0}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -283,16 +318,27 @@ const EmployeeReports = () => {
                           <th style={styles.th}>Work Title</th>
                           <th style={styles.th}>Amount</th>
                           <th style={styles.th}>Payment</th>
+                          <th style={styles.th}>Work Status</th>
                         </tr>
                       </thead>
                       <tbody>
                         {dayData.works.map(work => (
                           <tr key={work._id}>
-                            <td style={styles.td}>{work.customerName}</td>
-                            <td style={styles.td}>{work.items && work.items.length > 0 ? work.items.map(i => i.title).join(', ') : work.workTitle}</td>
+                            <td style={styles.td}>
+                              <div className="fw-bold text-truncate" style={{ maxWidth: '150px' }}>{work.customerName}</div>
+                              <div className="text-muted small">{work.customerPhone || '-'}</div>
+                            </td>
+                            <td style={{ ...styles.td, whiteSpace: 'normal', maxWidth: '200px' }}>
+                              {work.items && work.items.length > 0
+                                ? work.items.map(i => `${i.title} (x${i.quantity || 1})`).join(', ')
+                                : work.workTitle}
+                            </td>
                             <td style={styles.td}>{formatCurrency(work.amount)}</td>
                             <td style={styles.td}>
                               {getStatusBadge(work.paymentStatus)}
+                            </td>
+                            <td style={styles.td}>
+                              {getStatusBadge(work.workStatus)}
                             </td>
                           </tr>
                         ))}

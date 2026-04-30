@@ -13,14 +13,22 @@ const AdminReports = () => {
     totalWorkCharge: 0,
     totalServiceCharge: 0,
     totalBaseCost: 0,
+    totalOtherCharges: 0,
     totalActualCollected: 0,
     totalNetProfit: 0
   });
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
-    groupBy: 'day'
+    groupBy: 'day',
+    searchName: '',
+    searchPhone: '',
+    employeeName: '',
+    paymentStatus: '',
+    workStatus: ''
   });
+  const [selectedNote, setSelectedNote] = useState('');
+  const [showNotesModal, setShowNotesModal] = useState(false);
   const { success, error } = useToast();
 
   useEffect(() => {
@@ -44,6 +52,7 @@ const AdminReports = () => {
           totalWorkCharge: 0,
           totalServiceCharge: 0,
           totalBaseCost: 0,
+          totalOtherCharges: 0,
           totalActualCollected: 0,
           totalNetProfit: 0
         });
@@ -92,6 +101,51 @@ const AdminReports = () => {
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      startDate: '',
+      endDate: '',
+      groupBy: 'day',
+      searchName: '',
+      searchPhone: '',
+      employeeName: '',
+      paymentStatus: '',
+      workStatus: ''
+    });
+  };
+
+  // Apply frontend filters to detailed works
+  const getFilteredWorks = () => {
+    return detailedWorks.filter(work => {
+      // Customer Name filter (case-insensitive partial match)
+      if (filters.searchName && !work.customerName?.toLowerCase().includes(filters.searchName.toLowerCase())) {
+        return false;
+      }
+
+      // Customer Phone filter (partial match)
+      if (filters.searchPhone && !work.customerPhone?.includes(filters.searchPhone)) {
+        return false;
+      }
+
+      // Employee Name filter
+      if (filters.employeeName && !work.employee?.name?.toLowerCase().includes(filters.employeeName.toLowerCase())) {
+        return false;
+      }
+
+      // Payment Status filter
+      if (filters.paymentStatus && work.paymentStatus !== filters.paymentStatus) {
+        return false;
+      }
+
+      // Work Status filter
+      if (filters.workStatus && work.workStatus !== filters.workStatus) {
+        return false;
+      }
+
+      return true;
+    });
   };
 
   const handleRevenueReport = (e) => {
@@ -166,11 +220,11 @@ const AdminReports = () => {
   };
 
   const calculateWorkCharge = (work) => {
-    return work.items ? work.items.reduce((sum, item) => sum + (item.workChargeAtTime || 0), 0) : 0;
+    return work.items ? work.items.reduce((sum, item) => sum + ((item.workChargeAtTime || 0) * (item.quantity || 1)), 0) : 0;
   };
 
   const calculateServiceCharge = (work) => {
-    return work.items ? work.items.reduce((sum, item) => sum + (item.serviceChargeAtTime || 0), 0) : 0;
+    return work.items ? work.items.reduce((sum, item) => sum + ((item.serviceChargeAtTime || 0) * (item.quantity || 1)), 0) : 0;
   };
 
   const calculateExpectedBaseCost = (work) => {
@@ -178,16 +232,26 @@ const AdminReports = () => {
   };
 
   const calculateNetProfit = (work) => {
-    const expectedBaseCost = calculateExpectedBaseCost(work);
-    return work.amount - expectedBaseCost;
+    if (work.paymentStatus !== 'Paid') return 0;
+    const serviceCharge = calculateServiceCharge(work);
+    const otherCharges = work.otherCharges || 0;
+    return serviceCharge + otherCharges;
   };
 
   const getWorkTitles = (work) => {
-    return work.items ? work.items.map(item => item.title).join(', ') : '';
+    return work.items && work.items.length > 0
+      ? work.items.map(item => `${item.title} (x${item.quantity || 1})`).join(', ')
+      : work.workTitle || '';
   };
 
   return (
     <div className="container-fluid p-0">
+      <style>{`
+        @keyframes modalSlideIn {
+          from { transform: translateY(-30px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+      `}</style>
       <div className="mb-4">
         <h1 style={styles.title} className="fs-3 fs-md-2">Reports</h1>
         <p style={styles.subtitle} className="fs-6 text-muted">Analytics and performance reports</p>
@@ -221,7 +285,7 @@ const AdminReports = () => {
           <div style={styles.filtersCard}>
             <form onSubmit={handleRevenueReport} className="d-flex flex-column">
               <div className="row g-3">
-                <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
+                <div className="col-12 col-sm-6 col-md-3 d-flex flex-column gap-2">
                   <label style={styles.label}>From Date</label>
                   <input
                     type="date"
@@ -229,10 +293,9 @@ const AdminReports = () => {
                     value={filters.startDate}
                     onChange={handleFilterChange}
                     className="form-control"
-                    required
                   />
                 </div>
-                <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
+                <div className="col-12 col-sm-6 col-md-3 d-flex flex-column gap-2">
                   <label style={styles.label}>To Date</label>
                   <input
                     type="date"
@@ -240,10 +303,9 @@ const AdminReports = () => {
                     value={filters.endDate}
                     onChange={handleFilterChange}
                     className="form-control"
-                    required
                   />
                 </div>
-                <div className="col-12 col-md-4 d-flex flex-column gap-2">
+                <div className="col-12 col-sm-6 col-md-3 d-flex flex-column gap-2">
                   <label style={styles.label}>Group By</label>
                   <select
                     name="groupBy"
@@ -256,10 +318,79 @@ const AdminReports = () => {
                     <option value="year">Year</option>
                   </select>
                 </div>
+                <div className="col-12 col-sm-6 col-md-3 d-flex flex-column gap-2">
+                  <label style={styles.label}>Payment Status</label>
+                  <select
+                    name="paymentStatus"
+                    value={filters.paymentStatus}
+                    onChange={handleFilterChange}
+                    className="form-select"
+                  >
+                    <option value="">All Status</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Pending">Pending</option>
+                  </select>
+                </div>
+                <div className="col-12 col-sm-6 col-md-3 d-flex flex-column gap-2">
+                  <label style={styles.label}>Work Status</label>
+                  <select
+                    name="workStatus"
+                    value={filters.workStatus}
+                    onChange={handleFilterChange}
+                    className="form-select"
+                  >
+                    <option value="">All Status</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Pending">Pending</option>
+                  </select>
+                </div>
+                <div className="col-12 col-sm-6 col-md-3 d-flex flex-column gap-2">
+                  <label style={styles.label}>Customer Name</label>
+                  <input
+                    type="text"
+                    name="searchName"
+                    value={filters.searchName}
+                    onChange={handleFilterChange}
+                    className="form-control"
+                    placeholder="Search customer name..."
+                  />
+                </div>
+                <div className="col-12 col-sm-6 col-md-3 d-flex flex-column gap-2">
+                  <label style={styles.label}>Customer Phone</label>
+                  <input
+                    type="text"
+                    name="searchPhone"
+                    value={filters.searchPhone}
+                    onChange={handleFilterChange}
+                    className="form-control"
+                    placeholder="Search phone number..."
+                  />
+                </div>
+                <div className="col-12 col-sm-6 col-md-3 d-flex flex-column gap-2">
+                  <label style={styles.label}>Employee Name</label>
+                  <input
+                    type="text"
+                    name="employeeName"
+                    value={filters.employeeName}
+                    onChange={handleFilterChange}
+                    className="form-control"
+                    placeholder="Search employee..."
+                  />
+                </div>
               </div>
-              <button type="submit" style={styles.generateBtn} className="btn w-100 w-md-auto text-white mt-3">
-                Generate Report
-              </button>
+              <div className="d-flex gap-2 mt-3 flex-wrap">
+                <button type="submit" style={styles.generateBtn} className="btn text-white">
+                  Generate Report
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClearFilters}
+                  className="btn btn-outline-secondary"
+                  style={{ padding: '10px 24px', borderRadius: '6px', fontSize: '14px', fontWeight: '600' }}
+                >
+                  Clear Filters
+                </button>
+              </div>
             </form>
           </div>
 
@@ -349,9 +480,17 @@ const AdminReports = () => {
                   </div>
                   <div className="col-12 col-sm-6 col-md-4 col-lg">
                     <div style={styles.summaryItem} className="h-100">
+                      <span style={styles.summaryLabel} className="d-block mb-1">Total Other Charges</span>
+                      <span style={styles.summaryValue}>
+                        {formatCurrency(reportSummary.totalOtherCharges ?? detailedWorks.filter(w => w.paymentStatus === 'Paid').reduce((sum, w) => sum + (w.otherCharges || 0), 0))}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="col-12 col-sm-6 col-md-4 col-lg">
+                    <div style={styles.summaryItem} className="h-100">
                       <span style={styles.summaryLabel} className="d-block mb-1">Total Actual Collected</span>
                       <span style={styles.summaryValue}>
-                        {formatCurrency(reportSummary.totalActualCollected ?? detailedWorks.reduce((sum, w) => sum + w.amount, 0))}
+                        {formatCurrency(reportSummary.totalActualCollected ?? detailedWorks.filter(w => w.paymentStatus === 'Paid').reduce((sum, w) => sum + w.amount, 0))}
                       </span>
                     </div>
                   </div>
@@ -386,22 +525,24 @@ const AdminReports = () => {
                     <thead>
                       <tr>
                         <th style={styles.th}>Date</th>
-                        <th style={styles.th}>Customer Name</th>
-                        <th style={styles.th}>Customer Phone</th>
+                        <th style={styles.th}>Customer</th>
                         <th style={styles.th}>Payment Method</th>
                         <th style={styles.th}>Employee Name</th>
                         <th style={styles.th}>Employee ID</th>
-                        <th style={styles.th}>Work Title</th>
-                        <th style={styles.th}>Apply Charge</th>
+                        <th style={styles.th}>Service Name</th>
+                        <th style={styles.th}>Application Fees</th>
                         <th style={styles.th}>Service Charge</th>
+                        <th style={styles.th}>Expected Cost</th>
                         <th style={styles.th}>Other Charges</th>
                         <th style={styles.th}>Actual Collected</th>
                         <th style={styles.th}>Net Profit</th>
                         <th style={styles.th}>Payment Status</th>
+                        <th style={styles.th}>Work Status</th>
+                        <th style={styles.th}>Notes</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {detailedWorks.map((work) => {
+                      {getFilteredWorks().map((work) => {
                         const workCharge = calculateWorkCharge(work);
                         const serviceCharge = calculateServiceCharge(work);
                         const expectedBaseCost = calculateExpectedBaseCost(work);
@@ -409,15 +550,18 @@ const AdminReports = () => {
                         return (
                           <tr key={work._id}>
                             <td style={styles.td}>{formatDate(work.date)}</td>
-                            <td style={styles.td}>{work.customerName}</td>
-                            <td style={styles.td}>{work.customerPhone || '-'}</td>
+                            <td style={styles.td}>
+                              <div className="fw-bold">{work.customerName}</div>
+                              <div className="text-muted small">{work.customerPhone || '-'}</div>
+                            </td>
                             <td style={styles.td}>{work.paymentMethod || 'Hand Cash'}</td>
                             <td style={styles.td}>{work.employee?.name || 'Unknown'}</td>
                             <td style={styles.td}>{work.employee?.employeeId || 'N/A'}</td>
-                            <td style={styles.td}>{getWorkTitles(work)}</td>
+                            <td style={{ ...styles.td, whiteSpace: 'normal', maxWidth: '200px' }}>{getWorkTitles(work)}</td>
                             <td style={styles.td}>{formatCurrency(workCharge)}</td>
                             <td style={styles.td}>{formatCurrency(serviceCharge)}</td>
                             <td style={styles.td}>{formatCurrency(expectedBaseCost)}</td>
+                            <td style={styles.td}>{formatCurrency(work.otherCharges || 0)}</td>
                             <td style={{ ...styles.td, color: work.paymentStatus === 'Paid' ? 'inherit' : '#e74c3c' }}>
                               {formatCurrency(work.amount)}
                             </td>
@@ -427,13 +571,32 @@ const AdminReports = () => {
                             <td style={{ ...styles.td, color: work.paymentStatus === 'Paid' ? '#27ae60' : '#e74c3c' }}>
                               {work.paymentStatus}
                             </td>
+                            <td style={{ ...styles.td, color: work.workStatus === 'Completed' ? '#27ae60' : '#f39c12' }}>
+                              {work.workStatus === 'In Progress' ? 'Pending' : work.workStatus}
+                            </td>
+                            <td style={styles.td}>
+                              {work.notes ? (
+                                <button 
+                                  onClick={() => {
+                                    setSelectedNote(work.notes);
+                                    setShowNotesModal(true);
+                                  }}
+                                  className="btn btn-sm btn-outline-primary"
+                                  style={styles.viewBtn}
+                                >
+                                  View
+                                </button>
+                              ) : (
+                                <span className="text-muted small">No Notes</span>
+                              )}
+                            </td>
                           </tr>
                         );
                       })}
                     </tbody>
                   </table>
                 </div>
-                {detailedWorks.length === 0 && (
+                {getFilteredWorks().length === 0 && (
                   <div style={styles.noData}>
                     <p>No work entries found for the selected date range.</p>
                   </div>
@@ -531,6 +694,26 @@ const AdminReports = () => {
               <p>No performance data available.</p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Notes Modal */}
+      {showNotesModal && (
+        <div style={styles.modalOverlay} onClick={() => setShowNotesModal(false)}>
+          <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <h4 style={styles.modalTitle}>Work Notes</h4>
+              <button 
+                style={styles.closeBtn} 
+                onClick={() => setShowNotesModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div style={styles.modalBody}>
+              <p style={styles.notesText}>{selectedNote}</p>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -882,6 +1065,67 @@ const styles = {
     fontSize: '14px',
     fontWeight: '600',
     color: '#2c3e50'
+  },
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+    padding: '20px'
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: '12px',
+    width: '100%',
+    maxWidth: '500px',
+    maxHeight: '80vh',
+    display: 'flex',
+    flexDirection: 'column',
+    boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+    animation: 'modalSlideIn 0.3s ease-out'
+  },
+  modalHeader: {
+    padding: '16px 24px',
+    borderBottom: '1px solid #eee',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  modalTitle: {
+    margin: 0,
+    fontSize: '18px',
+    fontWeight: 'bold',
+    color: '#2c3e50'
+  },
+  modalBody: {
+    padding: '24px',
+    overflowY: 'auto',
+    fontSize: '15px',
+    lineHeight: '1.6',
+    color: '#444'
+  },
+  closeBtn: {
+    background: 'none',
+    border: 'none',
+    fontSize: '20px',
+    cursor: 'pointer',
+    color: '#999',
+    padding: '4px'
+  },
+  notesText: {
+    margin: 0,
+    whiteSpace: 'pre-wrap'
+  },
+  viewBtn: {
+    padding: '4px 12px',
+    fontSize: '12px',
+    borderRadius: '4px'
   }
 };
 

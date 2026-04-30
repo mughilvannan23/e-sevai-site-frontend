@@ -377,7 +377,7 @@ const AdminWorks = () => {
                   >
                     <option value="">All</option>
                     <option value="Completed">Completed</option>
-                    <option value="In Progress">In Progress</option>
+                    <option value="In Progress">Pending</option>
                   </select>
                 </div>
               </div>
@@ -474,7 +474,7 @@ const AdminWorks = () => {
             <h3 className="fs-5 mb-3">{editingPreset ? 'Edit Work Item Preset' : 'Add New Work Item Preset'}</h3>
             <form onSubmit={handleSaveWorkItem} className="row g-3 align-items-end">
               <div className="col-12 col-md-3 d-flex flex-column gap-2">
-                <label style={styles.label}>Work Name</label>
+                <label style={styles.label}>Service Name</label>
                 <input
                   type="text"
                   required
@@ -485,7 +485,7 @@ const AdminWorks = () => {
                 />
               </div>
               <div className="col-12 col-md-2 d-flex flex-column gap-2">
-                <label style={styles.label}>Work Charge (₹)</label>
+                <label style={styles.label}>Application Fees (₹)</label>
                 <input
                   type="number"
                   required
@@ -536,8 +536,8 @@ const AdminWorks = () => {
             <table className="table table-hover mb-0" style={styles.table}>
               <thead>
                 <tr>
-                  <th style={styles.th}>Work Name</th>
-                  <th style={styles.th}>Work Charge (₹)</th>
+                  <th style={styles.th}>Service Name</th>
+                  <th style={styles.th}>Application Fees (₹)</th>
                   <th style={styles.th}>Service Charge (₹)</th>
                   <th style={styles.th}>Total (₹)</th>
                   <th style={styles.th}>Status</th>

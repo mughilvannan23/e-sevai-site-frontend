@@ -64,9 +64,9 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('[AuthContext] Login error:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Login failed';
+      const errorMessage = error.response?.data?.message || 'Invalid credentials';
       setError(errorMessage);
-      throw new Error(errorMessage);
+      throw error; // Rethrow to let the component handle it with axios error object
     } finally {
       setLoading(false);
     }

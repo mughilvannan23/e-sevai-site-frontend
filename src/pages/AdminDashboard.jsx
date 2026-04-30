@@ -58,17 +58,25 @@ const AdminDashboard = () => {
 
       {stats && (
         <div className="row g-3 mb-4">
-          <div className="col-12 col-sm-6 col-md-6 col-lg-3">
+          <div className="col-12 col-sm-6 col-lg">
             <StatCard title="Total Employees" value={stats.employees.total} icon="👥" color="#3498db" />
           </div>
-          <div className="col-12 col-sm-6 col-md-6 col-lg-3">
+          <div className="col-12 col-sm-6 col-lg">
             <StatCard title="Today's Works" value={stats.works.today} icon="📋" color="#2ecc71" />
           </div>
-          <div className="col-12 col-sm-6 col-md-6 col-lg-3">
+          <div className="col-12 col-sm-6 col-lg">
             <StatCard title="Today's Revenue" value={`₹${stats.revenue.today.toLocaleString()}`} icon="💰" color="#f39c12" />
           </div>
-          <div className="col-12 col-sm-6 col-md-6 col-lg-3">
+          <div className="col-12 col-sm-6 col-lg">
             <StatCard title="Total Revenue" value={`₹${stats.revenue.total.toLocaleString()}`} icon="📊" color="#9b59b6" />
+          </div>
+          <div className="col-12 col-sm-6 col-lg">
+            <StatCard
+              title="Total Profit"
+              value={`${(stats.revenue.profit || 0) >= 0 ? '+' : ''}₹${(stats.revenue.profit || 0).toLocaleString()}`}
+              icon="💎"
+              color={(stats.revenue.profit || 0) >= 0 ? '#27ae60' : '#e74c3c'}
+            />
           </div>
         </div>
       )}
@@ -88,12 +96,12 @@ const AdminDashboard = () => {
             </div>
           </div>
           <div className="col-12 col-md-6 col-lg-3"
-            onClick={() => navigate('/admin/works', { state: { paymentStatus: 'Pending', workStatus: 'In Progress' } })}
+            onClick={() => navigate('/admin/works', { state: { paymentStatus: 'Pending' } })}
             style={{ cursor: 'pointer' }}>
             <div style={styles.revenueCard} className="p-3 p-md-4 h-100">
               <h3 style={styles.revenueTitle}>Pending Payments</h3>
               <div style={{ ...styles.revenueValue, color: '#e74c3c' }}>
-                ₹{stats?.revenue.pending.toLocaleString() || '0'}
+                {stats?.revenue.pending || 0} Customers
               </div>
               <div style={styles.revenueWorks}>
                 Follow up required

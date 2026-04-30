@@ -66,7 +66,7 @@ const NavigationBar = () => {
 
                   <Nav.Link as={Link} to="/employee/works"
                     style={{ ...styles.navLink, ...(isActive('/employee/works') ? styles.activeLink : {}) }}>
-                    My Works
+                    Sales Entries
                   </Nav.Link>
 
                   <Nav.Link as={Link} to="/employee/reports"

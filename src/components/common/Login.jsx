@@ -35,7 +35,8 @@ const Login = () => {
         navigate('/employee/dashboard');
       }
     } catch (err) {
-      toastError(err.message || 'Login failed');
+      const msg = err.response?.data?.message || err.message || 'Invalid credentials';
+      toastError(msg);
     } finally {
       setLoading(false);
     }
