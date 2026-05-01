@@ -67,9 +67,9 @@ const EmployeeDashboard = () => {
           <div className="col-12 col-sm-6 col-md-6 col-lg-3">
             <StatCard title="Total Works" value={stats.totalWorks} icon="📊" color="#f39c12" />
           </div>
-          <div className="col-12 col-sm-6 col-md-6 col-lg-3">
+          {/* <div className="col-12 col-sm-6 col-md-6 col-lg-3">
             <StatCard title="Total Earnings" value={`₹${stats.totalEarnings.toLocaleString()}`} icon="🏆" color="#9b59b6" />
-          </div>
+          </div> */}
         </div>
       )}
 
@@ -98,7 +98,7 @@ const EmployeeDashboard = () => {
                 {stats?.pendingWorks || 0}
               </div>
               <div style={styles.detailSubtext}>
-                In progress
+                Pending
               </div>
             </div>
           </div>

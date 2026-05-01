@@ -117,7 +117,7 @@ const AdminDashboard = () => {
                 {stats?.works.pending || 0}
               </div>
               <div style={styles.revenueWorks}>
-                In progress
+                Pending
               </div>
             </div>
           </div>

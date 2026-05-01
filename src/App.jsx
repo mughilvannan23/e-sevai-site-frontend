@@ -16,7 +16,7 @@ import AdminProfile from './pages/AdminProfile';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import EmployeeWorks from './pages/EmployeeWorks';
 import EmployeeReports from './pages/EmployeeReports';
-import AddWork from './pages/AddWork';
+import AddWorkPage from './pages/AddWorkPage';
 
 
 
@@ -26,6 +26,7 @@ import AddWork from './pages/AddWork';
 const ProtectedRoute = ({ requiredRole }) => {
   const { user, logout, isAuthenticated, isAdmin, isEmployee, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [isHovered, setIsHovered] = React.useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -51,66 +52,111 @@ const ProtectedRoute = ({ requiredRole }) => {
   const isActive = (path) => location.pathname === path;
   const dashboardPath = isAdmin ? '/admin/dashboard' : '/employee/dashboard';
 
-  const NavLinks = () => (
-    <>
+  const NavLinks = ({ collapsed = false }) => (
+    <div style={{ opacity: collapsed ? 0 : 1, transition: 'opacity 0.2s ease', pointerEvents: collapsed ? 'none' : 'auto' }}>
       {isAdmin && (
         <>
-          <Link to="/admin/dashboard" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/dashboard') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar}>
-            Dashboard
+          <Link to="/admin/dashboard" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/dashboard') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Dashboard">
+            <span style={styles.navIcon}>📊</span>
+            <span>Dashboard</span>
           </Link>
-          <Link to="/admin/employees" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/employees') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar}>
-            Employees
+          <Link to="/admin/employees" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/employees') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Employees">
+            <span style={styles.navIcon}>👥</span>
+            <span>Employees</span>
           </Link>
-          <Link to="/admin/works" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/works') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar}>
-            Works List
+          <Link to="/admin/works" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/works') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Works List">
+            <span style={styles.navIcon}>💼</span>
+            <span>Works List</span>
           </Link>
-          <Link to="/admin/reports" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/reports') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar}>
-            Reports
+          <Link to="/admin/reports" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/reports') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Reports">
+            <span style={styles.navIcon}>📈</span>
+            <span>Reports</span>
           </Link>
-          <Link to="/admin/profile" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/profile') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar}>
-            Profile
+          <Link to="/admin/profile" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/profile') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Profile">
+            <span style={styles.navIcon}>👤</span>
+            <span>Profile</span>
           </Link>
         </>
       )}
 
       {isEmployee && (
         <>
-          <Link to="/employee/dashboard" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/dashboard') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar}>
-            Dashboard
+          <Link to="/employee/dashboard" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/dashboard') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Dashboard">
+            <span style={styles.navIcon}>📊</span>
+            <span>Dashboard</span>
           </Link>
-          <Link to="/employee/works" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/works') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar}>
-            Sales Entries
+          <Link to="/add-work" className="nav-link" style={{ ...styles.navLink, ...(isActive('/add-work') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Add New Entry">
+            <span style={styles.navIcon}>➕</span>
+            <span>Add New Entry</span>
           </Link>
-          <Link to="/employee/reports" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/reports') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar}>
-            Reports
+          <Link to="/employee/works" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/works') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Sales Entries">
+            <span style={styles.navIcon}>📝</span>
+            <span>Sales Entries</span>
+          </Link>
+          <Link to="/employee/reports" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/reports') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Reports">
+            <span style={styles.navIcon}>📉</span>
+            <span>Reports</span>
           </Link>
         </>
       )}
-    </>
+    </div>
   );
 
-  const SidebarContent = () => (
-    <>
-      <Link to={dashboardPath} style={styles.brandLink}>
-        {/* <span style={styles.brandIcon}>🏢</span> */}
-        <span style={styles.brandText}>SEVAGAN CSC & E SEVA CENTRE</span>
-      </Link>
+  const SidebarContent = ({ mobile = false }) => {
+    const collapsed = !mobile && !isHovered;
 
-      <nav className="nav nav-pills flex-column gap-2 mt-4">
-        <NavLinks />
-      </nav>
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        overflow: 'hidden',
+        width: mobile ? '250px' : (isHovered ? '250px' : '40px'),
+        transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+      }}>
+        <div style={{
+          padding: '24px 16px',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          width: '250px', // Content always keeps its width
+        }}>
+          <div className="d-flex align-items-center justify-content-between mb-2">
+            <Link to={dashboardPath} style={{ ...styles.brandLink, opacity: collapsed ? 0 : 1, transition: 'opacity 0.2s' }}>
+              <span style={styles.brandText}>SEVAGAN CENTRE</span>
+            </Link>
+            {collapsed && (
+              <div style={{
+                position: 'absolute',
+                left: '0',
+                width: '40px',
+                textAlign: 'center',
+                fontSize: '24px',
+                color: 'rgba(255,255,255,0.7)',
+                marginTop: '-10px'
+              }}>
+                ⋮
+              </div>
+            )}
+          </div>
 
-      <div className="mt-auto pt-4 px-1">
-        <div className="mb-3">
-          <div style={styles.userName}>{user?.name}</div>
-          <div style={styles.userRole}>{isAdmin ? 'Admin' : user?.employeeId}</div>
+          <nav className="nav nav-pills flex-column gap-2 mt-4">
+            <NavLinks collapsed={collapsed} />
+          </nav>
+
+          <div className="mt-auto pt-4 px-1" style={{ opacity: collapsed ? 0 : 1, transition: 'opacity 0.2s' }}>
+            <div className="mb-3">
+              <div style={styles.userName}>{user?.name}</div>
+              <div style={styles.userRole}>{isAdmin ? 'Admin' : user?.employeeId}</div>
+            </div>
+            <button type="button" className="btn btn-danger w-100" onClick={handleLogout} title="Logout">
+              Logout
+            </button>
+          </div>
         </div>
-        <button type="button" className="btn btn-danger w-100" onClick={handleLogout}>
-          Logout
-        </button>
       </div>
-    </>
-  );
+    );
+  };
 
   return (
     <>
@@ -130,7 +176,18 @@ const ProtectedRoute = ({ requiredRole }) => {
       {/* Main Layout: Flex container for sidebar + content */}
       <div className="d-flex flex-column flex-md-row" style={styles.pageWrapper}>
         {/* Desktop Sidebar (hidden on mobile) */}
-        <aside className="d-none d-md-flex flex-column flex-md-shrink-0" style={styles.sidebar}>
+        <aside
+          className="d-none d-md-flex flex-column flex-md-shrink-0"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          style={{
+            ...styles.sidebar,
+            width: isHovered ? '250px' : '40px',
+            padding: 0, // Padding moved to inner container in SidebarContent
+            transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            overflow: 'visible'
+          }}
+        >
           <SidebarContent />
         </aside>
 
@@ -139,14 +196,23 @@ const ProtectedRoute = ({ requiredRole }) => {
           <>
             <div style={styles.offcanvasBackdrop} onClick={handleCloseSidebar}></div>
             <aside className="d-md-none d-flex flex-column" style={styles.offcanvasSidebarContent}>
-              <SidebarContent />
+              <SidebarContent mobile={true} />
             </aside>
           </>
         )}
 
         {/* Main Content */}
-        <main className="flex-grow-1 p-3 p-md-4 w-100" style={styles.mainContent}>
-          <Outlet />
+        <main
+          className="flex-grow-1 p-3 p-md-4"
+          style={{
+            ...styles.mainContent,
+            marginLeft: 0,
+            transition: 'all 0.3s ease'
+          }}
+        >
+          <div style={styles.content}>
+            <Outlet />
+          </div>
         </main>
       </div>
     </>
@@ -177,7 +243,7 @@ function App() {
                 <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
                 <Route path="/employee/works" element={<EmployeeWorks />} />
                 <Route path="/employee/reports" element={<EmployeeReports />} />
-                <Route path="/add-work" element={<AddWork />} />
+                <Route path="/add-work" element={<AddWorkPage />} />
               </Route>
 
               {/* Redirects */}
@@ -228,7 +294,9 @@ const styles = {
     padding: '24px 16px',
     flexShrink: 0,
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    zIndex: 1000,
+    boxShadow: '4px 0 10px rgba(0,0,0,0.1)'
   },
   offcanvasSidebarContent: {
     position: 'fixed',
@@ -288,15 +356,35 @@ const styles = {
     color: 'rgba(255,255,255,0.7)',
     fontSize: '12px'
   },
+  navIcon: {
+    fontSize: '18px',
+    minWidth: '24px',
+    display: 'inline-flex',
+    justifyContent: 'center',
+    marginRight: '12px'
+  },
+  collapsedNavLink: {
+    padding: '10px 0',
+    display: 'flex',
+    justifyContent: 'center'
+  },
+  desktopToggleBtn: {
+    fontSize: '18px',
+    padding: '0 4px',
+    border: 'none',
+    backgroundColor: 'transparent',
+    lineHeight: 1
+  },
   mainContent: {
     backgroundColor: '#f8f9fa',
     minHeight: '100vh',
-    flex: 1
+    flex: 1,
+    overflowX: 'hidden'
   },
   content: {
     padding: '20px',
-    maxWidth: '1200px',
-    margin: '0 auto',
+    maxWidth: '100%',
+    margin: '0',
     width: '100%'
   }
 };

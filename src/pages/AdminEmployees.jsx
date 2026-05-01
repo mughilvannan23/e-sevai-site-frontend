@@ -152,7 +152,7 @@ const AdminEmployees = () => {
           <h1 style={styles.title} className="fs-3 fs-md-2">Employees</h1>
           <p style={styles.subtitle} className="fs-6 text-muted">Manage employee accounts</p>
         </div>
-        <button 
+        <button
           style={styles.addBtn}
           className="btn w-90 w-md-auto text-white"
           onClick={() => handleOpenModal()}
@@ -193,8 +193,8 @@ const AdminEmployees = () => {
             <button type="submit" style={styles.searchBtn} className="btn w-100 w-sm-auto text-white">
               Search
             </button>
-            <button 
-              type="button" 
+            <button
+              type="button"
               style={styles.resetBtn}
               className="btn w-100 w-sm-auto text-white"
               onClick={() => setFilters({
@@ -239,14 +239,14 @@ const AdminEmployees = () => {
                     </span>
                   </td>
                   <td style={styles.td}>
-                    {emp.lastLogin 
+                    {emp.lastLogin
                       ? new Date(emp.lastLogin).toLocaleDateString('en-IN', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })
                       : 'Never'
                     }
                   </td>
@@ -273,7 +273,7 @@ const AdminEmployees = () => {
             </tbody>
           </table>
         </div>
-        
+
         {employees.length === 0 && (
           <div style={styles.noData}>No employees found</div>
         )}
@@ -327,7 +327,7 @@ const AdminEmployees = () => {
               </div>
               <div style={styles.formGroup}>
                 <label style={styles.label}>
-                  Password {editingEmployee && <span style={{fontSize: '12px', color: '#888'}}>(Leave blank to keep current password)</span>}
+                  Password {editingEmployee && <span style={{ fontSize: '12px', color: '#888' }}>(Leave blank to keep current password)</span>}
                 </label>
                 <input
                   type="password"

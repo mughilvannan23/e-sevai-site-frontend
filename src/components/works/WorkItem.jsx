@@ -1,0 +1,89 @@
+import React from 'react';
+import { workStyles as styles } from './workStyles';
+
+const WorkItem = ({
+  work,
+  onEdit,
+  onDelete,
+  onPrint,
+  formatDateTime,
+  getStatusBadge,
+  isAdmin,
+  isEmployee,
+  isEditing
+}) => {
+  return (
+    <tr style={isEditing ? { backgroundColor: '#e3f2fd' } : {}}>
+      {isAdmin && (
+        <td style={styles.td}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span className="fw-bold">{work.employee?.name || 'N/A'}</span>
+            <span className="text-muted small">{work.employee?.employeeId || ''}</span>
+          </div>
+        </td>
+      )}
+      <td style={{ ...styles.td, whiteSpace: 'nowrap' }}>
+        {formatDateTime(work.date)}
+      </td>
+      <td style={{ ...styles.td, maxWidth: '150px' }}>
+        <div className="text-truncate fw-bold">{work.customerName}</div>
+        <div className="text-muted small">{work.customerPhone || '-'}</div>
+      </td>
+      <td style={styles.td}>
+        {work.paymentMethod || 'Hand Cash'}
+      </td>
+      <td style={{ ...styles.td, maxWidth: '200px', whiteSpace: 'normal' }}>
+        <div>
+          {work.items && work.items.length > 0
+            ? work.items.map(i => {
+                const appNum = i.applicationNumber ? ` [#${i.applicationNumber}]` : '';
+                return `${i.title}${appNum} (x${i.quantity || 1})`;
+              }).join(', ')
+            : work.workTitle}
+        </div>
+      </td>
+      <td style={styles.td}>₹{work.amount.toLocaleString()}</td>
+      <td style={styles.td}>{getStatusBadge(work.paymentStatus, 'payment')}</td>
+      <td style={styles.td}>{getStatusBadge(work.workStatus, 'work')}</td>
+      <td style={styles.td}>
+        <div className="d-flex flex-column flex-md-row gap-1 gap-md-2">
+          {/* Employee should NOT have Edit/Delete */}
+          {/* Admin should have Edit/Delete */}
+          {isAdmin && (
+            <>
+              <button
+                style={styles.editBtn}
+                className="btn btn-sm text-white w-100 w-md-auto"
+                onClick={() => onEdit(work)}
+                disabled={isEditing}
+              >
+                {isEditing ? 'Editing...' : 'Edit'}
+              </button>
+              <button
+                style={styles.deleteBtn}
+                className="btn btn-sm text-white w-100 w-md-auto"
+                onClick={() => onDelete(work._id)}
+              >
+                Delete
+              </button>
+            </>
+          )}
+
+          {/* Employee should NOT have Print? The user said "Keep Print option if needed (optional)" for Employee. */}
+          {/* Admin: "Remove Print option for Admin (if present)" */}
+          {!isAdmin && onPrint && (
+            <button
+              style={{ ...styles.editBtn, backgroundColor: '#2ecc71' }}
+              className="btn btn-sm text-white w-100 w-md-auto"
+              onClick={() => onPrint(work)}
+            >
+              Print
+            </button>
+          )}
+        </div>
+      </td>
+    </tr>
+  );
+};
+
+export default WorkItem;

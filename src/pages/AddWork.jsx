@@ -24,7 +24,7 @@ const AddWork = () => {
     customerName: '',
     customerPhone: '',
     paymentMethod: 'Hand Cash',
-    items: [{ workItemId: '', workTitle: '' }],
+    items: [{ workItemId: '', workTitle: '', applicationNumber: '' }],
     amount: '',
     paymentStatus: 'Pending',
     workStatus: 'In Progress',
@@ -45,8 +45,12 @@ const AddWork = () => {
         customerPhone: editingWork.customerPhone || '',
         paymentMethod: editingWork.paymentMethod || 'Hand Cash',
         items: editingWork.items && editingWork.items.length > 0
-          ? editingWork.items.map(i => ({ workItemId: i.workItemId || '', workTitle: i.title || '' }))
-          : [{ workItemId: '', workTitle: '' }],
+          ? editingWork.items.map(i => ({
+            workItemId: i.workItemId || '',
+            workTitle: i.title || '',
+            applicationNumber: i.applicationNumber || ''
+          }))
+          : [{ workItemId: '', workTitle: '', applicationNumber: '' }],
         amount: editingWork.amount.toString(),
         paymentStatus: editingWork.paymentStatus,
         workStatus: editingWork.workStatus,
@@ -89,7 +93,7 @@ const AddWork = () => {
   const addItemRow = () => {
     setFormData(prev => ({
       ...prev,
-      items: [...prev.items, { workItemId: '', workTitle: '' }]
+      items: [...prev.items, { workItemId: '', workTitle: '', applicationNumber: '' }]
     }));
   };
 
@@ -105,7 +109,7 @@ const AddWork = () => {
 
     setFormData(prev => ({
       ...prev,
-      items: newItems.length ? newItems : [{ workItemId: '', workTitle: '' }],
+      items: newItems.length ? newItems : [{ workItemId: '', workTitle: '', applicationNumber: '' }],
       amount: totalAmount.toString()
     }));
   };
@@ -199,7 +203,7 @@ const AddWork = () => {
                     required
                   />
                 </div>
-                <div className="col-12 col-md-6">
+                <div className="col-12 col-md-4">
                   <label style={styles.label}>Amount (₹)</label>
                   <input
                     type="number"
@@ -285,6 +289,16 @@ const AddWork = () => {
                           <option key={wi._id} value={wi._id}>{wi.name}</option>
                         ))}
                       </select>
+                    </div>
+                    <div style={{ ...styles.workItemInput, maxWidth: '180px' }}>
+                      <input
+                        type="text"
+                        value={item.applicationNumber || ''}
+                        onChange={(e) => handleItemChange(index, 'applicationNumber', e.target.value)}
+                        className="form-control"
+                        style={styles.input}
+                        placeholder="App. Number"
+                      />
                     </div>
                     {!item.workItemId && (
                       <div style={styles.workItemInput}>

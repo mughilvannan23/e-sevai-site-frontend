@@ -1,19 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { adminAPI, userAPI } from '../services/api';
+import React, { useState, useEffect, useRef } from 'react';
+import { adminAPI, userAPI, workAPI } from '../services/api';
 import Loading from '../components/common/Loading.jsx';
 import Pagination from '../components/common/Pagination.jsx';
 import { useToast } from '../components/common/Toast.jsx';
 import { useLocation } from 'react-router-dom';
+import { formatWorkStatus } from '../utils/formatters';
+import { workStyles as styles } from '../components/works/workStyles';
+import AddWorkForm from '../components/works/AddWorkForm';
+import WorkList from '../components/works/WorkList';
+
+const getCurrentTime = () => new Date().toTimeString().slice(0, 5);
+
+const defaultFormData = {
+  date: new Date().toISOString().split('T')[0],
+  time: getCurrentTime(),
+  customerName: '',
+  customerPhone: '',
+  paymentMethod: 'Hand Cash',
+  items: [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', applicationNumber: '' }],
+  amount: '',
+  paymentStatus: 'Pending',
+  workStatus: 'In Progress',
+  notes: ''
+};
 
 const AdminWorks = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('entries');
   const [works, setWorks] = useState([]);
   const [workItems, setWorkItems] = useState([]);
-  const [newItem, setNewItem] = useState({ name: '', workCharge: '', serviceCharge: '', status: true });
-  const [editingPreset, setEditingPreset] = useState(null);
+  const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({});
+  const { success, error } = useToast();
+
+  // ── Work Entries State ─────────────────────────────────────────────────────
+  const [editingItemId, setEditingItemId] = useState(null);
+  const [editFormData, setEditFormData] = useState(defaultFormData);
+  const [submitting, setSubmitting] = useState(false);
+
   const [filters, setFilters] = useState({
     page: 1,
     limit: 10,
@@ -24,102 +49,207 @@ const AdminWorks = () => {
     paymentStatus: '',
     workStatus: ''
   });
-  const [employees, setEmployees] = useState([]);
-  const { success, error } = useToast();
+
+  // ── Presets State ──────────────────────────────────────────────────────────
+  const [newItem, setNewItem] = useState({ name: '', workCharge: '', serviceCharge: '', status: true });
+  const [editingPreset, setEditingPreset] = useState(null);
+
+  // ── Effects ────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    fetchEmployees();
+    fetchWorkItems();
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'entries') {
       fetchWorks();
-      fetchEmployees();
     } else {
       fetchWorkItems();
     }
   }, [activeTab, filters.page, filters.limit, filters.paymentStatus, filters.workStatus, filters.search, filters.startDate, filters.endDate, filters.employeeId]);
 
-
-  // new added for filter
-
-
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const paymentStatus = params.get('paymentStatus');
-    const workStatus = params.get('workStatus');
+    const paymentStatus = params.get('paymentStatus') || location.state?.paymentStatus;
+    const workStatus = params.get('workStatus') || location.state?.workStatus;
 
-    // Also check location.state for navigation from dashboard
-    const statePaymentStatus = location.state?.paymentStatus;
-    const stateWorkStatus = location.state?.workStatus;
-
-    const finalPaymentStatus = paymentStatus || statePaymentStatus;
-    const finalWorkStatus = workStatus || stateWorkStatus;
-
-    if (finalPaymentStatus || finalWorkStatus) {
-      setActiveTab('entries'); // ensure correct tab
-      const newFilters = {
-        page: 1,
-        limit: 10,
-        search: '',
-        startDate: '',
-        endDate: '',
-        employeeId: '',
-        paymentStatus: finalPaymentStatus || '',
-        workStatus: finalWorkStatus || ''
-      };
-      setFilters(newFilters);
-      // Fetch works immediately with the new filters
-      fetchWorksWithFilters(newFilters);
+    if (paymentStatus || workStatus) {
+      setActiveTab('entries');
+      setFilters(prev => ({
+        ...prev,
+        paymentStatus: paymentStatus || '',
+        workStatus: workStatus || ''
+      }));
     }
   }, [location.search, location.state]);
 
+  // ── API Helpers ────────────────────────────────────────────────────────────
+  const fetchEmployees = async () => {
+    try {
+      const response = await userAPI.getEmployees({ page: 1, limit: 100 });
+      if (response.data.success) setEmployees(response.data.employees);
+    } catch (err) { console.error('Error fetching employees:', err); }
+  };
 
   const fetchWorkItems = async () => {
     try {
       setLoading(true);
       const response = await adminAPI.getWorkItems();
+      if (response.data.success) setWorkItems(response.data.workItems);
+    } catch (err) { error('Failed to fetch work items'); }
+    finally { setLoading(false); }
+  };
+
+  const fetchWorks = async () => {
+    try {
+      setLoading(true);
+      const params = { ...filters };
+      const response = await adminAPI.getAllWorks(params);
       if (response.data.success) {
-        setWorkItems(response.data.workItems);
+        setWorks(response.data.works);
+        setPagination(response.data.pagination);
       }
-    } catch (err) {
-      console.error('Error fetching work items:', err);
-      error('Failed to fetch work items');
-    } finally {
-      setLoading(false);
+    } catch (err) { error('Failed to fetch works'); }
+    finally { setLoading(false); }
+  };
+
+  // ── Add/Edit Work Handlers ─────────────────────────────────────────────────
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => {
+      const updated = { ...prev, [name]: value };
+      if (name === 'paymentStatus' && value === 'Pending') updated.paymentMethod = '';
+      else if (name === 'paymentStatus' && value === 'Paid' && !prev.paymentMethod) updated.paymentMethod = 'Hand Cash';
+      return updated;
+    });
+  };
+
+  const handleItemChange = (index, field, value) => {
+    let newItems = [...editFormData.items];
+    if (field === 'workItemId' && value !== '') {
+      const existingIndex = newItems.findIndex((item, i) => i !== index && item.workItemId === value);
+      if (existingIndex !== -1) {
+        newItems[existingIndex].quantity = (parseInt(newItems[existingIndex].quantity) || 1) + 1;
+        if (newItems.length > 1) newItems.splice(index, 1);
+        else newItems[index] = { workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', applicationNumber: '' };
+      } else {
+        newItems[index] = { ...newItems[index], [field]: value };
+      }
+    } else {
+      newItems[index] = { ...newItems[index], [field]: value };
+    }
+
+    const total = newItems.reduce((sum, item) => {
+      const qty = parseInt(item.quantity) || 1;
+      const otherC = parseFloat(item.otherCharges) || 0;
+      let rowCost = otherC;
+      if (item.workItemId) {
+        const wi = workItems.find(w => w._id === item.workItemId);
+        rowCost += (wi ? (wi.workCharge + wi.serviceCharge) * qty : 0);
+      }
+      return sum + rowCost;
+    }, 0);
+    setEditFormData(prev => ({ ...prev, items: newItems, amount: total.toString() }));
+  };
+
+  const addItemRow = () => {
+    setEditFormData(prev => ({ ...prev, items: [...prev.items, { workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', applicationNumber: '' }] }));
+  };
+
+  const removeItemRow = (index) => {
+    const newItems = editFormData.items.filter((_, i) => i !== index);
+    const total = newItems.reduce((sum, item) => {
+      const qty = parseInt(item.quantity) || 1;
+      const otherC = parseFloat(item.otherCharges) || 0;
+      let rowCost = otherC;
+      if (item.workItemId) {
+        const wi = workItems.find(w => w._id === item.workItemId);
+        rowCost += (wi ? (wi.workCharge + wi.serviceCharge) * qty : 0);
+      }
+      return sum + rowCost;
+    }, 0);
+    setEditFormData(prev => ({
+      ...prev,
+      items: newItems.length ? newItems : [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', applicationNumber: '' }],
+      amount: total.toString()
+    }));
+  };
+
+  const handleSubmitWork = async (e) => {
+    e.preventDefault();
+    try {
+      setSubmitting(true);
+      const payload = { ...editFormData, date: new Date(`${editFormData.date}T${editFormData.time || '00:00'}`) };
+      const response = await workAPI.updateWork(editingItemId, payload);
+
+      if (response.data.success) {
+        success('Work updated successfully');
+        setEditingItemId(null);
+        fetchWorks();
+      }
+    } catch (err) { error(err.response?.data?.message || 'Failed to save work'); }
+    finally { setSubmitting(false); }
+  };
+
+  const handleEditClick = (work) => {
+    if (editingItemId === work._id) {
+      setEditingItemId(null);
+      return;
+    }
+    const workDate = new Date(work.date);
+    setEditFormData({
+      date: workDate.toISOString().split('T')[0],
+      time: workDate.toTimeString().slice(0, 5),
+      customerName: work.customerName,
+      customerPhone: work.customerPhone || '',
+      paymentMethod: work.paymentMethod || 'Hand Cash',
+      items: work.items?.length > 0 
+        ? work.items.map(i => ({ 
+            workItemId: i.workItemId || '', 
+            workTitle: i.title || '', 
+            quantity: i.quantity || 1, 
+            otherCharges: (i.otherCharges || 0).toString(),
+            applicationNumber: i.applicationNumber || ''
+          }))
+        : [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', applicationNumber: '' }],
+      amount: work.amount.toString(),
+      paymentStatus: work.paymentStatus,
+      workStatus: work.workStatus,
+      notes: work.notes || ''
+    });
+    setEditingItemId(work._id);
+  };
+
+  const handleDeleteWork = async (id) => {
+    if (window.confirm('Are you sure you want to delete this work entry?')) {
+      try {
+        const response = await workAPI.deleteWork(id);
+        if (response.data.success) {
+          success('Work entry deleted successfully');
+          fetchWorks();
+        }
+      } catch (err) { error('Failed to delete work'); }
     }
   };
 
+  // ── Preset Handlers ────────────────────────────────────────────────────────
   const handleSaveWorkItem = async (e) => {
     e.preventDefault();
-
     const payload = {
       name: newItem.name.trim(),
       workCharge: Number(newItem.workCharge),
       serviceCharge: Number(newItem.serviceCharge),
       status: newItem.status
     };
-
-    if (!payload.name || Number.isNaN(payload.workCharge) || Number.isNaN(payload.serviceCharge)) {
-      return error('Please enter a valid name, work charge, and service charge.');
-    }
-
     try {
-      let response;
-
-      if (editingPreset) {
-        response = await adminAPI.updateWorkItem(editingPreset._id, payload);
-      } else {
-        response = await adminAPI.createWorkItem(payload);
-      }
-
+      let response = editingPreset ? await adminAPI.updateWorkItem(editingPreset._id, payload) : await adminAPI.createWorkItem(payload);
       if (response.data.success) {
         success(editingPreset ? 'Work Item updated successfully' : 'Work Item created successfully');
         setNewItem({ name: '', workCharge: '', serviceCharge: '', status: true });
         setEditingPreset(null);
         fetchWorkItems();
       }
-    } catch (err) {
-      const message = err.response?.data?.message || 'Failed to save Work Item';
-      error(message);
-      console.error('Save work item failed:', err.response?.data || err);
-    }
+    } catch (err) { error('Failed to save Work Item'); }
   };
 
   const handleEditWorkItem = (item) => {
@@ -146,222 +276,69 @@ const AdminWorks = () => {
         fetchWorkItems();
       }
     } catch (err) {
-      console.error('Error toggling preset status:', err);
       error('Failed to update preset status');
     }
   };
 
-  const handleCancelPresetEdit = () => {
-    setEditingPreset(null);
-    setNewItem({ name: '', workCharge: '', serviceCharge: '', status: true });
-  };
-
-  const fetchWorks = async () => {
-    try {
-      setLoading(true);
-      const params = {};
-      Object.keys(filters).forEach(key => {
-        if (filters[key] && key !== 'page' && key !== 'limit') {
-          params[key] = filters[key];
-        }
-      });
-      params.page = filters.page;
-      params.limit = filters.limit;
-
-      const response = await adminAPI.getAllWorks(params);
-      if (response.data.success) {
-        setWorks(response.data.works);
-        setPagination(response.data.pagination);
-      }
-    } catch (err) {
-      console.error('Error fetching works:', err);
-      error('Failed to fetch works');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchWorksWithFilters = async (filterParams) => {
-    try {
-      setLoading(true);
-      const params = {};
-      Object.keys(filterParams).forEach(key => {
-        if (filterParams[key] && key !== 'page' && key !== 'limit') {
-          params[key] = filterParams[key];
-        }
-      });
-      params.page = filterParams.page;
-      params.limit = filterParams.limit;
-
-      const response = await adminAPI.getAllWorks(params);
-      if (response.data.success) {
-        setWorks(response.data.works);
-        setPagination(response.data.pagination);
-      }
-    } catch (err) {
-      console.error('Error fetching works:', err);
-      error('Failed to fetch works');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchEmployees = async () => {
-    try {
-      const response = await userAPI.getEmployees({ page: 1, limit: 100 });
-      if (response.data.success) {
-        setEmployees(response.data.employees);
-      }
-    } catch (err) {
-      console.error('Error fetching employees:', err);
-    }
-  };
-
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({
-      ...prev,
-      [name]: value,
-      page: 1 // Reset to first page when filter changes
-    }));
-  };
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    fetchWorks();
-  };
-
-  const formatDate = (date) => {
+  // ── Render Helpers ─────────────────────────────────────────────────────────
+  const formatDateTime = (date) => {
     if (!date) return '-';
-    const formatted = new Date(date).toLocaleString('en-IN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
-    return formatted
-      .replace(/\//g, '-')
-      .replace(/, /g, ' ')
-      .replace(/am/i, 'AM')
-      .replace(/pm/i, 'PM');
+    return new Date(date).toLocaleString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }).replace(/\//g, '-').replace(/, /g, ' ').replace(/am/i, 'AM').replace(/pm/i, 'PM');
   };
 
   const getStatusBadge = (status, type) => {
     const isPayment = type === 'payment';
-    const paid = status === 'Paid';
-    const completed = status === 'Completed';
-
+    const positive = isPayment ? status === 'Paid' : status === 'Completed';
     return (
-      <span style={{
-        ...styles.badge,
-        backgroundColor: isPayment
-          ? (paid ? '#27ae60' : '#e74c3c')
-          : (completed ? '#27ae60' : '#f39c12'),
-        color: 'white'
-      }}>
-        {status}
+      <span style={{ ...styles.badge, backgroundColor: positive ? '#27ae60' : (isPayment ? '#e74c3c' : '#f39c12'), color: 'white' }}>
+        {type === 'work' ? formatWorkStatus(status) : status}
       </span>
     );
   };
 
-  if (loading && works.length === 0) {
-    return <Loading text="Loading works..." />;
-  }
+  if (loading && works.length === 0 && activeTab === 'entries') return <Loading text="Loading works..." />;
 
   return (
     <div className="container-fluid p-0">
       <div className="mb-4">
-        <h1 style={styles.title} className="fs-3 fs-md-2">Manage Work</h1>
-        <p style={styles.subtitle} className="fs-6 text-muted">Manage employee entries and Admin Work Item presets</p>
+        <h1 style={styles.title} className="fs-3">Manage Work</h1>
+        <p style={styles.subtitle}>Manage employee entries and pricing presets</p>
       </div>
 
       <div className="d-flex flex-wrap gap-2 mb-4">
-        <button
-          style={{
-            ...styles.tab,
-            ...(activeTab === 'entries' ? styles.activeTab : {})
-          }}
-          className="flex-grow-1 flex-sm-grow-0"
-          onClick={() => setActiveTab('entries')}
-        >
-          Employee Work Entries
-        </button>
-        <button
-          style={{
-            ...styles.tab,
-            ...(activeTab === 'items' ? styles.activeTab : {})
-          }}
-          className="flex-grow-1 flex-sm-grow-0"
-          onClick={() => setActiveTab('items')}
-        >
-          Admin Work Pricing Presets
-        </button>
+        <button style={{ ...styles.tab, ...(activeTab === 'entries' ? styles.activeTab : {}) }} className="flex-grow-1 flex-sm-grow-0" onClick={() => setActiveTab('entries')}>Employee Work Entries</button>
+        <button style={{ ...styles.tab, ...(activeTab === 'items' ? styles.activeTab : {}) }} className="flex-grow-1 flex-sm-grow-0" onClick={() => setActiveTab('items')}>Admin Work Pricing Presets</button>
       </div>
 
-      {activeTab === 'entries' && (
+      {activeTab === 'entries' ? (
         <>
-          <div style={styles.filtersCard} className="p-3 p-md-4">
-            <form onSubmit={handleSearch} className="d-flex flex-column gap-3">
+          <div style={styles.filtersCard} className="p-3 p-md-4 mb-4">
+            <form onSubmit={(e) => { e.preventDefault(); fetchWorks(); }} className="d-flex flex-column gap-3">
               <div className="row g-3">
                 <div className="col-12 col-md-4 d-flex flex-column gap-2">
                   <label style={styles.label}>Search</label>
-                  <input
-                    type="text"
-                    name="search"
-                    value={filters.search}
-                    onChange={handleFilterChange}
-                    placeholder="Customer name or work title"
-                    className="form-control"
-                  />
+                  <input type="text" name="search" value={filters.search} onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value, page: 1 }))} placeholder="Customer or title" className="form-control" />
                 </div>
                 <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
                   <label style={styles.label}>From Date</label>
-                  <input
-                    type="date"
-                    name="startDate"
-                    value={filters.startDate}
-                    onChange={handleFilterChange}
-                    className="form-control"
-                  />
+                  <input type="date" name="startDate" value={filters.startDate} onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value, page: 1 }))} className="form-control" />
                 </div>
                 <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
                   <label style={styles.label}>To Date</label>
-                  <input
-                    type="date"
-                    name="endDate"
-                    value={filters.endDate}
-                    onChange={handleFilterChange}
-                    className="form-control"
-                  />
+                  <input type="date" name="endDate" value={filters.endDate} onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value, page: 1 }))} className="form-control" />
                 </div>
               </div>
               <div className="row g-3">
                 <div className="col-12 col-md-4 d-flex flex-column gap-2">
                   <label style={styles.label}>Employee</label>
-                  <select
-                    name="employeeId"
-                    value={filters.employeeId}
-                    onChange={handleFilterChange}
-                    className="form-select"
-                  >
+                  <select name="employeeId" value={filters.employeeId} onChange={(e) => setFilters(prev => ({ ...prev, employeeId: e.target.value, page: 1 }))} className="form-select">
                     <option value="">All Employees</option>
-                    {employees.map(emp => (
-                      <option key={emp._id} value={emp._id}>
-                        {emp.name} ({emp.employeeId})
-                      </option>
-                    ))}
+                    {employees.map(emp => <option key={emp._id} value={emp._id}>{emp.name} ({emp.employeeId})</option>)}
                   </select>
                 </div>
                 <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
                   <label style={styles.label}>Payment Status</label>
-                  <select
-                    name="paymentStatus"
-                    value={filters.paymentStatus}
-                    onChange={handleFilterChange}
-                    className="form-select"
-                  >
+                  <select name="paymentStatus" value={filters.paymentStatus} onChange={(e) => setFilters(prev => ({ ...prev, paymentStatus: e.target.value, page: 1 }))} className="form-select">
                     <option value="">All</option>
                     <option value="Paid">Paid</option>
                     <option value="Pending">Pending</option>
@@ -369,12 +346,7 @@ const AdminWorks = () => {
                 </div>
                 <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
                   <label style={styles.label}>Work Status</label>
-                  <select
-                    name="workStatus"
-                    value={filters.workStatus}
-                    onChange={handleFilterChange}
-                    className="form-select"
-                  >
+                  <select name="workStatus" value={filters.workStatus} onChange={(e) => setFilters(prev => ({ ...prev, workStatus: e.target.value, page: 1 }))} className="form-select">
                     <option value="">All</option>
                     <option value="Completed">Completed</option>
                     <option value="In Progress">Pending</option>
@@ -382,93 +354,45 @@ const AdminWorks = () => {
                 </div>
               </div>
               <div className="d-flex flex-column flex-sm-row gap-2 mt-2">
-                <button type="submit" style={styles.searchBtn} className="btn w-100 w-sm-auto text-white">
-                  Apply Filters
-                </button>
-                <button
-                  type="button"
-                  style={styles.resetBtn}
-                  className="btn w-100 w-sm-auto text-white"
-                  onClick={() => setFilters({
-                    page: 1,
-                    limit: 10,
-                    search: '',
-                    startDate: '',
-                    endDate: '',
-                    employeeId: '',
-                    paymentStatus: '',
-                    workStatus: ''
-                  })}
-                >
-                  Reset
-                </button>
+                <button type="submit" style={styles.searchBtn} className="btn w-100 w-sm-auto text-white">Apply Filters</button>
+                <button type="button" style={styles.filterResetBtn} className="btn w-100 w-sm-auto text-white" onClick={() => setFilters({ page: 1, limit: 10, search: '', startDate: '', endDate: '', employeeId: '', paymentStatus: '', workStatus: '' })}>Reset</button>
               </div>
             </form>
           </div>
 
-          <div style={styles.tableCard}>
-            <div className="table-responsive">
-              <table className="table table-hover mb-0" style={styles.table}>
-                <thead>
-                  <tr>
-                    <th style={styles.th}>Employee</th>
-                    <th style={styles.th}>Date</th>
-                    <th style={styles.th}>Customer</th>
-                    <th style={styles.th}>Phone</th>
-                    <th style={styles.th}>Payment Method</th>
-                    <th style={styles.th}>Work Title</th>
-                    <th style={styles.th}>Amount</th>
-                    <th style={styles.th}>Payment</th>
-                    <th style={styles.th}>Work Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {works.map(work => (
-                    <tr key={work._id}>
-                      <td style={styles.td}>
-                        <div style={styles.employeeInfo}>
-                          <div style={styles.employeeName}>{work.employee?.name}</div>
-                          <div style={styles.employeeId}>{work.employee?.employeeId}</div>
-                        </div>
-                      </td>
-                      <td style={styles.td}>{formatDate(work.date)}</td>
-                      <td style={styles.td}>{work.customerName}</td>
-                      <td style={styles.td}>{work.customerPhone || '-'}</td>
-                      <td style={styles.td}>{work.paymentMethod || 'Hand Cash'}</td>
-                      <td style={styles.td}>{work.items && work.items.length > 0 ? work.items.map(i => i.title).join(', ') : work.workTitle}</td>
-                      <td style={styles.td}>₹{work.amount.toLocaleString()}</td>
-                      <td style={styles.td}>
-                        {getStatusBadge(work.paymentStatus, 'payment')}
-                      </td>
-                      <td style={styles.td}>
-                        {getStatusBadge(work.workStatus, 'work')}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <WorkList
+            works={works}
+            loading={loading}
+            onEdit={handleEditClick}
+            onDelete={handleDeleteWork}
+            formatDateTime={formatDateTime}
+            getStatusBadge={getStatusBadge}
+            isAdmin={true}
+            isEmployee={false}
+            editingItemId={editingItemId}
+            renderEditForm={() => (
+              <AddWorkForm
+                formData={editFormData}
+                onSubmit={handleSubmitWork}
+                onReset={() => setEditingItemId(null)}
+                onInputChange={handleInputChange}
+                onItemChange={handleItemChange}
+                addItemRow={addItemRow}
+                removeItemRow={removeItemRow}
+                submitting={submitting}
+                workItems={workItems}
+                isEditing={true}
+              />
+            )}
+          />
+
+          {pagination.totalWorks > 0 && (
+            <div className="p-3 d-flex justify-content-center">
+              <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} totalItems={pagination.totalWorks} itemsPerPage={pagination.limit} onPageChange={(page) => setFilters(prev => ({ ...prev, page }))} />
             </div>
-
-            {works.length === 0 && (
-              <div style={styles.noData}>No works found</div>
-            )}
-
-            {pagination.totalWorks > 0 && (
-              <div className="p-3">
-                <Pagination
-                  currentPage={pagination.currentPage}
-                  totalPages={pagination.totalPages}
-                  totalItems={pagination.totalWorks}
-                  itemsPerPage={pagination.limit}
-                  onPageChange={(page) => setFilters(prev => ({ ...prev, page }))}
-                />
-              </div>
-            )}
-          </div>
+          )}
         </>
-      )}
-
-      {activeTab === 'items' && (
+      ) : (
         <div style={styles.tableCard}>
           <div className="p-3 p-md-4 border-bottom">
             <h3 className="fs-5 mb-3">{editingPreset ? 'Edit Work Item Preset' : 'Add New Work Item Preset'}</h3>
@@ -520,20 +444,19 @@ const AdminWorks = () => {
                 </select>
               </div>
               <div className="col-12 col-md-3 d-flex gap-2">
-                <button type="submit" style={styles.addBtn} className="btn w-100 text-white">
+                <button type="submit" style={presetStyles.addBtn} className="btn w-100 text-white">
                   {editingPreset ? 'Update Preset' : 'Add Preset'}
                 </button>
                 {editingPreset && (
-                  <button type="button" style={styles.resetBtn} className="btn w-100 text-white" onClick={handleCancelPresetEdit}>
+                  <button type="button" style={styles.resetBtn} className="btn w-100 text-white" onClick={() => { setEditingPreset(null); setNewItem({ name: '', workCharge: '', serviceCharge: '', status: true }); }}>
                     Cancel
                   </button>
                 )}
               </div>
             </form>
           </div>
-
           <div className="table-responsive">
-            <table className="table table-hover mb-0" style={styles.table}>
+            <table className="table table-hover mb-0">
               <thead>
                 <tr>
                   <th style={styles.th}>Service Name</th>
@@ -562,10 +485,10 @@ const AdminWorks = () => {
                     </td>
                     <td style={styles.td}>
                       <div className="d-flex gap-2 flex-wrap">
-                        <button style={styles.editBtn} className="btn btn-sm text-white" onClick={() => handleEditWorkItem(item)}>
+                        <button style={presetStyles.editBtn} className="btn btn-sm text-white" onClick={() => handleEditWorkItem(item)}>
                           Edit
                         </button>
-                        <button style={{ ...styles.editBtn, backgroundColor: '#f39c12' }} className="btn btn-sm text-white" onClick={() => handleTogglePresetStatus(item)}>
+                        <button style={presetStyles.toggleBtn} className="btn btn-sm text-white" onClick={() => handleTogglePresetStatus(item)}>
                           {(item.status !== undefined ? item.status : item.isActive) ? 'Set Inactive' : 'Set Active'}
                         </button>
                       </div>
@@ -574,9 +497,6 @@ const AdminWorks = () => {
                 ))}
               </tbody>
             </table>
-            {workItems.length === 0 && !loading && (
-              <div style={styles.noData}>No Work Item Presets found. Add one above.</div>
-            )}
           </div>
         </div>
       )}
@@ -584,158 +504,7 @@ const AdminWorks = () => {
   );
 };
 
-const styles = {
-  header: {
-    marginBottom: '30px'
-  },
-  title: {
-    margin: '0 0 8px 0',
-    fontSize: '32px',
-    fontWeight: 'bold',
-    color: '#2c3e50'
-  },
-  subtitle: {
-    margin: 0,
-    color: '#666',
-    fontSize: '16px'
-  },
-  filtersCard: {
-    backgroundColor: 'white',
-    padding: '24px',
-    borderRadius: '12px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    marginBottom: '20px'
-  },
-  filtersForm: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px'
-  },
-  filtersRow: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '16px'
-  },
-  filterGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px'
-  },
-  label: {
-    fontSize: '14px',
-    fontWeight: '500',
-    color: '#333'
-  },
-  input: {
-    padding: '10px 12px',
-    border: '1px solid #ddd',
-    borderRadius: '6px',
-    fontSize: '14px'
-  },
-  select: {
-    padding: '10px 12px',
-    border: '1px solid #ddd',
-    borderRadius: '6px',
-    fontSize: '14px',
-    backgroundColor: 'white'
-  },
-  filtersActions: {
-    display: 'flex',
-    gap: '12px'
-  },
-  searchBtn: {
-    padding: '10px 24px',
-    backgroundColor: '#3498db',
-    color: 'white',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer'
-  },
-  resetBtn: {
-    padding: '10px 24px',
-    backgroundColor: '#6c757d',
-    color: 'white',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer'
-  },
-  tableCard: {
-    backgroundColor: 'white',
-    borderRadius: '12px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    overflow: 'hidden'
-  },
-  tableWrapper: {
-    overflowX: 'auto'
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse'
-  },
-  th: {
-    padding: '16px',
-    textAlign: 'left',
-    backgroundColor: '#f8f9fa',
-    fontWeight: '600',
-    color: '#2c3e50',
-    borderBottom: '2px solid #e9ecef',
-    fontSize: '14px',
-    whiteSpace: 'nowrap'
-  },
-  td: {
-    padding: '16px',
-    borderBottom: '1px solid #e9ecef',
-    fontSize: '14px'
-  },
-  employeeInfo: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '2px'
-  },
-  employeeName: {
-    fontWeight: '600',
-    color: '#2c3e50'
-  },
-  employeeId: {
-    fontSize: '12px',
-    color: '#666'
-  },
-  badge: {
-    padding: '4px 12px',
-    borderRadius: '20px',
-    fontSize: '12px',
-    fontWeight: '500'
-  },
-  noData: {
-    padding: '40px',
-    textAlign: 'center',
-    color: '#666',
-    fontSize: '16px'
-  },
-  tabs: {
-    display: 'flex',
-    gap: '10px',
-    marginBottom: '30px'
-  },
-  tab: {
-    padding: '12px 24px',
-    backgroundColor: '#f8f9fa',
-    border: '1px solid #e9ecef',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease'
-  },
-  activeTab: {
-    backgroundColor: '#3498db',
-    color: 'white',
-    border: '1px solid #3498db'
-  },
+const presetStyles = {
   addBtn: {
     padding: '10px 24px',
     backgroundColor: '#27ae60',
@@ -747,9 +516,18 @@ const styles = {
     cursor: 'pointer',
     height: '40px'
   },
-  deleteBtn: {
+  editBtn: {
     padding: '6px 16px',
-    backgroundColor: '#e74c3c',
+    backgroundColor: '#3498db',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '12px',
+    cursor: 'pointer'
+  },
+  toggleBtn: {
+    padding: '6px 16px',
+    backgroundColor: '#f39c12',
     color: 'white',
     border: 'none',
     borderRadius: '4px',

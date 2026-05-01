@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { adminAPI } from '../services/api';
 import Loading from '../components/common/Loading';
 import { useToast } from '../components/common/Toast';
+import { formatWorkStatus } from '../utils/formatters';
 
 const AdminReports = () => {
   const [activeTab, setActiveTab] = useState('revenue');
@@ -29,6 +30,8 @@ const AdminReports = () => {
   });
   const [selectedNote, setSelectedNote] = useState('');
   const [showNotesModal, setShowNotesModal] = useState(false);
+  const [selectedWork, setSelectedWork] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const { success, error } = useToast();
 
   useEffect(() => {
@@ -240,7 +243,10 @@ const AdminReports = () => {
 
   const getWorkTitles = (work) => {
     return work.items && work.items.length > 0
-      ? work.items.map(item => `${item.title} (x${item.quantity || 1})`).join(', ')
+      ? work.items.map(item => {
+          const appNum = item.applicationNumber ? ` [#${item.applicationNumber}]` : '';
+          return `${item.title}${appNum} (x${item.quantity || 1})`;
+        }).join(', ')
       : work.workTitle || '';
   };
 
@@ -539,6 +545,7 @@ const AdminReports = () => {
                         <th style={styles.th}>Payment Status</th>
                         <th style={styles.th}>Work Status</th>
                         <th style={styles.th}>Notes</th>
+                        <th style={styles.th}>Action</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -572,7 +579,7 @@ const AdminReports = () => {
                               {work.paymentStatus}
                             </td>
                             <td style={{ ...styles.td, color: work.workStatus === 'Completed' ? '#27ae60' : '#f39c12' }}>
-                              {work.workStatus === 'In Progress' ? 'Pending' : work.workStatus}
+                              {formatWorkStatus(work.workStatus)}
                             </td>
                             <td style={styles.td}>
                               {work.notes ? (
@@ -584,11 +591,23 @@ const AdminReports = () => {
                                   className="btn btn-sm btn-outline-primary"
                                   style={styles.viewBtn}
                                 >
-                                  View
+                                  Notes
                                 </button>
                               ) : (
                                 <span className="text-muted small">No Notes</span>
                               )}
+                            </td>
+                            <td style={styles.td}>
+                              <button 
+                                onClick={() => {
+                                  setSelectedWork(work);
+                                  setShowDetailsModal(true);
+                                }}
+                                className="btn btn-sm btn-primary"
+                                style={styles.viewBtn}
+                              >
+                                View
+                              </button>
                             </td>
                           </tr>
                         );
@@ -712,6 +731,77 @@ const AdminReports = () => {
             </div>
             <div style={styles.modalBody}>
               <p style={styles.notesText}>{selectedNote}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Details Modal */}
+      {showDetailsModal && selectedWork && (
+        <div style={styles.modalOverlay} onClick={() => setShowDetailsModal(false)}>
+          <div style={{ ...styles.modalContent, maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <h4 style={styles.modalTitle}>Work Details</h4>
+              <button 
+                style={styles.closeBtn} 
+                onClick={() => setShowDetailsModal(false)}
+              >
+                ✕
+              </button>
+            </div>
+            <div style={styles.modalBody}>
+              <div className="mb-3">
+                <div className="fw-bold text-primary mb-1">Customer Information</div>
+                <div><strong>Name:</strong> {selectedWork.customerName}</div>
+                <div><strong>Phone:</strong> {selectedWork.customerPhone || 'N/A'}</div>
+              </div>
+              <div className="mb-3">
+                <div className="fw-bold text-primary mb-1">Work Items</div>
+                <div className="table-responsive">
+                  <table className="table table-sm table-bordered">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Service</th>
+                        <th>App. No</th>
+                        <th>Qty</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedWork.items?.map((item, idx) => (
+                        <tr key={idx}>
+                          <td>{item.title}</td>
+                          <td>{item.applicationNumber || '-'}</td>
+                          <td>{item.quantity}</td>
+                          <td>₹{(item.workChargeAtTime + item.serviceChargeAtTime) * item.quantity}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div className="row g-2 mb-3">
+                <div className="col-6">
+                  <div className="fw-bold text-primary mb-1">Payment Details</div>
+                  <div><strong>Total Amount:</strong> ₹{selectedWork.amount}</div>
+                  <div><strong>Status:</strong> {selectedWork.paymentStatus}</div>
+                  <div><strong>Method:</strong> {selectedWork.paymentMethod}</div>
+                </div>
+                <div className="col-6">
+                  <div className="fw-bold text-primary mb-1">Staff Details</div>
+                  <div><strong>Employee:</strong> {selectedWork.employee?.name}</div>
+                  <div><strong>Date:</strong> {formatDate(selectedWork.date)}</div>
+                </div>
+              </div>
+              {selectedWork.notes && (
+                <div>
+                  <div className="fw-bold text-primary mb-1">Notes</div>
+                  <p style={styles.notesText}>{selectedWork.notes}</p>
+                </div>
+              )}
+            </div>
+            <div style={{ ...styles.modalHeader, borderTop: '1px solid #eee', borderBottom: 'none', justifyContent: 'flex-end' }}>
+              <button className="btn btn-secondary" onClick={() => setShowDetailsModal(false)}>Close</button>
             </div>
           </div>
         </div>

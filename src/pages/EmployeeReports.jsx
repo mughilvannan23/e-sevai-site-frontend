@@ -3,6 +3,7 @@ import { workAPI } from '../services/api';
 import Loading from '../components/common/Loading';
 import { useToast } from '../components/common/Toast';
 import { useAuth } from '../context/AuthContext';
+import { formatWorkStatus } from '../utils/formatters';
 
 const EmployeeReports = () => {
   const [activeTab, setActiveTab] = useState('daily');
@@ -151,14 +152,14 @@ const EmployeeReports = () => {
   };
 
   const getStatusBadge = (status) => {
-    const isPaid = status === 'Paid';
+    const isPositive = status === 'Paid' || status === 'Completed';
     return (
       <span style={{
         ...styles.badge,
-        backgroundColor: isPaid ? '#27ae60' : '#e74c3c',
+        backgroundColor: isPositive ? '#27ae60' : (status === 'Pending' ? '#e74c3c' : '#f39c12'),
         color: 'white'
       }}>
-        {status}
+        {formatWorkStatus(status)}
       </span>
     );
   };
@@ -293,7 +294,7 @@ const EmployeeReports = () => {
 
                 <div className="col-12 col-sm-6 col-lg-3">
                   <div style={styles.summaryItem}>
-                    <span style={styles.summaryLabel}>Pending</span>
+                    <span style={styles.summaryLabel}>Pending Works</span>
                     <span style={{ ...styles.summaryValue, color: '#f39c12' }}>
                       {stats?.inProgressWorks || 0}
                     </span>
