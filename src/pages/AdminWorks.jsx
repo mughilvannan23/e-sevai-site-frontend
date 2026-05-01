@@ -17,8 +17,9 @@ const defaultFormData = {
   customerName: '',
   customerPhone: '',
   paymentMethod: 'Hand Cash',
-  items: [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', applicationNumber: '' }],
+  items: [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' }],
   amount: '',
+  totalDiscount: '0',
   paymentStatus: 'Pending',
   workStatus: 'In Progress',
   notes: ''
@@ -139,39 +140,46 @@ const AdminWorks = () => {
       newItems[index] = { ...newItems[index], [field]: value };
     }
 
-    const total = newItems.reduce((sum, item) => {
+    const { total, discountTotal } = newItems.reduce((acc, item) => {
       const qty = parseInt(item.quantity) || 1;
       const otherC = parseFloat(item.otherCharges) || 0;
-      let rowCost = otherC;
+      const itemDisc = parseFloat(item.discount) || 0;
+      let rowCost = otherC - itemDisc;
       if (item.workItemId) {
         const wi = workItems.find(w => w._id === item.workItemId);
         rowCost += (wi ? (wi.workCharge + wi.serviceCharge) * qty : 0);
       }
-      return sum + rowCost;
-    }, 0);
-    setEditFormData(prev => ({ ...prev, items: newItems, amount: total.toString() }));
+      acc.total += rowCost;
+      acc.discountTotal += itemDisc;
+      return acc;
+    }, { total: 0, discountTotal: 0 });
+    setEditFormData(prev => ({ ...prev, items: newItems, amount: total.toString(), totalDiscount: discountTotal.toString() }));
   };
 
   const addItemRow = () => {
-    setEditFormData(prev => ({ ...prev, items: [...prev.items, { workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', applicationNumber: '' }] }));
+    setEditFormData(prev => ({ ...prev, items: [...prev.items, { workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' }] }));
   };
 
   const removeItemRow = (index) => {
     const newItems = editFormData.items.filter((_, i) => i !== index);
-    const total = newItems.reduce((sum, item) => {
+    const { total, discountTotal } = newItems.reduce((acc, item) => {
       const qty = parseInt(item.quantity) || 1;
       const otherC = parseFloat(item.otherCharges) || 0;
-      let rowCost = otherC;
+      const itemDisc = parseFloat(item.discount) || 0;
+      let rowCost = otherC - itemDisc;
       if (item.workItemId) {
         const wi = workItems.find(w => w._id === item.workItemId);
         rowCost += (wi ? (wi.workCharge + wi.serviceCharge) * qty : 0);
       }
-      return sum + rowCost;
-    }, 0);
+      acc.total += rowCost;
+      acc.discountTotal += itemDisc;
+      return acc;
+    }, { total: 0, discountTotal: 0 });
     setEditFormData(prev => ({
       ...prev,
-      items: newItems.length ? newItems : [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', applicationNumber: '' }],
-      amount: total.toString()
+      items: newItems.length ? newItems : [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' }],
+      amount: total.toString(),
+      totalDiscount: discountTotal.toString()
     }));
   };
 
@@ -209,10 +217,12 @@ const AdminWorks = () => {
             workTitle: i.title || '', 
             quantity: i.quantity || 1, 
             otherCharges: (i.otherCharges || 0).toString(),
+            discount: (i.discount || 0).toString(),
             applicationNumber: i.applicationNumber || ''
           }))
-        : [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', applicationNumber: '' }],
+        : [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' }],
       amount: work.amount.toString(),
+      totalDiscount: (work.totalDiscount || 0).toString(),
       paymentStatus: work.paymentStatus,
       workStatus: work.workStatus,
       notes: work.notes || ''

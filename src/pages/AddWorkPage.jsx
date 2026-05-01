@@ -13,8 +13,9 @@ const defaultFormData = {
   customerName: '',
   customerPhone: '',
   paymentMethod: 'Hand Cash',
-  items: [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', applicationNumber: '' }],
+  items: [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' }],
   amount: '',
+  totalDiscount: '0',
   paymentStatus: 'Pending',
   workStatus: 'In Progress',
   notes: ''
@@ -65,7 +66,7 @@ const AddWorkPage = () => {
         if (newItems.length > 1) {
           newItems.splice(index, 1);
         } else {
-          newItems[index] = { workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', applicationNumber: '' };
+          newItems[index] = { workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' };
         }
       } else {
         newItems[index] = { ...newItems[index], [field]: value };
@@ -74,43 +75,50 @@ const AddWorkPage = () => {
       newItems[index] = { ...newItems[index], [field]: value };
     }
 
-    const total = newItems.reduce((sum, item) => {
+    const { total, discountTotal } = newItems.reduce((acc, item) => {
       const qty = parseInt(item.quantity) || 1;
       const otherC = parseFloat(item.otherCharges) || 0;
-      let rowCost = otherC;
+      const itemDisc = parseFloat(item.discount) || 0;
+      let rowCost = otherC - itemDisc;
       if (item.workItemId) {
         const wi = workItems.find(w => w._id === item.workItemId);
         rowCost += (wi ? (wi.workCharge + wi.serviceCharge) * qty : 0);
       }
-      return sum + rowCost;
-    }, 0);
-    setFormData(prev => ({ ...prev, items: newItems, amount: total.toString() }));
+      acc.total += rowCost;
+      acc.discountTotal += itemDisc;
+      return acc;
+    }, { total: 0, discountTotal: 0 });
+    setFormData(prev => ({ ...prev, items: newItems, amount: total.toString(), totalDiscount: discountTotal.toString() }));
   };
 
   const addItemRow = () => {
     setFormData(prev => ({
       ...prev,
-      items: [...prev.items, { workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', applicationNumber: '' }]
+      items: [...prev.items, { workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' }]
     }));
   };
 
   const removeItemRow = (index) => {
     const newItems = formData.items.filter((_, i) => i !== index);
-    const total = newItems.reduce((sum, item) => {
+    const { total, discountTotal } = newItems.reduce((acc, item) => {
       const qty = parseInt(item.quantity) || 1;
       const otherC = parseFloat(item.otherCharges) || 0;
-      let rowCost = otherC;
+      const itemDisc = parseFloat(item.discount) || 0;
+      let rowCost = otherC - itemDisc;
       if (item.workItemId) {
         const wi = workItems.find(w => w._id === item.workItemId);
         rowCost += (wi ? (wi.workCharge + wi.serviceCharge) * qty : 0);
       }
-      return sum + rowCost;
-    }, 0);
+      acc.total += rowCost;
+      acc.discountTotal += itemDisc;
+      return acc;
+    }, { total: 0, discountTotal: 0 });
 
     setFormData(prev => ({
       ...prev,
-      items: newItems.length ? newItems : [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', applicationNumber: '' }],
-      amount: total.toString()
+      items: newItems.length ? newItems : [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' }],
+      amount: total.toString(),
+      totalDiscount: discountTotal.toString()
     }));
   };
 

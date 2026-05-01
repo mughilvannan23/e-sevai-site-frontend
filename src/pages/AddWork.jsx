@@ -24,8 +24,9 @@ const AddWork = () => {
     customerName: '',
     customerPhone: '',
     paymentMethod: 'Hand Cash',
-    items: [{ workItemId: '', workTitle: '', applicationNumber: '' }],
+    items: [{ workItemId: '', workTitle: '', applicationNumber: '', otherCharges: '', discount: '' }],
     amount: '',
+    totalDiscount: '',
     paymentStatus: 'Pending',
     workStatus: 'In Progress',
     notes: ''
@@ -48,10 +49,13 @@ const AddWork = () => {
           ? editingWork.items.map(i => ({
             workItemId: i.workItemId || '',
             workTitle: i.title || '',
-            applicationNumber: i.applicationNumber || ''
+            applicationNumber: i.applicationNumber || '',
+            otherCharges: i.otherCharges?.toString() || '',
+            discount: i.discount?.toString() || ''
           }))
-          : [{ workItemId: '', workTitle: '', applicationNumber: '' }],
+          : [{ workItemId: '', workTitle: '', applicationNumber: '', otherCharges: '', discount: '' }],
         amount: editingWork.amount.toString(),
+        totalDiscount: editingWork.totalDiscount?.toString() || '0',
         paymentStatus: editingWork.paymentStatus,
         workStatus: editingWork.workStatus,
         notes: editingWork.notes || ''
@@ -84,33 +88,66 @@ const AddWork = () => {
   const handleItemChange = (index, field, value) => {
     const newItems = [...formData.items];
     newItems[index] = { ...newItems[index], [field]: value };
+    
+    // Calculate totals
+    let subtotal = 0;
+    let totalOtherCharges = 0;
+    let totalDiscount = 0;
+
+    newItems.forEach(item => {
+      if (item.workItemId) {
+        const wi = workItems.find(w => w._id === item.workItemId);
+        if (wi) {
+          subtotal += (wi.workCharge + wi.serviceCharge) * (parseInt(item.quantity) || 1);
+        }
+      }
+      totalOtherCharges += parseFloat(item.otherCharges) || 0;
+      totalDiscount += parseFloat(item.discount) || 0;
+    });
+
+    const finalAmount = subtotal + totalOtherCharges - totalDiscount;
+
     setFormData(prev => ({
       ...prev,
-      items: newItems
+      items: newItems,
+      amount: finalAmount.toString(),
+      totalDiscount: totalDiscount.toString()
     }));
   };
 
   const addItemRow = () => {
     setFormData(prev => ({
       ...prev,
-      items: [...prev.items, { workItemId: '', workTitle: '', applicationNumber: '' }]
+      items: [...prev.items, { workItemId: '', workTitle: '', applicationNumber: '', otherCharges: '', discount: '' }]
     }));
   };
 
   const removeItemRow = (index) => {
     const newItems = formData.items.filter((_, i) => i !== index);
-    let totalAmount = newItems.reduce((sum, item) => {
+    
+    // Calculate totals
+    let subtotal = 0;
+    let totalOtherCharges = 0;
+    let totalDiscount = 0;
+
+    newItems.forEach(item => {
       if (item.workItemId) {
-        const i = workItems.find(w => w._id === item.workItemId);
-        return sum + (i ? (i.workCharge + i.serviceCharge) : 0);
+        const wi = workItems.find(w => w._id === item.workItemId);
+        if (wi) {
+          subtotal += (wi.workCharge + wi.serviceCharge) * (parseInt(item.quantity) || 1);
+        }
       }
-      return sum;
-    }, 0);
+      totalOtherCharges += parseFloat(item.otherCharges) || 0;
+      totalDiscount += parseFloat(item.discount) || 0;
+    });
+
+    const finalAmount = subtotal + totalOtherCharges - totalDiscount;
 
     setFormData(prev => ({
       ...prev,
-      items: newItems.length ? newItems : [{ workItemId: '', workTitle: '', applicationNumber: '' }],
-      amount: totalAmount.toString()
+      items: newItems.length ? newItems : [{ workItemId: '', workTitle: '', applicationNumber: '', otherCharges: '', discount: '' }],
+      amount: finalAmount.toString(),
+      totalDiscount: totalDiscount.toString()
     }));
   };
 
@@ -204,14 +241,26 @@ const AddWork = () => {
                   />
                 </div>
                 <div className="col-12 col-md-4">
-                  <label style={styles.label}>Amount (₹)</label>
+                  <label style={styles.label}>Total Discount (₹)</label>
+                  <input
+                    type="number"
+                    name="totalDiscount"
+                    value={formData.totalDiscount}
+                    className="form-control"
+                    style={{ ...styles.input, backgroundColor: '#f9fafb' }}
+                    placeholder="0.00"
+                    readOnly
+                  />
+                </div>
+                <div className="col-12 col-md-4">
+                  <label style={styles.label}>Final Amount (₹)</label>
                   <input
                     type="number"
                     name="amount"
                     value={formData.amount}
                     onChange={handleInputChange}
                     className="form-control"
-                    style={styles.input}
+                    style={{ ...styles.input, fontWeight: 'bold', color: '#2563eb' }}
                     placeholder="0.00"
                     min="0"
                     step="0.01"
@@ -290,7 +339,7 @@ const AddWork = () => {
                         ))}
                       </select>
                     </div>
-                    <div style={{ ...styles.workItemInput, maxWidth: '180px' }}>
+                    <div style={{ ...styles.workItemInput, maxWidth: '150px' }}>
                       <input
                         type="text"
                         value={item.applicationNumber || ''}
@@ -298,6 +347,26 @@ const AddWork = () => {
                         className="form-control"
                         style={styles.input}
                         placeholder="App. Number"
+                      />
+                    </div>
+                    <div style={{ ...styles.workItemInput, maxWidth: '120px' }}>
+                      <input
+                        type="number"
+                        value={item.otherCharges || ''}
+                        onChange={(e) => handleItemChange(index, 'otherCharges', e.target.value)}
+                        className="form-control"
+                        style={styles.input}
+                        placeholder="Other (₹)"
+                      />
+                    </div>
+                    <div style={{ ...styles.workItemInput, maxWidth: '120px' }}>
+                      <input
+                        type="number"
+                        value={item.discount || ''}
+                        onChange={(e) => handleItemChange(index, 'discount', e.target.value)}
+                        className="form-control"
+                        style={styles.input}
+                        placeholder="Disc (₹)"
                       />
                     </div>
                     {!item.workItemId && (

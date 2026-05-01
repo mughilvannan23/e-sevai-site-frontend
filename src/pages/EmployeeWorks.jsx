@@ -160,13 +160,16 @@ const EmployeeWorks = () => {
     ? work.items.map(i => {
         const qty = i.quantity || 1;
         const price = (i.workChargeAtTime || 0) + (i.serviceChargeAtTime || 0);
-        const total = qty * price + (i.otherCharges || 0);
+        const subtotal = qty * price + (i.otherCharges || 0);
+        const itemDiscount = i.discount || 0;
+        const total = subtotal - itemDiscount;
 
         return `
           <div class="row">
             <span>${i.title}</span>
-            <span>${qty} x ₹${price} = ₹${total}</span>
+            <span>${qty} x ₹${price} = ₹${subtotal}</span>
           </div>
+          ${itemDiscount > 0 ? `<div class="row small-text"><span>Discount:</span><span>-₹${itemDiscount}</span></div>` : ''}
           ${i.applicationNumber 
             ? `<div class="row"><span>App No:</span><span>${i.applicationNumber}</span></div>` 
             : ''
@@ -185,6 +188,7 @@ const EmployeeWorks = () => {
       .line { border-top: 1px dashed #000; margin: 6px 0; }
       .row { display: flex; justify-content: space-between; margin: 2px 0; }
       .title { font-size: 14px; font-weight: bold; text-align: center; }
+      .small-text { font-size: 10px; color: #555; }
     </style>
   </head>
   <body>
@@ -201,12 +205,13 @@ const EmployeeWorks = () => {
     <div>Phone: ${work.customerPhone || '-'}</div>
 
     <div class="line"></div>
-    <div class="bold row"><span>Work</span><span>Qty / Amt</span></div>
+    <div class="bold row"><span>Work</span><span>Amt</span></div>
 
     ${itemsHtml}
 
     <div class="line"></div>
-    <div class="row bold"><span>TOTAL AMOUNT</span><span>₹${work.amount}</span></div>
+    ${work.totalDiscount > 0 ? `<div class="row"><span>Total Discount:</span><span>-₹${work.totalDiscount}</span></div>` : ''}
+    <div class="row bold"><span>FINAL AMOUNT</span><span>₹${work.amount}</span></div>
 
     <div class="line"></div>
     <div class="center">Thank You<br/>Visit Again 🙏</div>

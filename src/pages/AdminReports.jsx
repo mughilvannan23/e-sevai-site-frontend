@@ -238,7 +238,8 @@ const AdminReports = () => {
     if (work.paymentStatus !== 'Paid') return 0;
     const serviceCharge = calculateServiceCharge(work);
     const otherCharges = work.otherCharges || 0;
-    return serviceCharge + otherCharges;
+    const totalDiscount = work.totalDiscount || 0;
+    return serviceCharge + otherCharges - totalDiscount;
   };
 
   const getWorkTitles = (work) => {
@@ -521,6 +522,14 @@ const AdminReports = () => {
                       </span>
                     </div>
                   </div>
+                  <div className="col-12 col-sm-6 col-md-4 col-lg">
+                    <div style={styles.summaryItem} className="h-100">
+                      <span style={styles.summaryLabel} className="d-block mb-1">Total Discount</span>
+                      <span style={{ ...styles.summaryValue, color: '#e74c3c' }}>
+                        {formatCurrency(reportSummary.totalDiscount ?? detailedWorks.reduce((sum, w) => sum + (w.totalDiscount || 0), 0))}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -540,6 +549,7 @@ const AdminReports = () => {
                         <th style={styles.th}>Service Charge</th>
                         <th style={styles.th}>Expected Cost</th>
                         <th style={styles.th}>Other Charges</th>
+                        <th style={styles.th}>Discount</th>
                         <th style={styles.th}>Actual Collected</th>
                         <th style={styles.th}>Net Profit</th>
                         <th style={styles.th}>Payment Status</th>
@@ -569,6 +579,7 @@ const AdminReports = () => {
                             <td style={styles.td}>{formatCurrency(serviceCharge)}</td>
                             <td style={styles.td}>{formatCurrency(expectedBaseCost)}</td>
                             <td style={styles.td}>{formatCurrency(work.otherCharges || 0)}</td>
+                            <td style={{ ...styles.td, color: '#e74c3c' }}>{formatCurrency(work.totalDiscount || 0)}</td>
                             <td style={{ ...styles.td, color: work.paymentStatus === 'Paid' ? 'inherit' : '#e74c3c' }}>
                               {formatCurrency(work.amount)}
                             </td>
@@ -773,7 +784,10 @@ const AdminReports = () => {
                           <td>{item.title}</td>
                           <td>{item.applicationNumber || '-'}</td>
                           <td>{item.quantity}</td>
-                          <td>₹{(item.workChargeAtTime + item.serviceChargeAtTime) * item.quantity}</td>
+                          <td>
+                            ₹{((item.workChargeAtTime + item.serviceChargeAtTime) * item.quantity + (item.otherCharges || 0) - (item.discount || 0)).toFixed(2)}
+                            {item.discount > 0 && <span className="text-danger small ms-1">(-₹{item.discount})</span>}
+                          </td>
                         </tr>
                       ))}
                     </tbody>

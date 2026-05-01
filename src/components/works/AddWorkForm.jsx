@@ -106,6 +106,7 @@ const AddWorkForm = ({
                     <th style={{ width: '100px' }}>Quantity</th>
                     <th>Total</th>
                     <th><label style={styles.label}><b>Other Charges</b> (₹)</label></th>
+                    <th><label style={styles.label}><b>Discount</b> (₹)</label></th>
                     <th style={{ width: '50px' }}></th>
                   </tr>
                 </thead>
@@ -171,6 +172,17 @@ const AddWorkForm = ({
                             step="0.01"
                           />
                         </td>
+                        <td>
+                          <input
+                            type="number"
+                            value={item.discount}
+                            onChange={(e) => onItemChange(index, 'discount', e.target.value)}
+                            className="form-control form-control-sm"
+                            placeholder="0.00"
+                            min="0"
+                            step="0.01"
+                          />
+                        </td>
                         <td className="text-center">
                           {formData.items.length > 1 && (
                             <button
@@ -200,7 +212,12 @@ const AddWorkForm = ({
 
           <div className="row g-3 mt-2">
             <div className="col-12 col-md-4 mt-3"></div>
-            <div className="col-12 col-md-12 mt-3 text-end">
+            <div className="col-12 col-md-12 mt-3 text-end d-flex flex-column align-items-end gap-1">
+              {formData.totalDiscount > 0 && (
+                <span style={{ fontSize: '1rem', color: '#e74c3c', fontWeight: '500' }}>
+                  Total Discount: -₹{(parseFloat(formData.totalDiscount) || 0).toFixed(2)}
+                </span>
+              )}
               <strong style={{ fontSize: '1.2rem', color: '#2c3e50' }}>
                 Final Amount: ₹{(parseFloat(formData.amount) || 0).toFixed(2)}
               </strong>

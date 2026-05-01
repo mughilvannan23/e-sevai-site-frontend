@@ -57,12 +57,14 @@ const EmployeeReports = () => {
       const completedWorks = allWorks.filter(w => w.workStatus === 'Completed').length;
       const inProgressWorks = allWorks.filter(w => w.workStatus === 'In Progress').length;
 
+      const totalDiscount = allWorks.reduce((sum, w) => sum + (w.totalDiscount || 0), 0);
       setStats({
         totalWorks,
         totalEarnings,
         pendingAmount,
         completedWorks,
-        inProgressWorks
+        inProgressWorks,
+        totalDiscount
       });
     } catch (err) {
       console.error('Error fetching daily report:', err);
@@ -109,12 +111,14 @@ const EmployeeReports = () => {
         const completedWorks = response.data.works.filter(w => w.workStatus === 'Completed').length;
         const inProgressWorks = response.data.works.filter(w => w.workStatus === 'In Progress').length;
 
+        const totalDiscount = response.data.works.reduce((sum, w) => sum + (w.totalDiscount || 0), 0);
         setStats({
           totalWorks,
           totalEarnings,
           pendingAmount,
           completedWorks,
-          inProgressWorks
+          inProgressWorks,
+          totalDiscount
         });
       }
     } catch (err) {
@@ -280,6 +284,14 @@ const EmployeeReports = () => {
                         ? ((stats.totalEarnings / (stats.totalEarnings + stats.pendingAmount)) * 100).toFixed(1) + '%'
                         : '0%'
                       }
+                    </span>
+                  </div>
+                </div>
+                <div className="col-12 col-sm-6 col-lg-3">
+                  <div style={styles.summaryItem} className="h-100">
+                    <span style={styles.summaryLabel}>Total Discount Given</span>
+                    <span style={{ ...styles.summaryValue, color: '#e74c3c' }}>
+                      {formatCurrency(stats?.totalDiscount || 0)}
                     </span>
                   </div>
                 </div>
