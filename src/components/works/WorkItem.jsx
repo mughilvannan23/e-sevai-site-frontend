@@ -30,7 +30,21 @@ const WorkItem = ({
         <div className="text-muted small">{work.customerPhone || '-'}</div>
       </td>
       <td style={styles.td}>
-        {work.paymentMethod || 'Hand Cash'}
+        {work.paymentMethod || 'Cash'}
+      </td>
+      <td style={styles.td}>
+        ₹{(work.gpayAmount || 0).toLocaleString()}
+      </td>
+      <td style={styles.td}>
+        ₹{(work.cashAmount || 0).toLocaleString()}
+      </td>
+      <td style={styles.td}>
+        <div className="fw-bold">₹{(work.totalAmount || work.amount || 0).toLocaleString()}</div>
+        {work.totalDiscount > 0 && (
+          <div className="text-danger small" style={{ fontSize: '0.75rem' }}>
+            Disc: -₹{work.totalDiscount.toLocaleString()}
+          </div>
+        )}
       </td>
       <td style={{ ...styles.td, maxWidth: '200px', whiteSpace: 'normal' }}>
         <div>
@@ -41,14 +55,6 @@ const WorkItem = ({
               }).join(', ')
             : work.workTitle}
         </div>
-      </td>
-      <td style={styles.td}>
-        <div className="fw-bold">₹{work.amount.toLocaleString()}</div>
-        {work.totalDiscount > 0 && (
-          <div className="text-danger small" style={{ fontSize: '0.75rem' }}>
-            Disc: -₹{work.totalDiscount.toLocaleString()}
-          </div>
-        )}
       </td>
       <td style={styles.td}>{getStatusBadge(work.paymentStatus, 'payment')}</td>
       <td style={styles.td}>{getStatusBadge(work.workStatus, 'work')}</td>

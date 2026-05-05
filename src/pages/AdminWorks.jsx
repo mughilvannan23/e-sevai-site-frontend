@@ -16,7 +16,10 @@ const defaultFormData = {
   time: getCurrentTime(),
   customerName: '',
   customerPhone: '',
-  paymentMethod: 'Hand Cash',
+  paymentMethod: 'Cash',
+  gpayAmount: '',
+  cashAmount: '',
+  totalAmount: '',
   items: [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' }],
   amount: '',
   totalDiscount: '0',
@@ -119,8 +122,53 @@ const AdminWorks = () => {
     const { name, value } = e.target;
     setEditFormData(prev => {
       const updated = { ...prev, [name]: value };
-      if (name === 'paymentStatus' && value === 'Pending') updated.paymentMethod = '';
-      else if (name === 'paymentStatus' && value === 'Paid' && !prev.paymentMethod) updated.paymentMethod = 'Hand Cash';
+      const currentAmount = parseFloat(updated.amount) || 0;
+
+      if (name === 'paymentStatus') {
+        if (value === 'Pending') {
+          updated.paymentMethod = '';
+          updated.gpayAmount = '';
+          updated.cashAmount = '';
+        } else if (value === 'Paid' && !prev.paymentMethod) {
+          updated.paymentMethod = 'Cash';
+          updated.cashAmount = currentAmount.toString();
+          updated.gpayAmount = '0';
+        }
+      }
+
+      if (name === 'paymentMethod') {
+        if (value === 'GPay') {
+          updated.gpayAmount = currentAmount.toString();
+          updated.cashAmount = '0';
+        } else if (value === 'Cash') {
+          updated.cashAmount = currentAmount.toString();
+          updated.gpayAmount = '0';
+        } else if (value === 'Both') {
+          updated.gpayAmount = '';
+          updated.cashAmount = '';
+        }
+      }
+
+      // Handle split logic: if one changes, the other takes the remainder
+      if (updated.paymentMethod === 'Both') {
+        if (name === 'gpayAmount') {
+          const gpayVal = Math.min(parseFloat(value) || 0, currentAmount);
+          updated.gpayAmount = gpayVal.toString();
+          updated.cashAmount = (currentAmount - gpayVal).toFixed(2);
+        } else if (name === 'cashAmount') {
+          const cashVal = Math.min(parseFloat(value) || 0, currentAmount);
+          updated.cashAmount = cashVal.toString();
+          updated.gpayAmount = (currentAmount - cashVal).toFixed(2);
+        }
+      }
+
+      // Sync totalAmount state if needed
+      if (updated.paymentMethod === 'Both') {
+        updated.totalAmount = (parseFloat(updated.gpayAmount || 0) + parseFloat(updated.cashAmount || 0)).toString();
+      } else {
+        updated.totalAmount = currentAmount.toString();
+      }
+
       return updated;
     });
   };
@@ -153,7 +201,27 @@ const AdminWorks = () => {
       acc.discountTotal += itemDisc;
       return acc;
     }, { total: 0, discountTotal: 0 });
-    setEditFormData(prev => ({ ...prev, items: newItems, amount: total.toString(), totalDiscount: discountTotal.toString() }));
+    setEditFormData(prev => {
+      const updated = { ...prev, items: newItems, amount: total.toString(), totalDiscount: discountTotal.toString() };
+      
+      // Sync payment amounts if Paid
+      if (updated.paymentStatus === 'Paid') {
+        if (updated.paymentMethod === 'GPay') {
+          updated.gpayAmount = total.toString();
+          updated.cashAmount = '0';
+          updated.totalAmount = total.toString();
+        } else if (updated.paymentMethod === 'Cash') {
+          updated.cashAmount = total.toString();
+          updated.gpayAmount = '0';
+          updated.totalAmount = total.toString();
+        } else if (updated.paymentMethod === 'Both') {
+          const gpay = parseFloat(updated.gpayAmount) || 0;
+          const cash = parseFloat(updated.cashAmount) || 0;
+          updated.totalAmount = (gpay + cash).toString();
+        }
+      }
+      return updated;
+    });
   };
 
   const addItemRow = () => {
@@ -175,19 +243,67 @@ const AdminWorks = () => {
       acc.discountTotal += itemDisc;
       return acc;
     }, { total: 0, discountTotal: 0 });
-    setEditFormData(prev => ({
-      ...prev,
-      items: newItems.length ? newItems : [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' }],
-      amount: total.toString(),
-      totalDiscount: discountTotal.toString()
-    }));
+    setEditFormData(prev => {
+      const updated = {
+        ...prev,
+        items: newItems.length ? newItems : [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' }],
+        amount: total.toString(),
+        totalDiscount: discountTotal.toString()
+      };
+
+      // Sync payment amounts if Paid
+      if (updated.paymentStatus === 'Paid') {
+        if (updated.paymentMethod === 'GPay') {
+          updated.gpayAmount = total.toString();
+          updated.cashAmount = '0';
+          updated.totalAmount = total.toString();
+        } else if (updated.paymentMethod === 'Cash') {
+          updated.cashAmount = total.toString();
+          updated.gpayAmount = '0';
+          updated.totalAmount = total.toString();
+        } else if (updated.paymentMethod === 'Both') {
+          const gpay = parseFloat(updated.gpayAmount) || 0;
+          const cash = parseFloat(updated.cashAmount) || 0;
+          updated.totalAmount = (gpay + cash).toString();
+        }
+      }
+      return updated;
+    });
   };
 
   const handleSubmitWork = async (e) => {
     e.preventDefault();
+
+    if (editFormData.paymentStatus === 'Paid') {
+      const finalAmount = parseFloat(editFormData.amount) || 0;
+      const gpay = parseFloat(editFormData.gpayAmount) || 0;
+      const cash = parseFloat(editFormData.cashAmount) || 0;
+
+      if (editFormData.paymentMethod === 'Both') {
+        if (Math.abs((gpay + cash) - finalAmount) > 0.01) {
+          error(`GPay + Cash (₹${(gpay + cash).toFixed(2)}) must equal Final Amount (₹${finalAmount.toFixed(2)})`);
+          return;
+        }
+      } else if (editFormData.paymentMethod === 'GPay') {
+        if (Math.abs(gpay - finalAmount) > 0.01) {
+          error(`GPay amount must equal Final Amount (₹${finalAmount.toFixed(2)})`);
+          return;
+        }
+      } else if (editFormData.paymentMethod === 'Cash') {
+        if (Math.abs(cash - finalAmount) > 0.01) {
+          error(`Cash amount must equal Final Amount (₹${finalAmount.toFixed(2)})`);
+          return;
+        }
+      }
+    }
+
     try {
       setSubmitting(true);
-      const payload = { ...editFormData, date: new Date(`${editFormData.date}T${editFormData.time || '00:00'}`) };
+      const payload = { 
+        ...editFormData, 
+        totalAmount: editFormData.paymentStatus === 'Paid' ? editFormData.amount : '0',
+        date: new Date(`${editFormData.date}T${editFormData.time || '00:00'}`) 
+      };
       const response = await workAPI.updateWork(editingItemId, payload);
 
       if (response.data.success) {
@@ -210,7 +326,10 @@ const AdminWorks = () => {
       time: workDate.toTimeString().slice(0, 5),
       customerName: work.customerName,
       customerPhone: work.customerPhone || '',
-      paymentMethod: work.paymentMethod || 'Hand Cash',
+      paymentMethod: work.paymentMethod === 'Hand Cash' ? 'Cash' : (work.paymentMethod || 'Cash'),
+      gpayAmount: work.gpayAmount?.toString() || '',
+      cashAmount: work.cashAmount?.toString() || '',
+      totalAmount: work.totalAmount?.toString() || work.amount?.toString() || '',
       items: work.items?.length > 0 
         ? work.items.map(i => ({ 
             workItemId: i.workItemId || '', 

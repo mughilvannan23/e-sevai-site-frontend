@@ -23,7 +23,10 @@ const AddWork = () => {
     time: getCurrentTime(),
     customerName: '',
     customerPhone: '',
-    paymentMethod: 'Hand Cash',
+    paymentMethod: 'Cash', // Single selection: 'GPay', 'Cash', or 'Both'
+    gpayAmount: '',
+    cashAmount: '',
+    totalAmount: '',
     items: [{ workItemId: '', workTitle: '', applicationNumber: '', otherCharges: '', discount: '' }],
     amount: '',
     totalDiscount: '',
@@ -39,12 +42,24 @@ const AddWork = () => {
 
     // If editing, populate form data
     if (editingWork) {
+      let paymentMethod = 'Hand Cash';
+      if (editingWork.gpayAmount > 0 && editingWork.cashAmount > 0) {
+        paymentMethod = 'Both';
+      } else if (editingWork.gpayAmount > 0) {
+        paymentMethod = 'GPay';
+      } else if (editingWork.cashAmount > 0) {
+        paymentMethod = 'Cash';
+      }
+
       setFormData({
         date: new Date(editingWork.date).toISOString().split('T')[0],
         time: editingWork.time || getCurrentTime(),
         customerName: editingWork.customerName,
         customerPhone: editingWork.customerPhone || '',
-        paymentMethod: editingWork.paymentMethod || 'Hand Cash',
+        paymentMethod: paymentMethod,
+        gpayAmount: editingWork.gpayAmount?.toString() || '',
+        cashAmount: editingWork.cashAmount?.toString() || '',
+        totalAmount: editingWork.totalAmount?.toString() || editingWork.amount?.toString() || '',
         items: editingWork.items && editingWork.items.length > 0
           ? editingWork.items.map(i => ({
             workItemId: i.workItemId || '',
@@ -83,6 +98,47 @@ const AddWork = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handlePaymentMethodChange = (method) => {
+    setFormData(prev => {
+      let newData = { ...prev, paymentMethod: method };
+      
+      // Clear amounts based on selection
+      if (method === 'GPay') {
+        newData.cashAmount = '';
+        newData.totalAmount = prev.gpayAmount;
+      } else if (method === 'Cash') {
+        newData.gpayAmount = '';
+        newData.totalAmount = prev.cashAmount;
+      } else if (method === 'Both') {
+        // Keep both amounts and recalculate total
+        const gpay = parseFloat(prev.gpayAmount) || 0;
+        const cash = parseFloat(prev.cashAmount) || 0;
+        newData.totalAmount = (gpay + cash).toString();
+      }
+      
+      return newData;
+    });
+  };
+
+  const handleAmountChange = (field, value) => {
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      
+      // Auto-calculate total based on payment method
+      if (prev.paymentMethod === 'Both') {
+        const gpay = parseFloat(newData.gpayAmount) || 0;
+        const cash = parseFloat(newData.cashAmount) || 0;
+        newData.totalAmount = (gpay + cash).toString();
+      } else if (prev.paymentMethod === 'GPay') {
+        newData.totalAmount = value;
+      } else if (prev.paymentMethod === 'Cash') {
+        newData.totalAmount = value;
+      }
+      
+      return newData;
+    });
   };
 
   const handleItemChange = (index, field, value) => {
@@ -156,14 +212,44 @@ const AddWork = () => {
     try {
       setSubmitting(true);
 
+      // Prepare data for submission
+      const submitData = {
+        ...formData,
+        gpayAmount: parseFloat(formData.gpayAmount) || 0,
+        cashAmount: parseFloat(formData.cashAmount) || 0,
+        totalAmount: parseFloat(formData.totalAmount) || 0,
+        amount: parseFloat(formData.totalAmount) || 0 // Keep backward compatibility
+      };
+
+      // Validation
+      if (submitData.totalAmount <= 0) {
+        error('Total amount must be greater than zero');
+        return;
+      }
+
+      if (formData.paymentMethod === 'Both' && (submitData.gpayAmount <= 0 || submitData.cashAmount <= 0)) {
+        error('Both GPay and Cash amounts are required for split payment');
+        return;
+      }
+
+      if (formData.paymentMethod === 'GPay' && submitData.gpayAmount <= 0) {
+        error('GPay amount is required');
+        return;
+      }
+
+      if (formData.paymentMethod === 'Cash' && submitData.cashAmount <= 0) {
+        error('Cash amount is required');
+        return;
+      }
+
       if (editingWork) {
-        const response = await workAPI.updateWork(editingWork._id, formData);
+        const response = await workAPI.updateWork(editingWork._id, submitData);
         if (response.data.success) {
           success('Work updated successfully');
           navigate('/employee-works');
         }
       } else {
-        const response = await workAPI.createWork(formData);
+        const response = await workAPI.createWork(submitData);
         if (response.data.success) {
           success('Work entry created successfully');
           navigate('/employee-works');
@@ -304,19 +390,65 @@ const AddWork = () => {
                   <select
                     name="paymentMethod"
                     value={formData.paymentMethod}
-                    onChange={handleInputChange}
+                    onChange={(e) => handlePaymentMethodChange(e.target.value)}
                     className="form-select"
                     style={styles.input}
                   >
-                    <option value="Hand Cash">Hand Cash</option>
-                    <option value="GPay">GPay</option>
                     <option value="Cash">Cash</option>
-                    <option value="Card">Card</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="Other">Other</option>
+                    <option value="GPay">GPay</option>
+                    <option value="Both">Both (Split Payment)</option>
                   </select>
                 </div>
+                <div className="col-12 col-md-6">
+                  <label style={styles.label}>Total Amount (₹)</label>
+                  <input
+                    type="number"
+                    value={formData.totalAmount}
+                    className="form-control"
+                    style={{ ...styles.input, fontWeight: 'bold', color: '#2563eb', backgroundColor: '#f9fafb' }}
+                    placeholder="0.00"
+                    readOnly
+                  />
+                </div>
               </div>
+              
+              {/* Payment Amount Fields */}
+              <div className="row g-4">
+                {(formData.paymentMethod === 'GPay' || formData.paymentMethod === 'Both') && (
+                  <div className="col-12 col-md-6">
+                    <label style={styles.label}>GPay Amount (₹)</label>
+                    <input
+                      type="number"
+                      value={formData.gpayAmount}
+                      onChange={(e) => handleAmountChange('gpayAmount', e.target.value)}
+                      className="form-control"
+                      style={styles.input}
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                      required={formData.paymentMethod === 'GPay' || formData.paymentMethod === 'Both'}
+                    />
+                  </div>
+                )}
+                
+                {(formData.paymentMethod === 'Cash' || formData.paymentMethod === 'Both') && (
+                  <div className="col-12 col-md-6">
+                    <label style={styles.label}>Cash Amount (₹)</label>
+                    <input
+                      type="number"
+                      value={formData.cashAmount}
+                      onChange={(e) => handleAmountChange('cashAmount', e.target.value)}
+                      className="form-control"
+                      style={styles.input}
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                      required={formData.paymentMethod === 'Cash' || formData.paymentMethod === 'Both'}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
             </div>
 
             {/* Section 3: Work Items */}

@@ -495,9 +495,17 @@ const AdminReports = () => {
                   </div>
                   <div className="col-12 col-sm-6 col-md-4 col-lg">
                     <div style={styles.summaryItem} className="h-100">
-                      <span style={styles.summaryLabel} className="d-block mb-1">Total Actual Collected</span>
+                      <span style={styles.summaryLabel} className="d-block mb-1">Total GPay Amount</span>
                       <span style={styles.summaryValue}>
-                        {formatCurrency(reportSummary.totalActualCollected ?? detailedWorks.filter(w => w.paymentStatus === 'Paid').reduce((sum, w) => sum + w.amount, 0))}
+                        {formatCurrency(detailedWorks.filter(w => w.paymentStatus === 'Paid').reduce((sum, w) => sum + (w.gpayAmount || 0), 0))}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="col-12 col-sm-6 col-md-4 col-lg">
+                    <div style={styles.summaryItem} className="h-100">
+                      <span style={styles.summaryLabel} className="d-block mb-1">Total Cash Amount</span>
+                      <span style={styles.summaryValue}>
+                        {formatCurrency(detailedWorks.filter(w => w.paymentStatus === 'Paid').reduce((sum, w) => sum + (w.cashAmount || 0), 0))}
                       </span>
                     </div>
                   </div>
@@ -542,6 +550,9 @@ const AdminReports = () => {
                         <th style={styles.th}>Date</th>
                         <th style={styles.th}>Customer</th>
                         <th style={styles.th}>Payment Method</th>
+                        <th style={styles.th}>GPay Amount</th>
+                        <th style={styles.th}>Cash Amount</th>
+                        <th style={styles.th}>Total Amount</th>
                         <th style={styles.th}>Employee Name</th>
                         <th style={styles.th}>Employee ID</th>
                         <th style={styles.th}>Service Name</th>
@@ -571,7 +582,10 @@ const AdminReports = () => {
                               <div className="fw-bold">{work.customerName}</div>
                               <div className="text-muted small">{work.customerPhone || '-'}</div>
                             </td>
-                            <td style={styles.td}>{work.paymentMethod || 'Hand Cash'}</td>
+                            <td style={styles.td}>{work.paymentMethod || 'Cash'}</td>
+                            <td style={styles.td}>{formatCurrency(work.gpayAmount || 0)}</td>
+                            <td style={styles.td}>{formatCurrency(work.cashAmount || 0)}</td>
+                            <td style={{ ...styles.td, fontWeight: 'bold' }}>{formatCurrency(work.totalAmount || work.amount || 0)}</td>
                             <td style={styles.td}>{work.employee?.name || 'Unknown'}</td>
                             <td style={styles.td}>{work.employee?.employeeId || 'N/A'}</td>
                             <td style={{ ...styles.td, whiteSpace: 'normal', maxWidth: '200px' }}>{getWorkTitles(work)}</td>
@@ -799,7 +813,13 @@ const AdminReports = () => {
                   <div className="fw-bold text-primary mb-1">Payment Details</div>
                   <div><strong>Total Amount:</strong> ₹{selectedWork.amount}</div>
                   <div><strong>Status:</strong> {selectedWork.paymentStatus}</div>
-                  <div><strong>Method:</strong> {selectedWork.paymentMethod}</div>
+                  <div><strong>Method:</strong> {selectedWork.paymentMethod || 'Cash'}</div>
+                  {selectedWork.paymentMethod === 'Both' && (
+                    <>
+                      <div className="text-muted small"><strong>GPay:</strong> ₹{selectedWork.gpayAmount || 0}</div>
+                      <div className="text-muted small"><strong>Cash:</strong> ₹{selectedWork.cashAmount || 0}</div>
+                    </>
+                  )}
                 </div>
                 <div className="col-6">
                   <div className="fw-bold text-primary mb-1">Staff Details</div>

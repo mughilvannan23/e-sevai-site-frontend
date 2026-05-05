@@ -90,6 +90,7 @@ const AddWorkForm = ({
                 placeholder="Enter customer phone number"
               />
             </div>
+            
           </div>
         </div>
 
@@ -241,23 +242,60 @@ const AddWorkForm = ({
                 <option value="Pending">Pending</option>
               </select>
             </div>
+
             {formData.paymentStatus === 'Paid' && (
-              <div className="col-12 col-md-6">
-                <label style={styles.label}>Payment Method</label>
-                <select
-                  name="paymentMethod"
-                  value={formData.paymentMethod}
-                  onChange={onInputChange}
-                  className="form-select"
-                >
-                  <option value="Hand Cash">Hand Cash</option>
-                  <option value="GPay">GPay</option>
-                  <option value="Cash">Cash</option>
-                  <option value="Card">Card</option>
-                  <option value="Bank Transfer">Bank Transfer</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
+              <>
+                <div className="col-12 col-md-6">
+                  <label style={styles.label}>Payment Method</label>
+                  <select
+                    name="paymentMethod"
+                    value={formData.paymentMethod}
+                    onChange={onInputChange}
+                    className="form-select"
+                    required
+                  >
+                    <option value="">Select Method...</option>
+                    <option value="Cash">Cash</option>
+                    <option value="GPay">GPay</option>
+                    <option value="Both">Both (Split Payment)</option>
+                  </select>
+                </div>
+
+                {formData.paymentMethod === 'Both' && (
+                  <>
+                    <div className="col-12 col-md-6">
+                      <label style={styles.label}>GPay Amount (₹)</label>
+                      <input
+                        type="number"
+                        name="gpayAmount"
+                        value={formData.gpayAmount || ''}
+                        onChange={onInputChange}
+                        className="form-control"
+                        placeholder="0.00"
+                        min="0"
+                        max={formData.amount}
+                        step="0.01"
+                        required
+                      />
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label style={styles.label}>Cash Amount (₹)</label>
+                      <input
+                        type="number"
+                        name="cashAmount"
+                        value={formData.cashAmount || ''}
+                        onChange={onInputChange}
+                        className="form-control"
+                        placeholder="0.00"
+                        min="0"
+                        max={formData.amount}
+                        step="0.01"
+                        required
+                      />
+                    </div>
+                  </>
+                )}
+              </>
             )}
 
             <div className="col-12 col-md-6">
