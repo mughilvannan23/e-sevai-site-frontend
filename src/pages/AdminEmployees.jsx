@@ -18,6 +18,7 @@ const AdminEmployees = () => {
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
+    mobile: '',
     email: '',
     password: '',
     isActive: true
@@ -72,7 +73,8 @@ const AdminEmployees = () => {
       setEditingEmployee(employee);
       setFormData({
         name: employee.name,
-        email: employee.email,
+        mobile: employee.mobile || '',
+        email: employee.email || '',
         password: '',
         isActive: employee.isActive
       });
@@ -80,6 +82,7 @@ const AdminEmployees = () => {
       setEditingEmployee(null);
       setFormData({
         name: '',
+        mobile: '',
         email: '',
         password: '',
         isActive: true
@@ -95,10 +98,15 @@ const AdminEmployees = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    if (name === 'mobile') {
+        const numericValue = value.replace(/[^0-9]/g, '').substring(0, 10);
+        setFormData(prev => ({ ...prev, [name]: numericValue }));
+    } else {
+        setFormData(prev => ({
+          ...prev,
+          [name]: type === 'checkbox' ? checked : value
+        }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -171,7 +179,7 @@ const AdminEmployees = () => {
                 name="search"
                 value={filters.search}
                 onChange={handleFilterChange}
-                placeholder="Name, email, or ID"
+                placeholder="Name, mobile, or ID"
                 className="form-control"
               />
             </div>
@@ -217,7 +225,7 @@ const AdminEmployees = () => {
               <tr>
                 <th style={styles.th}>Employee ID</th>
                 <th style={styles.th}>Name</th>
-                <th style={styles.th}>Email</th>
+                <th style={styles.th}>Mobile</th>
                 <th style={styles.th}>Status</th>
                 <th style={styles.th}>Last Login</th>
                 <th style={styles.th}>Actions</th>
@@ -228,11 +236,11 @@ const AdminEmployees = () => {
                 <tr key={emp._id}>
                   <td style={styles.td}>{emp.employeeId}</td>
                   <td style={styles.td}>{emp.name}</td>
-                  <td style={styles.td}>{emp.email}</td>
+                  <td style={styles.td}>{emp.mobile}</td>
                   <td style={styles.td}>
                     <span style={{
                       ...styles.badge,
-                      backgroundColor: emp.isActive ? '#27ae60' : '#e74c3c',
+                      backgroundColor: emp.isActive ? '#3b8132' : '#e74c3c',
                       color: 'white'
                     }}>
                       {emp.isActive ? 'Active' : 'Inactive'}
@@ -314,7 +322,20 @@ const AdminEmployees = () => {
                 />
               </div>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Email</label>
+                <label style={styles.label}>Mobile Number</label>
+                <input
+                  type="text"
+                  name="mobile"
+                  value={formData.mobile}
+                  onChange={handleInputChange}
+                  className="form-control"
+                  placeholder="Enter 10-digit mobile number"
+                  required
+                  maxLength="10"
+                />
+              </div>
+              <div style={styles.formGroup}>
+                <label style={styles.label}>Email (Optional)</label>
                 <input
                   type="email"
                   name="email"
@@ -322,7 +343,6 @@ const AdminEmployees = () => {
                   onChange={handleInputChange}
                   className="form-control"
                   placeholder="Enter email"
-                  required={!editingEmployee}
                 />
               </div>
               <div style={styles.formGroup}>
@@ -377,8 +397,9 @@ const styles = {
   title: {
     margin: '0 0 8px 0',
     fontSize: '32px',
-    fontWeight: 'bold',
-    color: '#2c3e50'
+    fontWeight: '700',
+    color: '#3b8132',
+    letterSpacing: '0.5px'
   },
   subtitle: {
     margin: 0,
@@ -387,104 +408,71 @@ const styles = {
   },
   addBtn: {
     padding: '12px 24px',
-    backgroundColor: '#3498db',
+    backgroundColor: '#3b8132',
     color: 'white',
     border: 'none',
-    borderRadius: '8px',
+    borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '600',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.2s ease'
   },
   filtersCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#ffffff',
     padding: '24px',
-    borderRadius: '12px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    marginBottom: '20px'
-  },
-  filtersForm: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px'
-  },
-  filtersRow: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '16px'
-  },
-  filterGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px'
+    borderRadius: '10px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    marginBottom: '20px',
+    border: '1px solid #e0e0e0'
   },
   label: {
     fontSize: '14px',
     fontWeight: '500',
-    color: '#333'
-  },
-  input: {
-    padding: '10px 12px',
-    border: '1px solid #ddd',
-    borderRadius: '6px',
-    fontSize: '14px'
-  },
-  select: {
-    padding: '10px 12px',
-    border: '1px solid #ddd',
-    borderRadius: '6px',
-    fontSize: '14px',
-    backgroundColor: 'white'
-  },
-  filtersActions: {
-    display: 'flex',
-    gap: '12px'
+    color: '#2c3e50'
   },
   searchBtn: {
     padding: '10px 24px',
-    backgroundColor: '#3498db',
+    backgroundColor: '#3b8132',
     color: 'white',
     border: 'none',
-    borderRadius: '6px',
+    borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '600',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.2s ease'
   },
   resetBtn: {
     padding: '10px 24px',
-    backgroundColor: '#6c757d',
-    color: 'white',
-    border: 'none',
-    borderRadius: '6px',
+    backgroundColor: '#ffffff',
+    color: '#3b8132',
+    border: '1px solid #3b8132',
+    borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '600',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.2s ease'
   },
   tableCard: {
-    backgroundColor: 'white',
-    borderRadius: '12px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    overflow: 'hidden'
-  },
-  tableWrapper: {
-    overflowX: 'auto'
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse'
+    backgroundColor: '#ffffff',
+    borderRadius: '10px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    overflow: 'hidden',
+    border: '1px solid #e0e0e0'
   },
   th: {
     padding: '16px',
     textAlign: 'left',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f9fafb',
     fontWeight: '600',
-    color: '#2c3e50',
-    borderBottom: '2px solid #e9ecef',
+    color: '#3b8132',
+    borderBottom: '2px solid #3b8132',
     fontSize: '14px'
   },
   td: {
     padding: '16px',
-    borderBottom: '1px solid #e9ecef',
-    fontSize: '14px'
+    borderBottom: '1px solid #e0e0e0',
+    fontSize: '14px',
+    color: '#2c3e50'
   },
   badge: {
     padding: '4px 12px',
@@ -492,27 +480,27 @@ const styles = {
     fontSize: '12px',
     fontWeight: '500'
   },
-  actions: {
-    display: 'flex',
-    gap: '8px'
-  },
   editBtn: {
-    padding: '6px 16px',
-    backgroundColor: '#3498db',
+    padding: '8px 18px',
+    backgroundColor: '#3b8132',
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
-    fontSize: '12px',
-    cursor: 'pointer'
+    borderRadius: '10px',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease'
   },
   deleteBtn: {
-    padding: '6px 16px',
-    backgroundColor: '#e74c3c',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '12px',
-    cursor: 'pointer'
+    padding: '8px 18px',
+    backgroundColor: '#ffffff',
+    color: '#e74c3c',
+    border: '1px solid #e74c3c',
+    borderRadius: '10px',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease'
   },
   noData: {
     padding: '40px',
@@ -534,23 +522,24 @@ const styles = {
   },
   modal: {
     backgroundColor: 'white',
-    borderRadius: '12px',
+    borderRadius: '10px',
     width: '100%',
     maxWidth: '400px',
-    boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+    boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+    border: '1px solid #e0e0e0'
   },
   modalHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '20px',
-    borderBottom: '1px solid #e9ecef'
+    borderBottom: '1px solid #e0e0e0'
   },
   modalTitle: {
     margin: 0,
     fontSize: '20px',
-    fontWeight: 'bold',
-    color: '#2c3e50'
+    fontWeight: '700',
+    color: '#3b8132'
   },
   closeBtn: {
     background: 'none',
@@ -575,37 +564,36 @@ const styles = {
     alignItems: 'center',
     gap: '8px',
     fontSize: '14px',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    color: '#2c3e50'
   },
   checkbox: {
+    accentColor: '#3b8132',
     width: '16px',
     height: '16px',
     cursor: 'pointer'
   },
-  modalFooter: {
-    display: 'flex',
-    gap: '12px',
-    justifyContent: 'flex-end'
-  },
   cancelBtn: {
     padding: '10px 24px',
-    backgroundColor: '#6c757d',
-    color: 'white',
-    border: 'none',
-    borderRadius: '6px',
+    backgroundColor: '#ffffff',
+    color: '#3b8132',
+    border: '1px solid #3b8132',
+    borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '600',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.2s ease'
   },
   submitBtn: {
     padding: '10px 24px',
-    backgroundColor: '#3498db',
+    backgroundColor: '#3b8132',
     color: 'white',
     border: 'none',
-    borderRadius: '6px',
+    borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '600',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.2s ease'
   }
 };
 

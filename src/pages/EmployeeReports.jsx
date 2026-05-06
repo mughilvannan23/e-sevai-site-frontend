@@ -375,136 +375,152 @@ const EmployeeReports = () => {
 const styles = {
   title: {
     margin: '0 0 8px 0',
-    fontWeight: 'bold',
-    color: '#2c3e50'
+    fontWeight: '700',
+    color: '#3b8132',
+    letterSpacing: '0.5px'
   },
   subtitle: {
-    margin: 0
+    margin: 0,
+    color: '#666'
   },
   tab: {
     padding: '12px 24px',
-    backgroundColor: '#f8f9fa',
-    border: '1px solid #e9ecef',
-    borderRadius: '8px',
+    backgroundColor: '#ffffff',
+    border: '1px solid #3b8132',
+    color: '#3b8132',
+    borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.2s ease'
   },
   activeTab: {
-    backgroundColor: '#3498db',
+    backgroundColor: '#3b8132',
     color: 'white',
-    borderColor: '#3498db'
+    borderColor: '#3b8132'
   },
   reportCard: {
     backgroundColor: 'white',
-    borderRadius: '12px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    overflow: 'hidden'
+    borderRadius: '10px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    overflow: 'hidden',
+    border: '1px solid #e0e0e0'
   },
   filtersCard: {
-    backgroundColor: '#f8f9fa',
-    borderBottom: '1px solid #e9ecef'
+    backgroundColor: '#ffffff',
+    borderBottom: '1px solid #e0e0e0',
+    padding: '24px'
   },
   label: {
     fontSize: '14px',
     fontWeight: '500',
-    color: '#333'
+    color: '#2c3e50'
   },
   generateBtn: {
     padding: '10px 24px',
-    backgroundColor: '#3498db',
+    backgroundColor: '#3b8132',
     color: 'white',
     border: 'none',
-    borderRadius: '6px',
+    borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '600',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.2s ease'
   },
   summaryCard: {
-    backgroundColor: '#f8f9fa',
-    borderBottom: '1px solid #e9ecef'
+    backgroundColor: '#ffffff',
+    borderBottom: '1px solid #e0e0e0',
+    padding: '24px'
   },
   summaryTitle: {
-    fontWeight: 'bold',
-    color: '#2c3e50'
+    fontWeight: '700',
+    color: '#3b8132',
+    marginBottom: '20px'
   },
   summaryItem: {
     backgroundColor: 'white',
-    padding: '16px',
-    borderRadius: '8px',
+    padding: '20px',
+    borderRadius: '10px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '4px'
+    gap: '4px',
+    border: '1px solid #e0e0e0',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
   },
   summaryLabel: {
     fontSize: '12px',
     color: '#666',
     textTransform: 'uppercase',
-    letterSpacing: '0.5px'
+    letterSpacing: '0.5px',
+    fontWeight: '600'
   },
   summaryValue: {
     fontSize: '24px',
-    fontWeight: 'bold',
-    color: '#2c3e50'
+    fontWeight: '800',
+    color: '#3b8132'
   },
   worksTitle: {
-    fontWeight: 'bold',
-    color: '#2c3e50'
+    fontWeight: '700',
+    color: '#3b8132',
+    marginBottom: '20px'
   },
   daySection: {
     marginBottom: '24px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '8px',
-    overflow: 'hidden'
+    backgroundColor: '#ffffff',
+    borderRadius: '10px',
+    overflow: 'hidden',
+    border: '1px solid #e0e0e0'
   },
   dayHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '16px',
-    backgroundColor: '#e9ecef'
+    padding: '16px 20px',
+    backgroundColor: '#f9fafb',
+    borderBottom: '1px solid #e0e0e0'
   },
   dayTitle: {
     margin: 0,
     fontSize: '16px',
-    fontWeight: '600',
-    color: '#2c3e50'
+    fontWeight: '700',
+    color: '#3b8132'
   },
   dayCount: {
     fontSize: '14px',
-    color: '#666',
-    backgroundColor: 'white',
+    color: '#3b8132',
+    backgroundColor: 'rgba(59, 129, 50, 0.1)',
     padding: '4px 12px',
-    borderRadius: '20px'
+    borderRadius: '20px',
+    fontWeight: '600'
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse'
   },
   th: {
-    padding: '12px',
+    padding: '12px 20px',
     textAlign: 'left',
-    backgroundColor: 'white',
+    backgroundColor: '#ffffff',
     fontWeight: '600',
-    color: '#2c3e50',
-    borderBottom: '2px solid #e9ecef',
+    color: '#3b8132',
+    borderBottom: '2px solid #3b8132',
     fontSize: '14px'
   },
   td: {
-    padding: '12px',
-    borderBottom: '1px solid #e9ecef',
+    padding: '12px 20px',
+    borderBottom: '1px solid #e0e0e0',
     fontSize: '14px',
-    backgroundColor: 'white'
+    backgroundColor: 'white',
+    color: '#2c3e50'
   },
   badge: {
     padding: '4px 12px',
     borderRadius: '20px',
     fontSize: '12px',
-    fontWeight: '500'
+    fontWeight: '600'
   },
   noData: {
-    padding: '40px',
+    padding: '60px 40px',
     textAlign: 'center',
     color: '#666',
     fontSize: '16px'

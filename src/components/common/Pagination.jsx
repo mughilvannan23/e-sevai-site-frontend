@@ -116,20 +116,22 @@ const styles = {
     padding: '8px 12px',
     border: '1px solid #ddd',
     backgroundColor: 'white',
-    borderRadius: '4px',
+    borderRadius: '10px',
     cursor: 'pointer',
     fontSize: '14px',
     transition: 'all 0.2s ease',
-    minWidth: '36px'
+    minWidth: '36px',
+    color: '#3b8132'
   },
   activePage: {
-    backgroundColor: '#3498db',
+    backgroundColor: '#3b8132',
     color: 'white',
-    border: '1px solid #3498db'
+    border: '1px solid #3b8132'
   },
   disabledBtn: {
     opacity: 0.5,
-    cursor: 'not-allowed'
+    cursor: 'not-allowed',
+    color: '#999'
   },
   ellipsis: {
     padding: '0 8px',

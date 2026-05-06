@@ -13,12 +13,12 @@ const WorkItem = ({
   isEditing
 }) => {
   return (
-    <tr style={isEditing ? { backgroundColor: '#e3f2fd' } : {}}>
+    <tr style={isEditing ? { backgroundColor: 'rgba(59, 129, 50, 0.08)' } : {}}>
       {isAdmin && (
         <td style={styles.td}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span className="fw-bold">{work.employee?.name || 'N/A'}</span>
-            <span className="text-muted small">{work.employee?.employeeId || ''}</span>
+            <span className="text-muted small">{work.employee?.mobile || ''}</span>
           </div>
         </td>
       )}
@@ -45,6 +45,11 @@ const WorkItem = ({
             Disc: -₹{work.totalDiscount.toLocaleString()}
           </div>
         )}
+      </td>
+      <td style={styles.td}>
+        <span style={{ color: '#3b8132', fontWeight: '800' }}>
+          ₹{(work.applicationFee || 0).toLocaleString()}
+        </span>
       </td>
       <td style={{ ...styles.td, maxWidth: '200px', whiteSpace: 'normal' }}>
         <div>
@@ -86,7 +91,7 @@ const WorkItem = ({
           {/* Admin: "Remove Print option for Admin (if present)" */}
           {!isAdmin && onPrint && (
             <button
-              style={{ ...styles.editBtn, backgroundColor: '#2ecc71' }}
+              style={{ ...styles.editBtn, backgroundColor: '#3b8132', borderRadius: '10px' }}
               className="btn btn-sm text-white w-100 w-md-auto"
               onClick={() => onPrint(work)}
             >

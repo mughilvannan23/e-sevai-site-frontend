@@ -189,7 +189,8 @@ const AddWorkForm = ({
                             <button
                               type="button"
                               onClick={() => removeItemRow(index)}
-                              className="btn btn-sm btn-outline-danger"
+                              className="btn btn-sm"
+                              style={{ border: '1px solid #e74c3c', color: '#e74c3c', borderRadius: '10px' }}
                             >
                               ✕
                             </button>
@@ -219,9 +220,30 @@ const AddWorkForm = ({
                   Total Discount: -₹{(parseFloat(formData.totalDiscount) || 0).toFixed(2)}
                 </span>
               )}
-              <strong style={{ fontSize: '1.2rem', color: '#2c3e50' }}>
+              <strong style={{ fontSize: '1.25rem', color: '#3b8132', fontWeight: '800' }}>
                 Final Amount: ₹{(parseFloat(formData.amount) || 0).toFixed(2)}
               </strong>
+              {formData.items.some(item => {
+              const wi = item.workItemId ? workItems.find(w => w._id === item.workItemId) : null;
+              const name = (wi ? wi.name : item.workTitle) || '';
+              const rechargeKeywords = ['recharge', 'eb bill', 'electric charge', 'electricity', 'money transfer', 'transfer'];
+              return rechargeKeywords.some(key => name.toLowerCase().includes(key.toLowerCase()));
+            }) && (
+              <div className="col-12 col-lg-12 mt-3 text-start">
+                <label style={{ ...styles.label, color: '#000', fontWeight: 'bold' }}>Manually Enter Transfer/Recharge Amount (₹)</label>
+                <input
+                  type="number"
+                  name="applicationFee"
+                  value={formData.applicationFee || ''}
+                  onChange={onInputChange}
+                  className="form-control"
+                  style={{ border: '2px solid #000' }}
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+            )}
             </div>
           </div>
         </div>
@@ -230,6 +252,7 @@ const AddWorkForm = ({
         <div style={{ ...styles.section, borderBottom: 'none', marginBottom: 0, paddingBottom: 0 }}>
           <h3 style={styles.sectionTitle}>Status & Notes</h3>
           <div className="row g-3">
+            
             <div className="col-12 col-md-6">
               <label style={styles.label}>Payment Status</label>
               <select
@@ -319,7 +342,7 @@ const AddWorkForm = ({
                 className="form-control"
                 placeholder="Add any additional notes..."
                 rows="3"
-                style={{ resize: 'vertical', fontFamily: 'inherit' }}
+                style={{ resize: 'vertical', fontFamily: 'inherit', borderRadius: '10px' }}
               />
             </div>
           </div>

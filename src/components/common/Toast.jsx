@@ -18,23 +18,25 @@ const Toast = ({ message, type = 'info', duration = 3000, onClose }) => {
     const base = {
       container: {
         position: 'relative',
-        padding: '12px 20px',
-        borderRadius: '8px',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        padding: '16px 24px',
+        borderRadius: '10px',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
         display: 'flex',
         alignItems: 'center',
-        gap: '10px',
+        gap: '12px',
         animation: visible ? 'slideIn 0.3s ease' : 'slideOut 0.3s ease',
-        maxWidth: '400px',
-        minWidth: '300px'
+        maxWidth: '450px',
+        minWidth: '320px',
+        border: '1px solid #e0e0e0'
       },
       icon: {
-        fontSize: '20px'
+        fontSize: '20px',
+        fontWeight: 'bold'
       },
       message: {
         flex: 1,
         fontSize: '14px',
-        fontWeight: '500'
+        fontWeight: '600'
       },
       closeBtn: {
         background: 'none',
@@ -44,7 +46,9 @@ const Toast = ({ message, type = 'info', duration = 3000, onClose }) => {
         padding: '4px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        opacity: 0.6,
+        transition: 'opacity 0.2s'
       }
     };
 
@@ -54,9 +58,9 @@ const Toast = ({ message, type = 'info', duration = 3000, onClose }) => {
           ...base,
           container: {
             ...base.container,
-            backgroundColor: '#d4edda',
-            border: '1px solid #c3e6cb',
-            color: '#155724'
+            backgroundColor: '#ffffff',
+            borderLeft: '5px solid #3b8132',
+            color: '#3b8132'
           }
         };
       case 'error':
@@ -64,9 +68,9 @@ const Toast = ({ message, type = 'info', duration = 3000, onClose }) => {
           ...base,
           container: {
             ...base.container,
-            backgroundColor: '#f8d7da',
-            border: '1px solid #f5c6cb',
-            color: '#721c24'
+            backgroundColor: '#ffffff',
+            borderLeft: '5px solid #e74c3c',
+            color: '#e74c3c'
           }
         };
       case 'warning':
@@ -74,8 +78,8 @@ const Toast = ({ message, type = 'info', duration = 3000, onClose }) => {
           ...base,
           container: {
             ...base.container,
-            backgroundColor: '#fff3cd',
-            border: '1px solid #ffeeba',
+            backgroundColor: '#ffffff',
+            borderLeft: '5px solid #f39c12',
             color: '#856404'
           }
         };
@@ -84,9 +88,9 @@ const Toast = ({ message, type = 'info', duration = 3000, onClose }) => {
           ...base,
           container: {
             ...base.container,
-            backgroundColor: '#d1ecf1',
-            border: '1px solid #bee5eb',
-            color: '#0c5460'
+            backgroundColor: '#ffffff',
+            borderLeft: '5px solid #3498db',
+            color: '#3b8132'
           }
         };
     }

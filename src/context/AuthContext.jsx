@@ -34,31 +34,22 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (loginData, isEmployee = false) => {
-    console.log('[AuthContext] login called with:', { loginData, isEmployee });
+    console.log('[AuthContext] login called with mobile:', loginData.mobile);
     try {
       setLoading(true);
       setError(null);
-
-      console.log('[AuthContext] Calling API:', isEmployee ? 'employeeLogin' : 'adminLogin');
 
       const response = isEmployee
         ? await authAPI.employeeLogin(loginData)
         : await authAPI.adminLogin(loginData);
 
-      console.log('[AuthContext] API response:', response);
-      console.log('[AuthContext] response.data:', response.data);
-
       if (response.data.success) {
-        // Login successful (both admin and employee)
-        console.log(`[AuthContext] ${isEmployee ? 'Employee' : 'Admin'} login successful`);
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
         setUser(response.data.user);
         return { success: true, user: response.data.user };
       } else {
-        // Response was not successful
         const errorMessage = response.data.message || 'Login failed';
-        console.error('[AuthContext] Login failed:', errorMessage);
         setError(errorMessage);
         throw new Error(errorMessage);
       }
@@ -66,7 +57,7 @@ export const AuthProvider = ({ children }) => {
       console.error('[AuthContext] Login error:', error);
       const errorMessage = error.response?.data?.message || 'Invalid credentials';
       setError(errorMessage);
-      throw error; // Rethrow to let the component handle it with axios error object
+      throw error;
     } finally {
       setLoading(false);
     }

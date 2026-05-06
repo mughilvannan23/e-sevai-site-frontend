@@ -59,23 +59,31 @@ const AdminDashboard = () => {
       {stats && (
         <div className="row g-3 mb-4">
           <div className="col-12 col-sm-6 col-lg">
-            <StatCard title="Total Employees" value={stats.employees.total} icon="👥" color="#3498db" />
+            <StatCard title="Total Employees" value={stats.employees.total} icon="👥" color="#3b8132" />
           </div>
           <div className="col-12 col-sm-6 col-lg">
-            <StatCard title="Today's Works" value={stats.works.today} icon="📋" color="#2ecc71" />
+            <StatCard title="Today's Works" value={stats.works.today} icon="📋" color="#3b8132" />
           </div>
           <div className="col-12 col-sm-6 col-lg">
-            <StatCard title="Today's Revenue" value={`₹${stats.revenue.today.toLocaleString()}`} icon="💰" color="#f39c12" />
+            <StatCard title="Today's Revenue" value={`₹${stats.revenue.today.toLocaleString()}`} icon="💰" color="#3b8132" />
           </div>
           <div className="col-12 col-sm-6 col-lg">
-            <StatCard title="Total Revenue" value={`₹${stats.revenue.total.toLocaleString()}`} icon="📊" color="#9b59b6" />
+            <StatCard title="Total Revenue" value={`₹${stats.revenue.total.toLocaleString()}`} icon="📊" color="#3b8132" />
           </div>
           <div className="col-12 col-sm-6 col-lg">
             <StatCard
               title="Total Profit"
               value={`${(stats.revenue.profit || 0) >= 0 ? '+' : ''}₹${(stats.revenue.profit || 0).toLocaleString()}`}
               icon="💎"
-              color={(stats.revenue.profit || 0) >= 0 ? '#27ae60' : '#e74c3c'}
+              color="#3b8132"
+            />
+          </div>
+          <div className="col-12 col-sm-6 col-lg">
+            <StatCard
+              title="Shop Balance (Cash)"
+              value={`₹${(stats.revenue.shopBalance || 0).toLocaleString()}`}
+              icon="🏪"
+              color="#3b8132"
             />
           </div>
         </div>
@@ -109,7 +117,7 @@ const AdminDashboard = () => {
             </div>
           </div>
           <div className="col-12 col-md-6 col-lg-3"
-            onClick={() => navigate('/admin/works', { state: { workStatus: 'In Progress' } })}
+            onClick={() => navigate('/admin/works', { state: { workStatus: 'Pending' } })}
             style={{ cursor: 'pointer' }}>
             <div style={styles.revenueCard} className="p-3 p-md-4 h-100">
               <h3 style={styles.revenueTitle}>Pending Works</h3>
@@ -117,16 +125,16 @@ const AdminDashboard = () => {
                 {stats?.works.pending || 0}
               </div>
               <div style={styles.revenueWorks}>
-                Pending
+                Action needed
               </div>
             </div>
           </div>
           <div className="col-12 col-md-6 col-lg-3"
             onClick={() => navigate('/admin/works', { state: { workStatus: 'Completed' } })}
             style={{ cursor: 'pointer' }}>
-            <div style={{ ...styles.revenueCard, borderColor: '#27ae60', backgroundColor: '#f8fff9' }} className="p-3 p-md-4 h-100">
-              <h3 style={{ ...styles.revenueTitle, color: '#27ae60' }}>Completed Works</h3>
-              <div style={{ ...styles.revenueValue, color: '#27ae60' }}>
+            <div style={{ ...styles.revenueCard, borderColor: '#3b8132' }} className="p-3 p-md-4 h-100">
+              <h3 style={{ ...styles.revenueTitle, color: '#3b8132' }}>Completed Works</h3>
+              <div style={{ ...styles.revenueValue, color: '#3b8132' }}>
                 {stats?.works.completed || 0}
               </div>
               <div style={styles.revenueWorks}>
@@ -158,6 +166,12 @@ const AdminDashboard = () => {
               <span>View Reports</span>
             </Link>
           </div>
+          <div className="col-12 col-md-4">
+            <Link to="/admin/purchases" style={styles.actionBtn} className="w-100 d-flex align-items-center justify-content-center justify-content-md-start">
+              <span style={styles.actionIcon}>🛒</span>
+              <span>Manage Purchases</span>
+            </Link>
+          </div>
         </div>
       </div>
     </div>
@@ -167,32 +181,36 @@ const AdminDashboard = () => {
 const styles = {
   title: {
     margin: '0 0 8px 0',
-    fontWeight: 'bold',
-    color: '#2c3e50'
+    fontWeight: '700',
+    color: '#3b8132',
+    letterSpacing: '0.5px'
   },
   subtitle: {
-    margin: 0
+    margin: 0,
+    color: '#666'
   },
   statCard: {
     display: 'flex',
     alignItems: 'center',
-    padding: '20px',
-    borderRadius: '12px',
-    border: '2px solid',
+    padding: '24px',
+    borderRadius: '10px',
+    border: '1px solid #e0e0e0',
     backgroundColor: 'white',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    height: '100%'
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    height: '100%',
+    transition: 'transform 0.2s ease'
   },
   statIcon: {
     width: '60px',
     height: '60px',
-    borderRadius: '12px',
+    borderRadius: '10px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: '24px',
     marginRight: '20px',
-    flexShrink: 0
+    flexShrink: 0,
+    color: 'white'
   },
   statContent: {
     flex: 1
@@ -200,37 +218,40 @@ const styles = {
   statValue: {
     margin: '0 0 4px 0',
     fontSize: '28px',
-    fontWeight: 'bold',
-    color: '#2c3e50'
+    fontWeight: '800',
+    color: '#3b8132'
   },
   statTitle: {
     margin: 0,
-    fontSize: '14px',
+    fontSize: '13px',
     color: '#666',
+    fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: '0.5px'
   },
   sectionTitle: {
-    fontWeight: 'bold',
-    color: '#2c3e50'
+    fontWeight: '700',
+    color: '#3b8132',
+    marginBottom: '20px'
   },
   revenueCard: {
-    borderRadius: '12px',
+    borderRadius: '10px',
     backgroundColor: 'white',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    border: '1px solid #e9ecef'
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    border: '1px solid #e0e0e0',
+    transition: 'all 0.2s ease'
   },
   revenueTitle: {
     margin: '0 0 12px 0',
     fontSize: '18px',
-    fontWeight: '600',
-    color: '#2c3e50'
+    fontWeight: '700',
+    color: '#3b8132'
   },
   revenueValue: {
     margin: '0 0 8px 0',
     fontSize: '32px',
-    fontWeight: 'bold',
-    color: '#27ae60'
+    fontWeight: '800',
+    color: '#3b8132'
   },
   revenueWorks: {
     margin: 0,
@@ -239,20 +260,23 @@ const styles = {
   },
   quickActions: {
     backgroundColor: 'white',
-    borderRadius: '12px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    border: '1px solid #e9ecef'
+    borderRadius: '10px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    border: '1px solid #e0e0e0',
+    padding: '24px'
   },
   actionBtn: {
     gap: '12px',
     padding: '16px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '8px',
+    backgroundColor: '#ffffff',
+    borderRadius: '10px',
     textDecoration: 'none',
-    color: '#2c3e50',
-    fontWeight: '600',
+    color: '#3b8132',
+    fontWeight: '700',
     transition: 'all 0.2s ease',
-    border: '1px solid #e9ecef'
+    border: '1px solid #3b8132',
+    display: 'flex',
+    alignItems: 'center'
   },
   actionIcon: {
     fontSize: '20px'

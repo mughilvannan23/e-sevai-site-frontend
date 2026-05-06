@@ -9,7 +9,7 @@ const AdminProfile = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
+    mobile: '',
     password: '',
     confirmPassword: ''
   });
@@ -19,7 +19,7 @@ const AdminProfile = () => {
     if (user) {
       setFormData({
         name: user.name || '',
-        email: user.email || '',
+        mobile: user.mobile || '',
         password: '',
         confirmPassword: ''
       });
@@ -28,10 +28,15 @@ const AdminProfile = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    if (name === 'mobile') {
+        const numericValue = value.replace(/[^0-9]/g, '').substring(0, 10);
+        setFormData(prev => ({ ...prev, [name]: numericValue }));
+    } else {
+        setFormData(prev => ({
+          ...prev,
+          [name]: value
+        }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -56,7 +61,8 @@ const AdminProfile = () => {
       setLoading(true);
 
       const updateData = {
-        name: formData.name.trim()
+        name: formData.name.trim(),
+        mobile: formData.mobile.trim()
       };
 
       if (formData.password) {
@@ -120,16 +126,18 @@ const AdminProfile = () => {
             </div>
 
             <div style={styles.formGroup}>
-              <label style={styles.label}>Email</label>
+              <label style={styles.label}>Mobile Number</label>
               <input
-                type="email"
-                name="email"
-                value={formData.email}
-                style={{ ...styles.input, backgroundColor: '#f8f9fa', cursor: 'not-allowed' }}
-                readOnly
-                title="Email cannot be changed"
+                type="text"
+                name="mobile"
+                value={formData.mobile}
+                onChange={handleInputChange}
+                style={styles.input}
+                placeholder="Enter 10-digit mobile number"
+                required
+                maxLength="10"
               />
-              <small style={styles.helpText}>Email address cannot be modified</small>
+              <small style={styles.helpText}>Used for login and identification</small>
             </div>
 
             <div style={styles.formGroup}>
@@ -178,8 +186,9 @@ const styles = {
   title: {
     margin: '0 0 8px 0',
     fontSize: '32px',
-    fontWeight: 'bold',
-    color: '#2c3e50'
+    fontWeight: '700',
+    color: '#3b8132',
+    letterSpacing: '0.5px'
   },
   subtitle: {
     margin: 0,
@@ -188,10 +197,10 @@ const styles = {
   },
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: '12px',
+    borderRadius: '10px',
     width: '100%',
     maxWidth: '500px',
-    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.05)',
     border: '1px solid #e0e0e0'
   },
   form: {
@@ -206,7 +215,7 @@ const styles = {
   cardTitle: {
     fontSize: '24px',
     fontWeight: '700',
-    color: '#22863a',
+    color: '#3b8132',
     margin: '0 0 8px 0'
   },
   cardSubtitle: {
@@ -228,7 +237,7 @@ const styles = {
   input: {
     padding: '12px 16px',
     border: '1px solid #d0d0d0',
-    borderRadius: '8px',
+    borderRadius: '10px',
     fontSize: '14px',
     fontFamily: 'inherit',
     transition: 'all 0.2s ease',
@@ -241,14 +250,14 @@ const styles = {
   },
   button: {
     padding: '12px 16px',
-    backgroundColor: '#22863a',
+    backgroundColor: '#3b8132',
     color: '#ffffff',
     border: 'none',
-    borderRadius: '8px',
+    borderRadius: '10px',
     fontSize: '15px',
     fontWeight: '600',
     cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
+    transition: 'all 0.2s ease',
     marginTop: '8px'
   }
 };

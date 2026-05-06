@@ -420,7 +420,7 @@ const AdminReports = () => {
                   </div>
                   <div className="d-flex flex-wrap gap-3">
                     <span style={styles.legendItem}>
-                      <span style={{ ...styles.legendColor, backgroundColor: '#3498db' }}></span>
+                      <span style={{ ...styles.legendColor, backgroundColor: '#3b8132' }}></span>
                       Total Revenue
                     </span>
                     <span style={styles.legendItem}>
@@ -437,7 +437,7 @@ const AdminReports = () => {
                         <div
                           style={{
                             ...styles.bar,
-                            backgroundColor: '#3498db',
+                            backgroundColor: '#3b8132',
                             width: `${(item.totalRevenue / Math.max(...revenueData.map(d => d.totalRevenue))) * 100}%`
                           }}
                         >
@@ -485,6 +485,14 @@ const AdminReports = () => {
                       </span>
                     </div>
                   </div>
+                  {/* <div className="col-12 col-sm-6 col-md-4 col-lg">
+                    <div style={{ ...styles.summaryItem, borderLeft: '4px solid #e67e22' }} className="h-100">
+                      <span style={styles.summaryLabel} className="d-block mb-1">Total Recharge Amt</span>
+                      <span style={{ ...styles.summaryValue, color: '#e67e22' }}>
+                        {formatCurrency(reportSummary.totalApplicationFee ?? detailedWorks.reduce((sum, w) => sum + (w.applicationFee || 0), 0))}
+                      </span>
+                    </div>
+                  </div> */}
                   <div className="col-12 col-sm-6 col-md-4 col-lg">
                     <div style={styles.summaryItem} className="h-100">
                       <span style={styles.summaryLabel} className="d-block mb-1">Total Other Charges</span>
@@ -514,8 +522,8 @@ const AdminReports = () => {
                       <span style={styles.summaryLabel} className="d-block mb-1">Total Profit</span>
                       <span style={{
                         ...styles.summaryValue,
-                        color: (reportSummary.totalNetProfit ?? detailedWorks.reduce((sum, w) => sum + calculateNetProfit(w), 0)) >= 0 ? '#27ae60' : '#e74c3c',
-                        fontWeight: 'bold'
+                        color: (reportSummary.totalNetProfit ?? detailedWorks.reduce((sum, w) => sum + calculateNetProfit(w), 0)) >= 0 ? '#3b8132' : '#e74c3c',
+                        fontWeight: '800'
                       }}>
                         {(reportSummary.totalNetProfit ?? detailedWorks.reduce((sum, w) => sum + calculateNetProfit(w), 0)) >= 0 ? '+' : ''}
                         {formatCurrency(reportSummary.totalNetProfit ?? detailedWorks.reduce((sum, w) => sum + calculateNetProfit(w), 0))}
@@ -554,9 +562,10 @@ const AdminReports = () => {
                         <th style={styles.th}>Cash Amount</th>
                         <th style={styles.th}>Total Amount</th>
                         <th style={styles.th}>Employee Name</th>
-                        <th style={styles.th}>Employee ID</th>
+                        <th style={styles.th}>Mobile</th>
                         <th style={styles.th}>Service Name</th>
                         <th style={styles.th}>Application Fees</th>
+                        <th style={{ ...styles.th, color: '#3b8132' }}>Recharge Amt</th>
                         <th style={styles.th}>Service Charge</th>
                         <th style={styles.th}>Expected Cost</th>
                         <th style={styles.th}>Other Charges</th>
@@ -586,10 +595,11 @@ const AdminReports = () => {
                             <td style={styles.td}>{formatCurrency(work.gpayAmount || 0)}</td>
                             <td style={styles.td}>{formatCurrency(work.cashAmount || 0)}</td>
                             <td style={{ ...styles.td, fontWeight: 'bold' }}>{formatCurrency(work.totalAmount || work.amount || 0)}</td>
-                            <td style={styles.td}>{work.employee?.name || 'Unknown'}</td>
-                            <td style={styles.td}>{work.employee?.employeeId || 'N/A'}</td>
+                             <td style={styles.td}>{work.employee?.name || 'Unknown'}</td>
+                            <td style={styles.td}>{work.employee?.mobile || 'N/A'}</td>
                             <td style={{ ...styles.td, whiteSpace: 'normal', maxWidth: '200px' }}>{getWorkTitles(work)}</td>
                             <td style={styles.td}>{formatCurrency(workCharge)}</td>
+                            <td style={{ ...styles.td, color: '#e67e22', fontWeight: 'bold' }}>{formatCurrency(work.applicationFee || 0)}</td>
                             <td style={styles.td}>{formatCurrency(serviceCharge)}</td>
                             <td style={styles.td}>{formatCurrency(expectedBaseCost)}</td>
                             <td style={styles.td}>{formatCurrency(work.otherCharges || 0)}</td>
@@ -668,7 +678,7 @@ const AdminReports = () => {
                       <div className="d-flex justify-content-between align-items-start mb-3">
                         <div style={styles.employeeInfo}>
                           <h4 style={styles.employeeName} className="fs-5">{emp.employee.name}</h4>
-                          <p style={styles.employeeId}>{emp.employee.employeeId}</p>
+                          <p style={styles.employeeId}>{emp.employee.mobile}</p>
                         </div>
                         <div style={styles.employeeStats}>
                           <div style={styles.stat} className="mb-2">
@@ -851,8 +861,9 @@ const styles = {
   title: {
     margin: '0 0 8px 0',
     fontSize: '32px',
-    fontWeight: 'bold',
-    color: '#2c3e50'
+    fontWeight: '700',
+    color: '#3b8132',
+    letterSpacing: '0.5px'
   },
   subtitle: {
     margin: 0,
@@ -866,29 +877,31 @@ const styles = {
   },
   tab: {
     padding: '12px 24px',
-    backgroundColor: '#f8f9fa',
-    border: '1px solid #e9ecef',
-    borderRadius: '8px',
+    backgroundColor: '#ffffff',
+    border: '1px solid #3b8132',
+    color: '#3b8132',
+    borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.2s ease'
   },
   activeTab: {
-    backgroundColor: '#3498db',
+    backgroundColor: '#3b8132',
     color: 'white',
-    borderColor: '#3498db'
+    borderColor: '#3b8132'
   },
   reportCard: {
     backgroundColor: 'white',
-    borderRadius: '12px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    overflow: 'hidden'
+    borderRadius: '10px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    overflow: 'hidden',
+    border: '1px solid #e0e0e0'
   },
   filtersCard: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffff',
     padding: '20px',
-    borderBottom: '1px solid #e9ecef'
+    borderBottom: '1px solid #e0e0e0'
   },
   filtersForm: {
     display: 'flex',
@@ -908,43 +921,47 @@ const styles = {
   label: {
     fontSize: '14px',
     fontWeight: '500',
-    color: '#333'
+    color: '#2c3e50'
   },
   input: {
     padding: '10px 12px',
-    border: '1px solid #ddd',
-    borderRadius: '6px',
-    fontSize: '14px'
+    border: '1px solid #d0d0d0',
+    borderRadius: '10px',
+    fontSize: '14px',
+    transition: 'all 0.2s ease'
   },
   select: {
     padding: '10px 12px',
-    border: '1px solid #ddd',
-    borderRadius: '6px',
+    border: '1px solid #d0d0d0',
+    borderRadius: '10px',
     fontSize: '14px',
-    backgroundColor: 'white'
+    backgroundColor: 'white',
+    transition: 'all 0.2s ease'
   },
   generateBtn: {
     padding: '10px 24px',
-    backgroundColor: '#3498db',
+    backgroundColor: '#3b8132',
     color: 'white',
     border: 'none',
-    borderRadius: '6px',
+    borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '600',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.2s ease'
   },
   downloadBtn: {
     padding: '8px 16px',
-    backgroundColor: '#27ae60',
+    backgroundColor: '#3b8132',
     color: 'white',
     border: 'none',
-    borderRadius: '6px',
+    borderRadius: '10px',
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
-    gap: '6px'
+    gap: '6px',
+    transition: 'all 0.2s ease'
   },
   chartContainer: {
     padding: '24px'
@@ -959,7 +976,7 @@ const styles = {
     margin: 0,
     fontSize: '20px',
     fontWeight: 'bold',
-    color: '#2c3e50'
+    color: '#3b8132'
   },
   legend: {
     display: 'flex',
@@ -996,7 +1013,7 @@ const styles = {
   barContainer: {
     flex: 1,
     height: '24px',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f9fafb',
     borderRadius: '12px',
     overflow: 'hidden',
     display: 'flex'
@@ -1013,14 +1030,14 @@ const styles = {
   },
   summaryCard: {
     padding: '24px',
-    backgroundColor: '#f8f9fa',
-    borderBottom: '1px solid #e9ecef'
+    backgroundColor: '#ffffff',
+    borderBottom: '1px solid #e0e0e0'
   },
   summaryTitle: {
     margin: '0 0 16px 0',
     fontSize: '18px',
     fontWeight: 'bold',
-    color: '#2c3e50'
+    color: '#3b8132'
   },
   summaryGrid: {
     display: 'grid',
@@ -1030,10 +1047,12 @@ const styles = {
   summaryItem: {
     backgroundColor: 'white',
     padding: '16px',
-    borderRadius: '8px',
+    borderRadius: '10px',
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
+    border: '1px solid #e0e0e0',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
   },
   summaryLabel: {
     fontSize: '14px',
@@ -1042,16 +1061,17 @@ const styles = {
   summaryValue: {
     fontSize: '18px',
     fontWeight: 'bold',
-    color: '#2c3e50'
+    color: '#3b8132'
   },
   tableCard: {
-    padding: '24px'
+    padding: '24px',
+    backgroundColor: '#ffffff'
   },
   tableTitle: {
     margin: '0 0 16px 0',
     fontSize: '18px',
     fontWeight: 'bold',
-    color: '#2c3e50'
+    color: '#3b8132'
   },
   tableWrapper: {
     overflowX: 'auto'
@@ -1063,16 +1083,17 @@ const styles = {
   th: {
     padding: '12px',
     textAlign: 'left',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f9fafb',
     fontWeight: '600',
-    color: '#2c3e50',
-    borderBottom: '2px solid #e9ecef',
+    color: '#3b8132',
+    borderBottom: '2px solid #3b8132',
     fontSize: '14px'
   },
   td: {
     padding: '12px',
-    borderBottom: '1px solid #e9ecef',
-    fontSize: '14px'
+    borderBottom: '1px solid #e0e0e0',
+    fontSize: '14px',
+    color: '#2c3e50'
   },
   noData: {
     padding: '40px',

@@ -21,7 +21,8 @@ const defaultFormData = {
   totalDiscount: '0',
   paymentStatus: 'Pending',
   workStatus: 'In Progress',
-  notes: ''
+  notes: '',
+  applicationFee: 0
 };
 
 const AddWorkPage = () => {
@@ -50,7 +51,26 @@ const AddWorkPage = () => {
     const { name, value } = e.target;
     setFormData(prev => {
       const updated = { ...prev, [name]: value };
-      const currentAmount = parseFloat(updated.amount) || 0;
+      
+      // Recalculate amount if applicationFee changes or if it's already there
+      const { total, discountTotal } = updated.items.reduce((acc, item) => {
+        const qty = parseInt(item.quantity) || 1;
+        const otherC = parseFloat(item.otherCharges) || 0;
+        const itemDisc = parseFloat(item.discount) || 0;
+        let rowCost = otherC - itemDisc;
+        if (item.workItemId) {
+          const wi = workItems.find(w => w._id === item.workItemId);
+          rowCost += (wi ? (wi.workCharge + wi.serviceCharge) * qty : 0);
+        }
+        acc.total += rowCost;
+        acc.discountTotal += itemDisc;
+        return acc;
+      }, { total: parseFloat(updated.applicationFee) || 0, discountTotal: 0 });
+
+      updated.amount = total.toString();
+      updated.totalDiscount = discountTotal.toString();
+
+      const currentAmount = total;
 
       if (name === 'paymentStatus') {
         if (value === 'Pending') {
@@ -132,7 +152,7 @@ const AddWorkPage = () => {
       acc.total += rowCost;
       acc.discountTotal += itemDisc;
       return acc;
-    }, { total: 0, discountTotal: 0 });
+    }, { total: parseFloat(formData.applicationFee) || 0, discountTotal: 0 });
     setFormData(prev => {
       const updated = { 
         ...prev, 
@@ -221,24 +241,25 @@ const AddWorkPage = () => {
   };
 
   const handleSubmit = async (e) => {
-    if (formData.paymentStatus === 'Paid') {
-      const finalAmount = parseFloat(formData.amount) || 0;
-      const gpay = parseFloat(formData.gpayAmount) || 0;
-      const cash = parseFloat(formData.cashAmount) || 0;
+    e.preventDefault();
 
-      if (formData.paymentMethod === 'Both') {
-        if (Math.abs((gpay + cash) - finalAmount) > 0.01) {
-          error(`GPay + Cash (₹${(gpay + cash).toFixed(2)}) must equal Final Amount (₹${finalAmount.toFixed(2)})`);
-          return;
-        }
-      } else if (formData.paymentMethod === 'GPay') {
-        if (Math.abs(gpay - finalAmount) > 0.01) {
-          error(`GPay amount must equal Final Amount (₹${finalAmount.toFixed(2)})`);
-          return;
-        }
+    let finalGpay = 0;
+    let finalCash = 0;
+    const currentAmount = parseFloat(formData.amount) || 0;
+
+    if (formData.paymentStatus === 'Paid') {
+      if (formData.paymentMethod === 'GPay') {
+        finalGpay = currentAmount;
+        finalCash = 0;
       } else if (formData.paymentMethod === 'Cash') {
-        if (Math.abs(cash - finalAmount) > 0.01) {
-          error(`Cash amount must equal Final Amount (₹${finalAmount.toFixed(2)})`);
+        finalCash = currentAmount;
+        finalGpay = 0;
+      } else if (formData.paymentMethod === 'Both') {
+        finalGpay = parseFloat(formData.gpayAmount) || 0;
+        finalCash = parseFloat(formData.cashAmount) || 0;
+
+        if (Math.abs((finalGpay + finalCash) - currentAmount) > 0.01) {
+          error(`GPay + Cash (₹${(finalGpay + finalCash).toFixed(2)}) must equal Final Amount (₹${currentAmount.toFixed(2)})`);
           return;
         }
       }
@@ -248,9 +269,14 @@ const AddWorkPage = () => {
       setSubmitting(true);
       const payload = {
         ...formData,
-        totalAmount: formData.paymentStatus === 'Paid' ? formData.amount : '0',
+        gpayAmount: finalGpay,
+        cashAmount: finalCash,
+        totalAmount: formData.paymentStatus === 'Paid' ? currentAmount : 0,
+        amount: currentAmount,
         date: new Date(`${formData.date}T${formData.time || '00:00'}`)
       };
+
+      console.log("Submitting Work Data:", payload);
 
       const response = await workAPI.createWork(payload);
       if (response.data.success) {
@@ -269,8 +295,8 @@ const AddWorkPage = () => {
   return (
     <div className="container-fluid p-0">
       <div className="mb-4">
-        <h1 style={styles.title} className="fs-3">Add Work</h1>
-        <p style={styles.subtitle} className="mb-0">Enter new work details</p>
+        <h1 style={{ color: '#3b8132', fontWeight: '700', margin: '0 0 8px 0', letterSpacing: '0.5px' }} className="fs-3">New Sales Entry</h1>
+        <p style={{ color: '#666', margin: 0 }} className="mb-0">Fill in the details to record a new work entry</p>
       </div>
 
       <AddWorkForm
@@ -287,10 +313,11 @@ const AddWorkPage = () => {
       
       <div className="mt-3">
         <button 
-          className="btn btn-secondary" 
+          className="btn" 
+          style={{ backgroundColor: 'white', color: '#3b8132', border: '1px solid #3b8132', borderRadius: '10px', fontWeight: '600', padding: '10px 24px' }}
           onClick={() => navigate('/employee/works')}
         >
-          Cancel & View List
+          Cancel & View All Entries
         </button>
       </div>
     </div>

@@ -105,11 +105,12 @@ const NavigationBar = () => {
 
 const styles = {
   navbar: {
-    backgroundColor: '#2c3e50',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    backgroundColor: '#3b8132',
+    boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
     position: 'sticky',
     top: 0,
-    zIndex: 1000
+    zIndex: 1000,
+    padding: '12px 0'
   },
   brandLink: {
     display: 'flex',
@@ -122,35 +123,41 @@ const styles = {
     marginRight: '8px'
   },
   brandText: {
-    fontSize: '16px',
-    fontWeight: 'bold'
+    fontSize: '18px',
+    fontWeight: '800',
+    letterSpacing: '0.5px'
   },
   navLink: {
-    padding: '6px 12px',
-    color: 'rgba(255,255,255,0.8)',
-    borderRadius: '4px',
-    fontSize: '14px'
+    padding: '8px 16px',
+    color: 'rgba(255,255,255,0.9)',
+    borderRadius: '10px',
+    fontSize: '14px',
+    fontWeight: '600',
+    transition: 'all 0.2s ease'
   },
   activeLink: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
     color: 'white'
   },
   userName: {
     color: 'white',
     fontSize: '14px',
-    fontWeight: '500'
+    fontWeight: '700'
   },
   userRole: {
-    color: 'rgba(255,255,255,0.6)',
+    color: 'rgba(255,255,255,0.8)',
     fontSize: '12px'
   },
   logoutBtn: {
-    padding: '6px 12px',
-    backgroundColor: '#e74c3c',
-    color: 'white',
+    padding: '8px 16px',
+    backgroundColor: 'white',
+    color: '#3b8132',
     border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer'
+    borderRadius: '10px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '700',
+    transition: 'all 0.2s ease'
   }
 };
 

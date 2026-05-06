@@ -41,7 +41,7 @@ const styles = {
   },
   spinner: {
     border: '3px solid #f3f3f3',
-    borderTop: '3px solid #3498db',
+    borderTop: '3px solid #3b8132',
     borderRadius: '50%',
     animation: 'spin 1s linear infinite'
   },
@@ -71,7 +71,7 @@ const styles = {
     width: '16px',
     height: '16px',
     border: '2px solid #f3f3f3',
-    borderTop: '2px solid #3498db',
+    borderTop: '2px solid #3b8132',
     borderRadius: '50%',
     animation: 'spin 1s linear infinite'
   },

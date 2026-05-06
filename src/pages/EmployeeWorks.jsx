@@ -252,16 +252,17 @@ const EmployeeWorks = () => {
   return (
     <div className="container-fluid p-0">
       <div className="mb-4">
-        <h1 style={styles.title} className="fs-3">My Works</h1>
-        <p style={styles.subtitle} className="mb-0">Manage your work entries</p>
+        <h1 style={{ color: '#3b8132', fontWeight: '700', margin: '0 0 8px 0', letterSpacing: '0.5px' }} className="fs-3">My Sales Entries</h1>
+        <p style={{ color: '#666', margin: 0 }} className="mb-0">Manage and track your work entries</p>
       </div>
 
       <div className="d-flex justify-content-end mb-4">
         <button 
-          className="btn btn-primary" 
+          className="btn" 
+          style={{ backgroundColor: '#3b8132', color: 'white', borderRadius: '10px', fontWeight: '700', padding: '10px 24px', boxShadow: '0 4px 10px rgba(59, 129, 50, 0.2)' }}
           onClick={() => navigate('/add-work')}
         >
-          ➕ Add Work
+          ➕ Add New Work
         </button>
       </div>
 

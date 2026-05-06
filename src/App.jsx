@@ -13,6 +13,7 @@ import AdminWorks from './pages/AdminWorks';
 import AdminEmployees from './pages/AdminEmployees';
 import AdminReports from './pages/AdminReports';
 import AdminProfile from './pages/AdminProfile';
+import AdminPurchases from './pages/AdminPurchases';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import EmployeeWorks from './pages/EmployeeWorks';
 import EmployeeReports from './pages/EmployeeReports';
@@ -71,6 +72,10 @@ const ProtectedRoute = ({ requiredRole }) => {
           <Link to="/admin/reports" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/reports') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Reports">
             <span style={styles.navIcon}>📈</span>
             <span>Reports</span>
+          </Link>
+          <Link to="/admin/purchases" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/purchases') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Purchase">
+            <span style={styles.navIcon}>🛒</span>
+            <span>Purchase</span>
           </Link>
           <Link to="/admin/profile" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/profile') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Profile">
             <span style={styles.navIcon}>👤</span>
@@ -235,6 +240,7 @@ function App() {
                 <Route path="/admin/works" element={<AdminWorks />} />
                 <Route path="/admin/employees" element={<AdminEmployees />} />
                 <Route path="/admin/reports" element={<AdminReports />} />
+                <Route path="/admin/purchases" element={<AdminPurchases />} />
                 <Route path="/admin/profile" element={<AdminProfile />} />
               </Route>
 
@@ -260,18 +266,18 @@ function App() {
 const styles = {
   app: {
     minHeight: '100vh',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffff',
     overflowX: 'hidden'
   },
   pageWrapper: {
     minHeight: '100vh',
-    backgroundColor: '#f8f9fa'
+    backgroundColor: '#ffffff'
   },
   mobileHeader: {
-    backgroundColor: '#2c3e50',
+    backgroundColor: '#3b8132',
     color: 'white',
     zIndex: 999,
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
   },
   mobileBrandLink: {
     display: 'flex',
@@ -282,12 +288,13 @@ const styles = {
   },
   hamburgerBtn: {
     fontSize: '20px',
-    padding: '6px 12px'
+    padding: '6px 12px',
+    borderRadius: '10px'
   },
   sidebar: {
     width: '250px',
     minHeight: '100vh',
-    backgroundColor: '#2c3e50',
+    backgroundColor: '#3b8132',
     color: 'white',
     position: 'sticky',
     top: 0,
@@ -296,7 +303,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     zIndex: 1000,
-    boxShadow: '4px 0 10px rgba(0,0,0,0.1)'
+    boxShadow: '4px 0 12px rgba(0,0,0,0.1)'
   },
   offcanvasSidebarContent: {
     position: 'fixed',
@@ -304,12 +311,12 @@ const styles = {
     left: 0,
     width: '250px',
     height: '100vh',
-    backgroundColor: '#2c3e50',
+    backgroundColor: '#3b8132',
     color: 'white',
     padding: '24px 16px',
     zIndex: 1050,
     overflowY: 'auto',
-    boxShadow: '2px 0 8px rgba(0,0,0,0.2)',
+    boxShadow: '2px 0 12px rgba(0,0,0,0.2)',
     display: 'flex',
     flexDirection: 'column'
   },
@@ -334,18 +341,23 @@ const styles = {
   },
   brandText: {
     fontSize: '16px',
-    fontWeight: '700'
+    fontWeight: '700',
+    letterSpacing: '0.5px'
   },
   navLink: {
-    padding: '10px 14px',
+    padding: '12px 16px',
     color: 'rgba(255,255,255,0.85)',
-    borderRadius: '8px',
+    borderRadius: '10px',
     textDecoration: 'none',
-    display: 'block'
+    display: 'flex',
+    alignItems: 'center',
+    transition: 'all 0.2s ease',
+    marginBottom: '4px'
   },
   activeNavLink: {
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    color: 'white'
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    color: 'white',
+    fontWeight: '600'
   },
   userName: {
     color: 'white',
@@ -363,20 +375,8 @@ const styles = {
     justifyContent: 'center',
     marginRight: '12px'
   },
-  collapsedNavLink: {
-    padding: '10px 0',
-    display: 'flex',
-    justifyContent: 'center'
-  },
-  desktopToggleBtn: {
-    fontSize: '18px',
-    padding: '0 4px',
-    border: 'none',
-    backgroundColor: 'transparent',
-    lineHeight: 1
-  },
   mainContent: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffff',
     minHeight: '100vh',
     flex: 1,
     overflowX: 'hidden'

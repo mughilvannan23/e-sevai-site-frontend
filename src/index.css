@@ -1,15 +1,15 @@
 :root {
-  --primary-color: #3498db;
-  --primary-hover: #2980b9;
-  --success-color: #27ae60;
+  --primary-color: #3b8132;
+  --primary-hover: #2e6427;
+  --success-color: #3b8132;
   --danger-color: #e74c3c;
   --warning-color: #f39c12;
   --text-color: #2c3e50;
   --text-muted: #666;
-  --bg-color: #f8f9fa;
+  --bg-color: #ffffff;
   --card-bg: #ffffff;
-  --border-color: #e9ecef;
-  --shadow: 0 2px 8px rgba(0,0,0,0.1);
+  --border-color: #e0e0e0;
+  --shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 * {
@@ -121,6 +121,64 @@ input, select, textarea {
 .text-2xl { font-size: 24px; }
 .text-3xl { font-size: 32px; }
 .text-4xl { font-size: 40px; }
+
+/* Bootstrap Overrides */
+.btn-primary {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+  background-color: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+  box-shadow: 0 0 0 0.25rem rgba(59, 129, 50, 0.25) !important;
+}
+
+.form-control, .form-select {
+  border-radius: 10px !important;
+  border: 1px solid var(--border-color) !important;
+  padding: 10px 15px !important;
+  font-size: 14px !important;
+  transition: all 0.2s ease !important;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 0.25rem rgba(59, 129, 50, 0.1) !important;
+  outline: none !important;
+}
+
+.card {
+  border-radius: 10px !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.table thead th {
+  background-color: #f9fafb !important;
+  color: var(--primary-color) !important;
+  border-bottom: 2px solid var(--primary-color) !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(59, 129, 50, 0.05) !important;
+}
+
+.badge {
+  border-radius: 20px !important;
+  padding: 6px 12px !important;
+  font-weight: 600 !important;
+}
+
+.text-primary { color: var(--primary-color) !important; }
+.bg-primary { background-color: var(--primary-color) !important; }
 
 /* Responsive utilities */
 @media (max-width: 768px) {

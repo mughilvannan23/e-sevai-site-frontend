@@ -73,6 +73,7 @@ export const workAPI = {
   deleteWork: (id) => api.delete(`/works/${id}`),
   getMyWorkStats: () => api.get('/works/stats'),
   getActiveWorkItems: () => api.get('/works/items/active'),
+  getShopBalance: () => api.get('/works/employee/shop-balance'),
 };
 
 // Admin endpoints
@@ -88,6 +89,12 @@ export const adminAPI = {
   updateWorkItem: (id, data) => api.put(`/admin/work-items/${id}`, data),
   deleteWorkItem: (id) => api.delete(`/admin/work-items/${id}`),
   updateProfile: (data) => api.put('/admin/profile', data),
+};
+
+// Purchase endpoints
+export const purchaseAPI = {
+  getAllPurchases: (params) => api.get('/purchases', { params }),
+  createPurchase: (data) => api.post('/purchases', data),
 };
 
 export default api;

@@ -25,7 +25,8 @@ const defaultFormData = {
   totalDiscount: '0',
   paymentStatus: 'Pending',
   workStatus: 'In Progress',
-  notes: ''
+  notes: '',
+  applicationFee: 0
 };
 
 const AdminWorks = () => {
@@ -122,7 +123,26 @@ const AdminWorks = () => {
     const { name, value } = e.target;
     setEditFormData(prev => {
       const updated = { ...prev, [name]: value };
-      const currentAmount = parseFloat(updated.amount) || 0;
+      
+      // Recalculate amount if applicationFee changes or if it's already there
+      const { total, discountTotal } = updated.items.reduce((acc, item) => {
+        const qty = parseInt(item.quantity) || 1;
+        const otherC = parseFloat(item.otherCharges) || 0;
+        const itemDisc = parseFloat(item.discount) || 0;
+        let rowCost = otherC - itemDisc;
+        if (item.workItemId) {
+          const wi = workItems.find(w => w._id === item.workItemId);
+          rowCost += (wi ? (wi.workCharge + wi.serviceCharge) * qty : 0);
+        }
+        acc.total += rowCost;
+        acc.discountTotal += itemDisc;
+        return acc;
+      }, { total: parseFloat(updated.applicationFee) || 0, discountTotal: 0 });
+
+      updated.amount = total.toString();
+      updated.totalDiscount = discountTotal.toString();
+
+      const currentAmount = total;
 
       if (name === 'paymentStatus') {
         if (value === 'Pending') {
@@ -200,7 +220,7 @@ const AdminWorks = () => {
       acc.total += rowCost;
       acc.discountTotal += itemDisc;
       return acc;
-    }, { total: 0, discountTotal: 0 });
+    }, { total: parseFloat(editFormData.applicationFee) || 0, discountTotal: 0 });
     setEditFormData(prev => {
       const updated = { ...prev, items: newItems, amount: total.toString(), totalDiscount: discountTotal.toString() };
       
@@ -242,7 +262,7 @@ const AdminWorks = () => {
       acc.total += rowCost;
       acc.discountTotal += itemDisc;
       return acc;
-    }, { total: 0, discountTotal: 0 });
+    }, { total: parseFloat(editFormData.applicationFee) || 0, discountTotal: 0 });
     setEditFormData(prev => {
       const updated = {
         ...prev,
@@ -274,24 +294,23 @@ const AdminWorks = () => {
   const handleSubmitWork = async (e) => {
     e.preventDefault();
 
-    if (editFormData.paymentStatus === 'Paid') {
-      const finalAmount = parseFloat(editFormData.amount) || 0;
-      const gpay = parseFloat(editFormData.gpayAmount) || 0;
-      const cash = parseFloat(editFormData.cashAmount) || 0;
+    let finalGpay = 0;
+    let finalCash = 0;
+    const currentAmount = parseFloat(editFormData.amount) || 0;
 
-      if (editFormData.paymentMethod === 'Both') {
-        if (Math.abs((gpay + cash) - finalAmount) > 0.01) {
-          error(`GPay + Cash (₹${(gpay + cash).toFixed(2)}) must equal Final Amount (₹${finalAmount.toFixed(2)})`);
-          return;
-        }
-      } else if (editFormData.paymentMethod === 'GPay') {
-        if (Math.abs(gpay - finalAmount) > 0.01) {
-          error(`GPay amount must equal Final Amount (₹${finalAmount.toFixed(2)})`);
-          return;
-        }
+    if (editFormData.paymentStatus === 'Paid') {
+      if (editFormData.paymentMethod === 'GPay') {
+        finalGpay = currentAmount;
+        finalCash = 0;
       } else if (editFormData.paymentMethod === 'Cash') {
-        if (Math.abs(cash - finalAmount) > 0.01) {
-          error(`Cash amount must equal Final Amount (₹${finalAmount.toFixed(2)})`);
+        finalCash = currentAmount;
+        finalGpay = 0;
+      } else if (editFormData.paymentMethod === 'Both') {
+        finalGpay = parseFloat(editFormData.gpayAmount) || 0;
+        finalCash = parseFloat(editFormData.cashAmount) || 0;
+
+        if (Math.abs((finalGpay + finalCash) - currentAmount) > 0.01) {
+          error(`GPay + Cash (₹${(finalGpay + finalCash).toFixed(2)}) must equal Final Amount (₹${currentAmount.toFixed(2)})`);
           return;
         }
       }
@@ -301,7 +320,10 @@ const AdminWorks = () => {
       setSubmitting(true);
       const payload = { 
         ...editFormData, 
-        totalAmount: editFormData.paymentStatus === 'Paid' ? editFormData.amount : '0',
+        gpayAmount: finalGpay,
+        cashAmount: finalCash,
+        totalAmount: editFormData.paymentStatus === 'Paid' ? currentAmount : 0,
+        amount: currentAmount,
         date: new Date(`${editFormData.date}T${editFormData.time || '00:00'}`) 
       };
       const response = await workAPI.updateWork(editingItemId, payload);
@@ -344,7 +366,8 @@ const AdminWorks = () => {
       totalDiscount: (work.totalDiscount || 0).toString(),
       paymentStatus: work.paymentStatus,
       workStatus: work.workStatus,
-      notes: work.notes || ''
+      notes: work.notes || '',
+      applicationFee: work.applicationFee || 0
     });
     setEditingItemId(work._id);
   };
@@ -419,7 +442,12 @@ const AdminWorks = () => {
     const isPayment = type === 'payment';
     const positive = isPayment ? status === 'Paid' : status === 'Completed';
     return (
-      <span style={{ ...styles.badge, backgroundColor: positive ? '#27ae60' : (isPayment ? '#e74c3c' : '#f39c12'), color: 'white' }}>
+      <span style={{ 
+        ...styles.badge, 
+        backgroundColor: positive ? '#3b8132' : (isPayment ? '#e74c3c' : '#f39c12'), 
+        color: 'white',
+        borderRadius: '20px'
+      }}>
         {type === 'work' ? formatWorkStatus(status) : status}
       </span>
     );
@@ -430,13 +458,39 @@ const AdminWorks = () => {
   return (
     <div className="container-fluid p-0">
       <div className="mb-4">
-        <h1 style={styles.title} className="fs-3">Manage Work</h1>
-        <p style={styles.subtitle}>Manage employee entries and pricing presets</p>
+        <h1 style={{ color: '#3b8132', fontWeight: '700', margin: '0 0 8px 0', letterSpacing: '0.5px' }} className="fs-3">Work Management</h1>
+        <p style={{ color: '#666', margin: 0 }}>Review employee entries and configure service pricing</p>
       </div>
 
       <div className="d-flex flex-wrap gap-2 mb-4">
-        <button style={{ ...styles.tab, ...(activeTab === 'entries' ? styles.activeTab : {}) }} className="flex-grow-1 flex-sm-grow-0" onClick={() => setActiveTab('entries')}>Employee Work Entries</button>
-        <button style={{ ...styles.tab, ...(activeTab === 'items' ? styles.activeTab : {}) }} className="flex-grow-1 flex-sm-grow-0" onClick={() => setActiveTab('items')}>Admin Work Pricing Presets</button>
+        <button 
+          style={{ 
+            ...styles.tab, 
+            ...(activeTab === 'entries' ? { backgroundColor: '#3b8132', color: 'white', borderColor: '#3b8132' } : { backgroundColor: 'white', color: '#3b8132', borderColor: '#3b8132' }),
+            borderRadius: '10px',
+            padding: '12px 24px',
+            fontWeight: '700',
+            transition: 'all 0.2s ease'
+          }} 
+          className="flex-grow-1 flex-sm-grow-0" 
+          onClick={() => setActiveTab('entries')}
+        >
+          Employee Work Entries
+        </button>
+        <button 
+          style={{ 
+            ...styles.tab, 
+            ...(activeTab === 'items' ? { backgroundColor: '#3b8132', color: 'white', borderColor: '#3b8132' } : { backgroundColor: 'white', color: '#3b8132', borderColor: '#3b8132' }),
+            borderRadius: '10px',
+            padding: '12px 24px',
+            fontWeight: '700',
+            transition: 'all 0.2s ease'
+          }} 
+          className="flex-grow-1 flex-sm-grow-0" 
+          onClick={() => setActiveTab('items')}
+        >
+          Admin Work Pricing Presets
+        </button>
       </div>
 
       {activeTab === 'entries' ? (
@@ -446,28 +500,28 @@ const AdminWorks = () => {
               <div className="row g-3">
                 <div className="col-12 col-md-4 d-flex flex-column gap-2">
                   <label style={styles.label}>Search</label>
-                  <input type="text" name="search" value={filters.search} onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value, page: 1 }))} placeholder="Customer or title" className="form-control" />
+                  <input type="text" name="search" value={filters.search} onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value, page: 1 }))} placeholder="Customer or title" className="form-control" style={{ borderRadius: '10px' }} />
                 </div>
                 <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
                   <label style={styles.label}>From Date</label>
-                  <input type="date" name="startDate" value={filters.startDate} onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value, page: 1 }))} className="form-control" />
+                  <input type="date" name="startDate" value={filters.startDate} onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value, page: 1 }))} className="form-control" style={{ borderRadius: '10px' }} />
                 </div>
                 <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
                   <label style={styles.label}>To Date</label>
-                  <input type="date" name="endDate" value={filters.endDate} onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value, page: 1 }))} className="form-control" />
+                  <input type="date" name="endDate" value={filters.endDate} onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value, page: 1 }))} className="form-control" style={{ borderRadius: '10px' }} />
                 </div>
               </div>
               <div className="row g-3">
                 <div className="col-12 col-md-4 d-flex flex-column gap-2">
                   <label style={styles.label}>Employee</label>
-                  <select name="employeeId" value={filters.employeeId} onChange={(e) => setFilters(prev => ({ ...prev, employeeId: e.target.value, page: 1 }))} className="form-select">
+                  <select name="employeeId" value={filters.employeeId} onChange={(e) => setFilters(prev => ({ ...prev, employeeId: e.target.value, page: 1 }))} className="form-select" style={{ borderRadius: '10px' }}>
                     <option value="">All Employees</option>
                     {employees.map(emp => <option key={emp._id} value={emp._id}>{emp.name} ({emp.employeeId})</option>)}
                   </select>
                 </div>
                 <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
                   <label style={styles.label}>Payment Status</label>
-                  <select name="paymentStatus" value={filters.paymentStatus} onChange={(e) => setFilters(prev => ({ ...prev, paymentStatus: e.target.value, page: 1 }))} className="form-select">
+                  <select name="paymentStatus" value={filters.paymentStatus} onChange={(e) => setFilters(prev => ({ ...prev, paymentStatus: e.target.value, page: 1 }))} className="form-select" style={{ borderRadius: '10px' }}>
                     <option value="">All</option>
                     <option value="Paid">Paid</option>
                     <option value="Pending">Pending</option>
@@ -475,7 +529,7 @@ const AdminWorks = () => {
                 </div>
                 <div className="col-12 col-sm-6 col-md-4 d-flex flex-column gap-2">
                   <label style={styles.label}>Work Status</label>
-                  <select name="workStatus" value={filters.workStatus} onChange={(e) => setFilters(prev => ({ ...prev, workStatus: e.target.value, page: 1 }))} className="form-select">
+                  <select name="workStatus" value={filters.workStatus} onChange={(e) => setFilters(prev => ({ ...prev, workStatus: e.target.value, page: 1 }))} className="form-select" style={{ borderRadius: '10px' }}>
                     <option value="">All</option>
                     <option value="Completed">Completed</option>
                     <option value="In Progress">Pending</option>
@@ -484,7 +538,7 @@ const AdminWorks = () => {
               </div>
               <div className="d-flex flex-column flex-sm-row gap-2 mt-2">
                 <button type="submit" style={styles.searchBtn} className="btn w-100 w-sm-auto text-white">Apply Filters</button>
-                <button type="button" style={styles.filterResetBtn} className="btn w-100 w-sm-auto text-white" onClick={() => setFilters({ page: 1, limit: 10, search: '', startDate: '', endDate: '', employeeId: '', paymentStatus: '', workStatus: '' })}>Reset</button>
+                <button type="button" style={styles.filterResetBtn} className="btn w-100 w-sm-auto">Reset</button>
               </div>
             </form>
           </div>
@@ -524,7 +578,7 @@ const AdminWorks = () => {
       ) : (
         <div style={styles.tableCard}>
           <div className="p-3 p-md-4 border-bottom">
-            <h3 className="fs-5 mb-3">{editingPreset ? 'Edit Work Item Preset' : 'Add New Work Item Preset'}</h3>
+            <h3 className="fs-5 mb-3" style={{ color: '#3b8132', fontWeight: 'bold' }}>{editingPreset ? 'Edit Work Item Preset' : 'Add New Work Item Preset'}</h3>
             <form onSubmit={handleSaveWorkItem} className="row g-3 align-items-end">
               <div className="col-12 col-md-3 d-flex flex-column gap-2">
                 <label style={styles.label}>Service Name</label>
@@ -535,6 +589,7 @@ const AdminWorks = () => {
                   onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
                   placeholder="E.g. Logo Design"
                   className="form-control"
+                  style={{ borderRadius: '10px' }}
                 />
               </div>
               <div className="col-12 col-md-2 d-flex flex-column gap-2">
@@ -547,6 +602,7 @@ const AdminWorks = () => {
                   onChange={(e) => setNewItem({ ...newItem, workCharge: e.target.value })}
                   placeholder="0.00"
                   className="form-control"
+                  style={{ borderRadius: '10px' }}
                 />
               </div>
               <div className="col-12 col-md-2 d-flex flex-column gap-2">
@@ -559,6 +615,7 @@ const AdminWorks = () => {
                   onChange={(e) => setNewItem({ ...newItem, serviceCharge: e.target.value })}
                   placeholder="0.00"
                   className="form-control"
+                  style={{ borderRadius: '10px' }}
                 />
               </div>
               <div className="col-12 col-md-2 d-flex flex-column gap-2">
@@ -567,6 +624,7 @@ const AdminWorks = () => {
                   value={newItem.status ? 'active' : 'inactive'}
                   onChange={(e) => setNewItem({ ...newItem, status: e.target.value === 'active' })}
                   className="form-select"
+                  style={{ borderRadius: '10px' }}
                 >
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
@@ -577,7 +635,7 @@ const AdminWorks = () => {
                   {editingPreset ? 'Update Preset' : 'Add Preset'}
                 </button>
                 {editingPreset && (
-                  <button type="button" style={styles.resetBtn} className="btn w-100 text-white" onClick={() => { setEditingPreset(null); setNewItem({ name: '', workCharge: '', serviceCharge: '', status: true }); }}>
+                  <button type="button" style={styles.resetBtn} className="btn w-100" onClick={() => { setEditingPreset(null); setNewItem({ name: '', workCharge: '', serviceCharge: '', status: true }); }}>
                     Cancel
                   </button>
                 )}
@@ -606,7 +664,7 @@ const AdminWorks = () => {
                     <td style={styles.td}>
                       <span style={{
                         ...styles.badge,
-                        backgroundColor: (item.status !== undefined ? item.status : item.isActive) ? '#27ae60' : '#95a5a6',
+                        backgroundColor: (item.status !== undefined ? item.status : item.isActive) ? '#3b8132' : '#95a5a6',
                         color: 'white'
                       }}>
                         {(item.status !== undefined ? item.status : item.isActive) ? 'Active' : 'Inactive'}
@@ -636,32 +694,35 @@ const AdminWorks = () => {
 const presetStyles = {
   addBtn: {
     padding: '10px 24px',
-    backgroundColor: '#27ae60',
+    backgroundColor: '#3b8132',
     color: 'white',
     border: 'none',
-    borderRadius: '6px',
+    borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '600',
     cursor: 'pointer',
-    height: '40px'
+    height: '40px',
+    transition: 'all 0.3s ease'
   },
   editBtn: {
     padding: '6px 16px',
-    backgroundColor: '#3498db',
+    backgroundColor: '#3b8132',
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '6px',
     fontSize: '12px',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
   },
   toggleBtn: {
     padding: '6px 16px',
-    backgroundColor: '#f39c12',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
+    backgroundColor: '#ffffff',
+    color: '#3b8132',
+    border: '1px solid #3b8132',
+    borderRadius: '6px',
     fontSize: '12px',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
   }
 };
 

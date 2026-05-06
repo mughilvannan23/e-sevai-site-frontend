@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const EmployeeDashboard = () => {
   const [stats, setStats] = useState(null);
+  const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { success, error } = useToast();
@@ -19,11 +20,16 @@ const EmployeeDashboard = () => {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const response = await workAPI.getMyWorkStats();
-      if (response.data.success) {
-        setStats(response.data.stats);
-      } else {
-        error('Failed to fetch dashboard stats');
+      const [statsRes, balanceRes] = await Promise.all([
+        workAPI.getMyWorkStats(),
+        workAPI.getShopBalance()
+      ]);
+
+      if (statsRes.data.success) {
+        setStats(statsRes.data.stats);
+      }
+      if (balanceRes.data.success) {
+        setBalance(balanceRes.data.shopBalance);
       }
     } catch (err) {
       console.error('Error fetching stats:', err);
@@ -59,6 +65,9 @@ const EmployeeDashboard = () => {
       {stats && (
         <div className="row g-3 mb-4">
           <div className="col-12 col-sm-6 col-md-6 col-lg-3">
+            <StatCard title="Shop Balance" value={`₹${balance.toLocaleString()}`} icon="🏢" color="#3b8132" />
+          </div>
+          <div className="col-12 col-sm-6 col-md-6 col-lg-3">
             <StatCard title="Today's Tasks" value={stats.todayWorks} icon="📋" color="#3498db" />
           </div>
           <div className="col-12 col-sm-6 col-md-6 col-lg-3">
@@ -67,9 +76,6 @@ const EmployeeDashboard = () => {
           <div className="col-12 col-sm-6 col-md-6 col-lg-3">
             <StatCard title="Total Works" value={stats.totalWorks} icon="📊" color="#f39c12" />
           </div>
-          {/* <div className="col-12 col-sm-6 col-md-6 col-lg-3">
-            <StatCard title="Total Earnings" value={`₹${stats.totalEarnings.toLocaleString()}`} icon="🏆" color="#9b59b6" />
-          </div> */}
         </div>
       )}
 
@@ -148,32 +154,36 @@ const EmployeeDashboard = () => {
 const styles = {
   title: {
     margin: '0 0 8px 0',
-    fontWeight: 'bold',
-    color: '#2c3e50'
+    fontWeight: '700',
+    color: '#3b8132',
+    letterSpacing: '0.5px'
   },
   subtitle: {
-    margin: 0
+    margin: 0,
+    color: '#666'
   },
   statCard: {
     display: 'flex',
     alignItems: 'center',
-    padding: '20px',
-    borderRadius: '12px',
-    border: '2px solid',
+    padding: '24px',
+    borderRadius: '10px',
+    border: '1px solid #e0e0e0',
     backgroundColor: 'white',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    height: '100%'
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    height: '100%',
+    transition: 'transform 0.2s ease'
   },
   statIcon: {
     width: '60px',
     height: '60px',
-    borderRadius: '12px',
+    borderRadius: '10px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: '24px',
     marginRight: '20px',
-    flexShrink: 0
+    flexShrink: 0,
+    color: 'white'
   },
   statContent: {
     flex: 1
@@ -181,37 +191,40 @@ const styles = {
   statValue: {
     margin: '0 0 4px 0',
     fontSize: '28px',
-    fontWeight: 'bold',
-    color: '#2c3e50'
+    fontWeight: '800',
+    color: '#3b8132'
   },
   statTitle: {
     margin: 0,
-    fontSize: '14px',
+    fontSize: '13px',
     color: '#666',
+    fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: '0.5px'
   },
   sectionTitle: {
-    fontWeight: 'bold',
-    color: '#2c3e50'
+    fontWeight: '700',
+    color: '#3b8132',
+    marginBottom: '20px'
   },
   detailCard: {
-    borderRadius: '12px',
+    borderRadius: '10px',
     backgroundColor: 'white',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    border: '1px solid #e9ecef'
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    border: '1px solid #e0e0e0',
+    transition: 'all 0.2s ease'
   },
   detailTitle: {
     margin: '0 0 12px 0',
     fontSize: '18px',
-    fontWeight: '600',
-    color: '#2c3e50'
+    fontWeight: '700',
+    color: '#3b8132'
   },
   detailValue: {
     margin: '0 0 8px 0',
     fontSize: '32px',
-    fontWeight: 'bold',
-    color: '#27ae60'
+    fontWeight: '800',
+    color: '#3b8132'
   },
   detailSubtext: {
     margin: 0,
@@ -220,20 +233,23 @@ const styles = {
   },
   quickActions: {
     backgroundColor: 'white',
-    borderRadius: '12px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    border: '1px solid #e9ecef'
+    borderRadius: '10px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    border: '1px solid #e0e0e0',
+    padding: '24px'
   },
   actionBtn: {
     gap: '12px',
     padding: '16px',
-    backgroundColor: '#f8f9fa',
-    borderRadius: '8px',
+    backgroundColor: '#ffffff',
+    borderRadius: '10px',
     textDecoration: 'none',
-    color: '#2c3e50',
-    fontWeight: '600',
+    color: '#3b8132',
+    fontWeight: '700',
     transition: 'all 0.2s ease',
-    border: '1px solid #e9ecef'
+    border: '1px solid #3b8132',
+    display: 'flex',
+    alignItems: 'center'
   },
   actionIcon: {
     fontSize: '20px'

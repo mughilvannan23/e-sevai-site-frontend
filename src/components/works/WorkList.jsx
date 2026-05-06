@@ -21,22 +21,23 @@ const WorkList = ({
   }
 
   return (
-    <div ref={tableRef} style={{ ...styles.tableCard, overflowX: 'hidden' }}>
+    <div ref={tableRef} style={{ ...styles.tableCard, overflowX: 'hidden', borderRadius: '10px', border: '1px solid #e0e0e0' }}>
       <div className="table-responsive">
-        <table className="table table-hover mb-0" style={{ minWidth: '700px' }}>
+        <table className="table table-hover mb-0" style={{ minWidth: '800px' }}>
           <thead>
             <tr>
-              {isAdmin && <th style={styles.th}>Employee</th>}
-              <th style={styles.th}>Date</th>
-              <th style={styles.th}>Customer</th>
-              <th style={styles.th}>Payment Method</th>
-              <th style={styles.th}>GPay</th>
-              <th style={styles.th}>Cash</th>
-              <th style={styles.th}>Total</th>
-              <th style={styles.th}>Work Title</th>
-              <th style={styles.th}>Payment</th>
-              <th style={styles.th}>Work Status</th>
-              <th style={styles.th}>Actions</th>
+              {isAdmin && <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Employee</th>}
+              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Date</th>
+              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Customer</th>
+              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Payment Method</th>
+              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>GPay</th>
+              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Cash</th>
+              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Total</th>
+              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>App Fee</th>
+              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Work Title</th>
+              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Payment</th>
+              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Work Status</th>
+              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -55,7 +56,7 @@ const WorkList = ({
                 />
                 {editingItemId === work._id && (
                   <tr>
-                    <td colSpan={isAdmin ? 9 : 8} style={{ padding: '20px', backgroundColor: '#f8f9fa' }}>
+                    <td colSpan={isAdmin ? 12 : 11} style={{ padding: '24px', backgroundColor: 'rgba(59, 129, 50, 0.03)' }}>
                       {renderEditForm(work)}
                     </td>
                   </tr>

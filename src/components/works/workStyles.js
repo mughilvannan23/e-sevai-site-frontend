@@ -1,8 +1,9 @@
 export const workStyles = {
   title: {
     margin: '0 0 4px 0',
-    fontWeight: 'bold',
-    color: 'var(--text-color)'
+    fontWeight: '700',
+    color: '#3b8132',
+    letterSpacing: '0.5px'
   },
   subtitle: {
     color: 'var(--text-muted)',
@@ -11,10 +12,10 @@ export const workStyles = {
 
   // Form card
   formCard: {
-    backgroundColor: 'var(--card-bg)',
-    borderRadius: '12px',
-    border: '1px solid var(--border-color)',
-    boxShadow: 'var(--shadow)',
+    backgroundColor: '#ffffff',
+    borderRadius: '10px',
+    border: '1px solid #e0e0e0',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
     padding: '28px 32px'
   },
   formHeader: {
@@ -23,13 +24,13 @@ export const workStyles = {
     alignItems: 'flex-start',
     marginBottom: '24px',
     paddingBottom: '16px',
-    borderBottom: '1px solid var(--border-color)'
+    borderBottom: '1px solid #e0e0e0'
   },
   formTitle: {
     margin: 0,
     fontSize: '20px',
     fontWeight: '700',
-    color: 'var(--text-color)'
+    color: '#3b8132'
   },
   formSubtitle: {
     margin: '4px 0 0 0',
@@ -39,12 +40,12 @@ export const workStyles = {
   editingBadge: {
     display: 'inline-block',
     padding: '4px 12px',
-    backgroundColor: '#fff3cd',
-    color: '#856404',
+    backgroundColor: '#eaf4e9',
+    color: '#3b8132',
     borderRadius: '20px',
     fontSize: '12px',
     fontWeight: '600',
-    border: '1px solid #ffc107'
+    border: '1px solid #3b8132'
   },
   section: {
     marginBottom: '28px',
@@ -54,14 +55,14 @@ export const workStyles = {
   sectionTitle: {
     fontSize: '15px',
     fontWeight: '600',
-    color: '#374151',
+    color: '#3b8132',
     marginBottom: '16px',
     marginTop: 0
   },
   label: {
     fontSize: '14px',
     fontWeight: '500',
-    color: '#374151',
+    color: '#2c3e50',
     marginBottom: '6px',
     display: 'block'
   },
@@ -77,24 +78,26 @@ export const workStyles = {
   },
   removeBtn: {
     padding: '8px 14px',
-    backgroundColor: '#fee2e2',
-    color: '#dc2626',
-    border: '1px solid #fecaca',
-    borderRadius: '8px',
+    backgroundColor: '#ffffff',
+    color: '#e74c3c',
+    border: '1px solid #e74c3c',
+    borderRadius: '10px',
     fontSize: '14px',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
   },
   addItemBtn: {
     padding: '10px 18px',
-    backgroundColor: '#f9fafb',
-    color: '#4b5563',
-    border: '1px dashed #d1d5db',
-    borderRadius: '8px',
+    backgroundColor: '#ffffff',
+    color: '#3b8132',
+    border: '1px dashed #3b8132',
+    borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '500',
     cursor: 'pointer',
     alignSelf: 'flex-start',
-    marginTop: '4px'
+    marginTop: '4px',
+    transition: 'all 0.3s ease'
   },
   formActions: {
     display: 'flex',
@@ -102,74 +105,85 @@ export const workStyles = {
     gap: '12px',
     marginTop: '28px',
     paddingTop: '20px',
-    borderTop: '1px solid var(--border-color)'
+    borderTop: '1px solid #e0e0e0'
   },
   resetBtn: {
     padding: '10px 24px',
-    backgroundColor: '#fff',
-    color: '#374151',
-    border: '1px solid #d1d5db',
-    borderRadius: '8px',
+    backgroundColor: '#ffffff',
+    color: '#3b8132',
+    border: '1px solid #3b8132',
+    borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '500',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
   },
   submitBtn: {
     padding: '10px 28px',
-    backgroundColor: 'var(--primary-color)',
+    backgroundColor: '#3b8132',
     color: 'white',
     border: 'none',
-    borderRadius: '8px',
+    borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '600',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 2px 4px rgba(59, 129, 50, 0.2)'
   },
 
   // Filter bar
   filtersCard: {
-    backgroundColor: 'var(--card-bg)',
-    borderRadius: '12px',
-    boxShadow: 'var(--shadow)'
+    backgroundColor: '#ffffff',
+    borderRadius: '10px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    padding: '20px',
+    border: '1px solid #e0e0e0'
   },
   searchBtn: {
     padding: '10px 24px',
-    backgroundColor: 'var(--primary-color)',
+    backgroundColor: '#3b8132',
+    color: 'white',
     border: 'none',
-    borderRadius: '6px',
+    borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '600',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
   },
   filterResetBtn: {
     padding: '10px 24px',
-    backgroundColor: '#6c757d',
-    border: 'none',
-    borderRadius: '6px',
+    backgroundColor: '#ffffff',
+    color: '#3b8132',
+    border: '1px solid #3b8132',
+    borderRadius: '10px',
     fontSize: '14px',
     fontWeight: '600',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
   },
 
   // Table
   tableCard: {
-    backgroundColor: 'var(--card-bg)',
-    borderRadius: '12px',
-    boxShadow: 'var(--shadow)',
-    overflow: 'hidden'
+    backgroundColor: '#ffffff',
+    borderRadius: '10px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+    overflow: 'hidden',
+    border: '1px solid #e0e0e0'
   },
   th: {
     padding: '16px',
     textAlign: 'left',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f9fafb',
     fontWeight: '600',
-    color: 'var(--text-color)',
-    borderBottom: '2px solid var(--border-color)',
+    color: '#3b8132',
+    borderBottom: '2px solid #3b8132',
     fontSize: '14px'
   },
   td: {
     padding: '16px',
-    borderBottom: '1px solid var(--border-color)',
-    fontSize: '14px'
+    borderBottom: '1px solid #e0e0e0',
+    fontSize: '14px',
+    color: '#2c3e50'
   },
   badge: {
     padding: '4px 12px',
@@ -178,27 +192,42 @@ export const workStyles = {
     fontWeight: '500'
   },
   editBtn: {
-    padding: '6px 16px',
-    backgroundColor: 'var(--primary-color)',
+    padding: '8px 18px',
+    backgroundColor: '#3b8132',
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
-    fontSize: '12px',
-    cursor: 'pointer'
+    borderRadius: '10px',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
   },
   deleteBtn: {
-    padding: '6px 16px',
-    backgroundColor: 'var(--danger-color)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '12px',
-    cursor: 'pointer'
+    padding: '8px 18px',
+    backgroundColor: '#ffffff',
+    color: '#e74c3c',
+    border: '1px solid #e74c3c',
+    borderRadius: '10px',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
   },
   noData: {
     padding: '40px',
     textAlign: 'center',
     color: 'var(--text-muted)',
     fontSize: '15px'
+  },
+  viewBtn: {
+    padding: '8px 18px',
+    backgroundColor: '#ffffff',
+    color: '#3b8132',
+    border: '1px solid #3b8132',
+    borderRadius: '10px',
+    fontSize: '13px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease'
   }
 };
