@@ -4,6 +4,7 @@ import { workAPI } from '../services/api';
 import { useToast } from '../components/common/Toast';
 import { workStyles as styles } from '../components/works/workStyles';
 import AddWorkForm from '../components/works/AddWorkForm';
+import WorkPreviewModal from '../components/works/WorkPreviewModal';
 
 const getCurrentTime = () => new Date().toTimeString().slice(0, 5);
 
@@ -30,10 +31,13 @@ const AddWorkPage = () => {
   const { success, error } = useToast();
   const [formData, setFormData] = useState(defaultFormData);
   const [submitting, setSubmitting] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [workItems, setWorkItems] = useState([]);
+  const [shopBalance, setShopBalance] = useState(0);
 
   useEffect(() => {
     fetchWorkItems();
+    fetchShopBalance();
   }, []);
 
   const fetchWorkItems = async () => {
@@ -44,6 +48,17 @@ const AddWorkPage = () => {
       }
     } catch (err) {
       console.error('Error fetching work items:', err);
+    }
+  };
+
+  const fetchShopBalance = async () => {
+    try {
+      const response = await workAPI.getShopBalance();
+      if (response.data.success) {
+        setShopBalance(response.data.shopBalance);
+      }
+    } catch (err) {
+      console.error('Error fetching shop balance:', err);
     }
   };
 
@@ -248,6 +263,27 @@ const AddWorkPage = () => {
     const currentAmount = parseFloat(formData.amount) || 0;
 
     if (formData.paymentStatus === 'Paid') {
+      if (formData.paymentMethod === 'Both') {
+        const gpay = parseFloat(formData.gpayAmount) || 0;
+        const cash = parseFloat(formData.cashAmount) || 0;
+        if (Math.abs((gpay + cash) - currentAmount) > 0.01) {
+          error(`GPay + Cash (₹${(gpay + cash).toFixed(2)}) must equal Final Amount (₹${currentAmount.toFixed(2)})`);
+          return;
+        }
+      }
+    }
+
+    setShowPreview(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    setShowPreview(false);
+    
+    let finalGpay = 0;
+    let finalCash = 0;
+    const currentAmount = parseFloat(formData.amount) || 0;
+
+    if (formData.paymentStatus === 'Paid') {
       if (formData.paymentMethod === 'GPay') {
         finalGpay = currentAmount;
         finalCash = 0;
@@ -257,11 +293,6 @@ const AddWorkPage = () => {
       } else if (formData.paymentMethod === 'Both') {
         finalGpay = parseFloat(formData.gpayAmount) || 0;
         finalCash = parseFloat(formData.cashAmount) || 0;
-
-        if (Math.abs((finalGpay + finalCash) - currentAmount) > 0.01) {
-          error(`GPay + Cash (₹${(finalGpay + finalCash).toFixed(2)}) must equal Final Amount (₹${currentAmount.toFixed(2)})`);
-          return;
-        }
       }
     }
 
@@ -308,6 +339,15 @@ const AddWorkPage = () => {
         addItemRow={addItemRow}
         removeItemRow={removeItemRow}
         submitting={submitting}
+        workItems={workItems}
+        shopBalance={shopBalance}
+      />
+
+      <WorkPreviewModal
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        onConfirm={handleConfirmSubmit}
+        formData={formData}
         workItems={workItems}
       />
       

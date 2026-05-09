@@ -12,10 +12,11 @@ const AddWorkForm = ({
   submitting,
   workItems,
   isEditing = false,
-  formRef = null
+  formRef = null,
+  shopBalance = 0
 }) => {
   return (
-    <div ref={formRef} style={styles.formCard} className="mb-4">
+    <div ref={formRef} style={styles.formCard} className="mb-3">
       {/* Form header */}
       <div style={styles.formHeader}>
         <div>
@@ -37,7 +38,7 @@ const AddWorkForm = ({
         {/* Section 1: Basic Info */}
         <div style={styles.section}>
           <h3 style={styles.sectionTitle}>Basic Info</h3>
-          <div className="row g-3">
+          <div className="row g-2">
             <div className="col-12 col-md-4">
               <label style={styles.label}>Date</label>
               <input
@@ -66,7 +67,7 @@ const AddWorkForm = ({
         {/* Section 2: Customer Details */}
         <div style={styles.section}>
           <h3 style={styles.sectionTitle}>Customer Details</h3>
-          <div className="row g-3">
+          <div className="row g-2">
             <div className="col-12 col-md-6">
               <label style={styles.label}>Customer Name</label>
               <input
@@ -212,7 +213,7 @@ const AddWorkForm = ({
             </button>
           </div>
 
-          <div className="row g-3 mt-2">
+          <div className="row g-2 mt-1">
             <div className="col-12 col-md-4 mt-3"></div>
             <div className="col-12 col-md-12 mt-3 text-end d-flex flex-column align-items-end gap-1">
               {formData.totalDiscount > 0 && (
@@ -229,7 +230,7 @@ const AddWorkForm = ({
               const rechargeKeywords = ['recharge', 'eb bill', 'electric charge', 'electricity', 'money transfer', 'transfer'];
               return rechargeKeywords.some(key => name.toLowerCase().includes(key.toLowerCase()));
             }) && (
-              <div className="col-12 col-lg-12 mt-3 text-start">
+              <div className="col-12 col-lg-12 mt-2 text-start">
                 <label style={{ ...styles.label, color: '#000', fontWeight: 'bold' }}>Manually Enter Transfer/Recharge Amount (₹)</label>
                 <input
                   type="number"
@@ -242,6 +243,20 @@ const AddWorkForm = ({
                   min="0"
                   step="0.01"
                 />
+                
+                {/* Specific info for Handcash to Gpay Transfer */}
+                {formData.items.some(item => {
+                  const wi = item.workItemId ? workItems.find(w => w._id === item.workItemId) : null;
+                  const name = (wi ? wi.name : item.workTitle) || '';
+                  return name.toLowerCase().includes('handcash to gpay transfer');
+                }) && (
+                  <div className={`mt-2 p-2 rounded d-flex justify-content-between align-items-center ${parseFloat(formData.applicationFee) > shopBalance ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'}`} style={{ fontSize: '0.85rem', border: '1px solid currentColor' }}>
+                    <span><strong>Shop Balance:</strong> ₹{shopBalance.toLocaleString()}</span>
+                    {parseFloat(formData.applicationFee) > shopBalance && (
+                      <span className="fw-bold">⚠️ Insufficient Balance</span>
+                    )}
+                  </div>
+                )}
               </div>
             )}
             </div>
@@ -251,7 +266,7 @@ const AddWorkForm = ({
         {/* Section 4: Status & Notes */}
         <div style={{ ...styles.section, borderBottom: 'none', marginBottom: 0, paddingBottom: 0 }}>
           <h3 style={styles.sectionTitle}>Status & Notes</h3>
-          <div className="row g-3">
+          <div className="row g-2">
             
             <div className="col-12 col-md-6">
               <label style={styles.label}>Payment Status</label>

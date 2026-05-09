@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { adminAPI, userAPI, workAPI } from '../services/api';
+import { adminAPI, userAPI, workAPI, purchaseAPI } from '../services/api';
 import Loading from '../components/common/Loading.jsx';
 import Pagination from '../components/common/Pagination.jsx';
 import { useToast } from '../components/common/Toast.jsx';
@@ -58,6 +58,14 @@ const AdminWorks = () => {
   // ── Presets State ──────────────────────────────────────────────────────────
   const [newItem, setNewItem] = useState({ name: '', workCharge: '', serviceCharge: '', status: true });
   const [editingPreset, setEditingPreset] = useState(null);
+  const [shopBalance, setShopBalance] = useState(0);
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [transferData, setTransferData] = useState({
+    presetName: '',
+    amount: '',
+    date: new Date().toISOString().split('T')[0]
+  });
+  const [transferSubmitting, setTransferSubmitting] = useState(false);
 
   // ── Effects ────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -70,6 +78,7 @@ const AdminWorks = () => {
       fetchWorks();
     } else {
       fetchWorkItems();
+      fetchShopBalance();
     }
   }, [activeTab, filters.page, filters.limit, filters.paymentStatus, filters.workStatus, filters.search, filters.startDate, filters.endDate, filters.employeeId]);
 
@@ -103,6 +112,17 @@ const AdminWorks = () => {
       if (response.data.success) setWorkItems(response.data.workItems);
     } catch (err) { error('Failed to fetch work items'); }
     finally { setLoading(false); }
+  };
+
+  const fetchShopBalance = async () => {
+    try {
+      const response = await adminAPI.getDashboardStats();
+      if (response.data.success) {
+        setShopBalance(response.data.stats.revenue.shopBalance || 0);
+      }
+    } catch (err) {
+      console.error('Error fetching shop balance:', err);
+    }
   };
 
   const fetchWorks = async () => {
@@ -432,6 +452,48 @@ const AdminWorks = () => {
     }
   };
 
+  const handleOpenTransferModal = (presetName) => {
+    setTransferData({
+      presetName,
+      amount: '',
+      date: new Date().toISOString().split('T')[0]
+    });
+    setShowTransferModal(true);
+  };
+
+  const handleTransferSubmit = async (e) => {
+    e.preventDefault();
+    if (!transferData.amount || parseFloat(transferData.amount) <= 0) {
+      error('Please enter a valid amount');
+      return;
+    }
+
+    if (parseFloat(transferData.amount) > shopBalance) {
+      error('Insufficient Handcash balance');
+      return;
+    }
+
+    try {
+      setTransferSubmitting(true);
+      const payload = {
+        orderName: transferData.presetName,
+        amount: parseFloat(transferData.amount),
+        date: transferData.date
+      };
+      
+      const response = await purchaseAPI.createPurchase(payload);
+      if (response.data.success) {
+        success('Transfer recorded successfully');
+        setShowTransferModal(false);
+        fetchShopBalance();
+      }
+    } catch (err) {
+      error(err.response?.data?.message || 'Failed to record transfer');
+    } finally {
+      setTransferSubmitting(false);
+    }
+  };
+
   // ── Render Helpers ─────────────────────────────────────────────────────────
   const formatDateTime = (date) => {
     if (!date) return '-';
@@ -565,6 +627,7 @@ const AdminWorks = () => {
                 submitting={submitting}
                 workItems={workItems}
                 isEditing={true}
+                shopBalance={shopBalance}
               />
             )}
           />
@@ -678,12 +741,110 @@ const AdminWorks = () => {
                         <button style={presetStyles.toggleBtn} className="btn btn-sm text-white" onClick={() => handleTogglePresetStatus(item)}>
                           {(item.status !== undefined ? item.status : item.isActive) ? 'Set Inactive' : 'Set Active'}
                         </button>
+                        {item.name.toLowerCase().includes('transfer') && (
+                          <button 
+                            style={{ ...presetStyles.editBtn, backgroundColor: '#3498db' }} 
+                            className="btn btn-sm text-white" 
+                            onClick={() => handleOpenTransferModal(item.name)}
+                          >
+                            Transfer
+                          </button>
+                        )}
+                        {item.name.toLowerCase().includes('recharge') && (
+                          <button 
+                            style={{ ...presetStyles.editBtn, backgroundColor: '#e67e22' }} 
+                            className="btn btn-sm text-white" 
+                            onClick={() => handleOpenTransferModal(item.name)}
+                          >
+                            Recharge
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Transfer/Recharge Amount Modal */}
+      {showTransferModal && (
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1100 }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content border-0 shadow" style={{ borderRadius: '15px', overflow: 'hidden' }}>
+              <div className="modal-header text-white border-0 p-4" style={{ backgroundColor: '#3b8132' }}>
+                <h5 className="modal-title fw-bold d-flex align-items-center gap-2">
+                  <span>{transferData.presetName.includes('Transfer') ? '💸' : '📱'}</span>
+                  {transferData.presetName}
+                </h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setShowTransferModal(false)}></button>
+              </div>
+              <form onSubmit={handleTransferSubmit}>
+                <div className="modal-body p-4">
+                  <div className="mb-4 text-center">
+                    <div className="text-muted small fw-bold mb-1">AVAILABLE HANDCASH BALANCE</div>
+                    <div style={{ fontSize: '24px', fontWeight: '800', color: '#3b8132' }}>
+                      ₹{shopBalance.toLocaleString()}
+                    </div>
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label fw-bold small text-muted">ENTER AMOUNT (₹)</label>
+                    <input 
+                      type="number" 
+                      className="form-control form-control-lg text-center" 
+                      style={{ borderRadius: '12px', border: '2px solid #e0e0e0', fontWeight: '700' }}
+                      value={transferData.amount}
+                      onChange={(e) => setTransferData({ ...transferData, amount: e.target.value })}
+                      placeholder="0.00"
+                      required
+                      min="0.01"
+                      step="0.01"
+                      autoFocus
+                    />
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label fw-bold small text-muted">DATE</label>
+                    <input 
+                      type="date" 
+                      className="form-control" 
+                      style={{ borderRadius: '10px' }}
+                      value={transferData.date}
+                      onChange={(e) => setTransferData({ ...transferData, date: e.target.value })}
+                      required
+                    />
+                  </div>
+
+                  {parseFloat(transferData.amount) > shopBalance && (
+                    <div className="alert alert-danger py-2 px-3 small border-0 d-flex align-items-center gap-2" style={{ borderRadius: '10px' }}>
+                      <span>⚠️</span>
+                      <strong>Insufficient Balance:</strong> Transfer amount exceeds available cash.
+                    </div>
+                  )}
+                </div>
+                <div className="modal-footer border-0 p-4 pt-0">
+                  <button 
+                    type="button" 
+                    className="btn px-4" 
+                    style={{ border: '1px solid #3b8132', color: '#3b8132', borderRadius: '10px', fontWeight: '600' }}
+                    onClick={() => setShowTransferModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="btn px-5"
+                    style={{ backgroundColor: '#3b8132', color: 'white', borderRadius: '10px', fontWeight: '700', boxShadow: '0 4px 12px rgba(59, 129, 50, 0.2)' }}
+                    disabled={transferSubmitting || (parseFloat(transferData.amount) > shopBalance)}
+                  >
+                    {transferSubmitting ? 'Processing...' : 'Confirm & Deduct'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/common/Toast';
 import Loading from './components/common/Loading';
 import Login from './components/common/Login';
+import LiveClock from './components/common/LiveClock';
 
 // Import pages
 import AdminDashboard from './pages/AdminDashboard';
@@ -256,6 +257,7 @@ function App() {
               <Route path="/" element={<Navigate to="/login" replace />} />
               <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
+            <LiveClock />
           </div>
         </HashRouter>
       </ToastProvider>
