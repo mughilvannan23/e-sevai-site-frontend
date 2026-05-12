@@ -33,15 +33,13 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (loginData, isEmployee = false) => {
+  const login = async (loginData) => {
     console.log('[AuthContext] login called with mobile:', loginData.mobile);
     try {
       setLoading(true);
       setError(null);
 
-      const response = isEmployee
-        ? await authAPI.employeeLogin(loginData)
-        : await authAPI.adminLogin(loginData);
+      const response = await authAPI.login(loginData);
 
       if (response.data.success) {
         localStorage.setItem('token', response.data.token);

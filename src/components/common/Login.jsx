@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 const Login = () => {
   const navigate = useNavigate();
 
-  const [isEmployee, setIsEmployee] = useState(false);
+
   const [formData, setFormData] = useState({ mobile: '', password: '' });
   const [loading, setLoading] = useState(false);
 
@@ -37,7 +37,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const result = await login(formData, isEmployee);
+      const result = await login(formData);
       success('Login successful!');
 
       if (result.user.role === 'admin') {
@@ -73,32 +73,7 @@ const Login = () => {
 
           {/* ================= LOGIN FORM ================= */}
           <form onSubmit={handleSubmit} style={styles.form}>
-            {/* Login Type Selection */}
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Login Type</label>
-              <div className="d-flex justify-content-center gap-4 mt-2">
-                <label style={styles.radioLabel} className="d-flex align-items-center">
-                  <input
-                    type="radio"
-                    checked={!isEmployee}
-                    onChange={() => setIsEmployee(false)}
-                    style={styles.radio}
-                    className="me-2"
-                  />
-                  Admin
-                </label>
-                <label style={styles.radioLabel} className="d-flex align-items-center">
-                  <input
-                    type="radio"
-                    checked={isEmployee}
-                    onChange={() => setIsEmployee(true)}
-                    style={styles.radio}
-                    className="me-2"
-                  />
-                  Employee
-                </label>
-              </div>
-            </div>
+
 
             {/* Mobile Input */}
             <div style={styles.formGroup}>
@@ -213,15 +188,7 @@ const styles = {
     fontFamily: 'inherit',
     transition: 'all 0.2s ease'
   },
-  radio: {
-    accentColor: '#3b8132'
-  },
-  radioLabel: {
-    fontSize: '14px',
-    color: '#2c3e50',
-    cursor: 'pointer',
-    fontWeight: '500'
-  },
+
   button: {
     padding: '12px 16px',
     backgroundColor: '#3b8132',

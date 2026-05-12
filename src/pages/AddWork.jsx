@@ -298,11 +298,10 @@ const AddWork = () => {
         {/* Form Card */}
         <div style={styles.formCard}>
           <form onSubmit={handleSubmit}>
-            {/* Section 1: Basic Info */}
+            {/* Combined Section: Basic & Customer Info */}
             <div style={styles.section}>
-              <h2 style={styles.sectionTitle}>Basic Info</h2>
-              <div className="row g-4">
-                <div className="col-12 col-md-6">
+              <div className="row g-1">
+                <div className="col-6 col-md-2">
                   <label style={styles.label}>Date</label>
                   <input
                     type="date"
@@ -314,7 +313,7 @@ const AddWork = () => {
                     required
                   />
                 </div>
-                <div className="col-12 col-md-6">
+                <div className="col-6 col-md-2">
                   <label style={styles.label}>Time</label>
                   <input
                     type="time"
@@ -326,41 +325,7 @@ const AddWork = () => {
                     required
                   />
                 </div>
-                <div className="col-12 col-md-4">
-                  <label style={styles.label}>Total Discount (₹)</label>
-                  <input
-                    type="number"
-                    name="totalDiscount"
-                    value={formData.totalDiscount}
-                    className="form-control"
-                    style={{ ...styles.input, backgroundColor: '#f9fafb' }}
-                    placeholder="0.00"
-                    readOnly
-                  />
-                </div>
-                <div className="col-12 col-md-4">
-                  <label style={styles.label}>Final Amount (₹)</label>
-                  <input
-                    type="number"
-                    name="amount"
-                    value={formData.amount}
-                    onChange={handleInputChange}
-                    className="form-control"
-                    style={{ ...styles.input, fontWeight: 'bold', color: '#2563eb' }}
-                    placeholder="0.00"
-                    min="0"
-                    step="0.01"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Section 2: Customer Details */}
-            <div style={styles.section}>
-              <h2 style={styles.sectionTitle}>Customer Details</h2>
-              <div className="row g-4">
-                <div className="col-12 col-md-6">
+                <div className="col-12 col-md-3">
                   <label style={styles.label}>Customer Name</label>
                   <input
                     type="text"
@@ -369,12 +334,12 @@ const AddWork = () => {
                     onChange={handleInputChange}
                     className="form-control"
                     style={styles.input}
-                    placeholder="Enter customer name"
+                    placeholder="Name"
                     required
                   />
                 </div>
-                <div className="col-12 col-md-6">
-                  <label style={styles.label}>Customer Phone</label>
+                <div className="col-12 col-md-2">
+                  <label style={styles.label}>Phone</label>
                   <input
                     type="text"
                     name="customerPhone"
@@ -382,10 +347,10 @@ const AddWork = () => {
                     onChange={handleInputChange}
                     className="form-control"
                     style={styles.input}
-                    placeholder="Enter customer phone number"
+                    placeholder="Phone"
                   />
                 </div>
-                <div className="col-12 col-md-6">
+                <div className="col-12 col-md-3">
                   <label style={styles.label}>Payment Method</label>
                   <select
                     name="paymentMethod"
@@ -396,53 +361,45 @@ const AddWork = () => {
                   >
                     <option value="Cash">Cash</option>
                     <option value="GPay">GPay</option>
-                    <option value="Both">Both (Split Payment)</option>
+                    <option value="Both">Both</option>
                   </select>
                 </div>
-                <div className="col-12 col-md-6">
-                  <label style={styles.label}>Total Amount (₹)</label>
+              </div>
+              
+              {/* Secondary Row for Amounts */}
+              <div className="row g-1 mt-1">
+                <div className="col-6 col-md-2">
+                  <label style={styles.label}>Total Paid</label>
                   <input
                     type="number"
                     value={formData.totalAmount}
                     className="form-control"
                     style={{ ...styles.input, fontWeight: 'bold', color: '#2563eb', backgroundColor: '#f9fafb' }}
-                    placeholder="0.00"
                     readOnly
                   />
                 </div>
-              </div>
-              
-              {/* Payment Amount Fields */}
-              <div className="row g-4">
                 {(formData.paymentMethod === 'GPay' || formData.paymentMethod === 'Both') && (
-                  <div className="col-12 col-md-6">
-                    <label style={styles.label}>GPay Amount (₹)</label>
+                  <div className="col-6 col-md-2">
+                    <label style={styles.label}>GPay (₹)</label>
                     <input
                       type="number"
                       value={formData.gpayAmount}
                       onChange={(e) => handleAmountChange('gpayAmount', e.target.value)}
                       className="form-control"
                       style={styles.input}
-                      placeholder="0.00"
-                      min="0"
-                      step="0.01"
                       required={formData.paymentMethod === 'GPay' || formData.paymentMethod === 'Both'}
                     />
                   </div>
                 )}
-                
                 {(formData.paymentMethod === 'Cash' || formData.paymentMethod === 'Both') && (
-                  <div className="col-12 col-md-6">
-                    <label style={styles.label}>Cash Amount (₹)</label>
+                  <div className="col-6 col-md-2">
+                    <label style={styles.label}>Cash (₹)</label>
                     <input
                       type="number"
                       value={formData.cashAmount}
                       onChange={(e) => handleAmountChange('cashAmount', e.target.value)}
                       className="form-control"
                       style={styles.input}
-                      placeholder="0.00"
-                      min="0"
-                      step="0.01"
                       required={formData.paymentMethod === 'Cash' || formData.paymentMethod === 'Both'}
                     />
                   </div>
@@ -453,95 +410,135 @@ const AddWork = () => {
 
             {/* Section 3: Work Items */}
             <div style={styles.section}>
-              <h2 style={styles.sectionTitle}>Work Items</h2>
-              <div style={styles.workItemsContainer}>
-                {formData.items.map((item, index) => (
-                  <div key={index} style={styles.workItemRow}>
-                    <div style={styles.workItemSelect}>
-                      <select
-                        value={item.workItemId}
-                        onChange={(e) => handleItemChange(index, 'workItemId', e.target.value)}
-                        className="form-select"
-                        style={styles.input}
-                        required={!item.workTitle && !item.workItemId}
-                      >
-                        <option value="">Select a Work Item...</option>
-                        {workItems.map(wi => (
-                          <option key={wi._id} value={wi._id}>{wi.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div style={{ ...styles.workItemInput, maxWidth: '150px' }}>
-                      <input
-                        type="text"
-                        value={item.applicationNumber || ''}
-                        onChange={(e) => handleItemChange(index, 'applicationNumber', e.target.value)}
-                        className="form-control"
-                        style={styles.input}
-                        placeholder="App. Number"
-                      />
-                    </div>
-                    <div style={{ ...styles.workItemInput, maxWidth: '120px' }}>
-                      <input
-                        type="number"
-                        value={item.otherCharges || ''}
-                        onChange={(e) => handleItemChange(index, 'otherCharges', e.target.value)}
-                        className="form-control"
-                        style={styles.input}
-                        placeholder="Other (₹)"
-                      />
-                    </div>
-                    <div style={{ ...styles.workItemInput, maxWidth: '120px' }}>
-                      <input
-                        type="number"
-                        value={item.discount || ''}
-                        onChange={(e) => handleItemChange(index, 'discount', e.target.value)}
-                        className="form-control"
-                        style={styles.input}
-                        placeholder="Disc (₹)"
-                      />
-                    </div>
-                    {!item.workItemId && (
-                      <div style={styles.workItemInput}>
-                        <input
-                          type="text"
-                          value={item.workTitle}
-                          onChange={(e) => handleItemChange(index, 'workTitle', e.target.value)}
-                          className="form-control"
-                          style={styles.input}
-                          placeholder="Custom Title"
-                        />
-                      </div>
-                    )}
-                    {formData.items.length > 1 && (
-                      <button
-                        type="button"
-                        style={styles.removeBtn}
-                        onClick={() => removeItemRow(index)}
-                        className="btn"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                ))}
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <h2 style={{ ...styles.sectionTitle, marginBottom: 0 }}>Work Items</h2>
                 <button
                   type="button"
                   style={styles.addItemBtn}
                   onClick={addItemRow}
                   className="btn"
                 >
-                  + Add Another Work
+                  + Add Item
                 </button>
+              </div>
+              
+              <div style={styles.workItemsContainer}>
+                {/* Header Row - Desktop Only */}
+                <div className="d-none d-md-flex gap-2 mb-1 px-1">
+                  <div style={{ ...styles.workItemSelect, fontSize: '12px', fontWeight: '600', color: '#6b7280' }}>Service Name</div>
+                  <div style={{ width: '150px', fontSize: '12px', fontWeight: '600', color: '#6b7280' }}>App. Number</div>
+                  <div style={{ width: '100px', fontSize: '12px', fontWeight: '600', color: '#6b7280' }}>Other (₹)</div>
+                  <div style={{ width: '100px', fontSize: '12px', fontWeight: '600', color: '#6b7280' }}>Disc (₹)</div>
+                  <div style={{ width: '40px' }}></div>
+                </div>
+
+                {formData.items.map((item, index) => (
+                  <div key={index} style={{ marginBottom: '8px' }}>
+                    <div style={styles.workItemRow}>
+                      <div style={styles.workItemSelect}>
+                        <select
+                          value={item.workItemId}
+                          onChange={(e) => handleItemChange(index, 'workItemId', e.target.value)}
+                          className="form-select"
+                          style={styles.input}
+                          required={!item.workTitle && !item.workItemId}
+                        >
+                          <option value="">Select Service...</option>
+                          {workItems.map(wi => (
+                            <option key={wi._id} value={wi._id}>{wi.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div style={{ width: '150px' }}>
+                        <input
+                          type="text"
+                          value={item.applicationNumber || ''}
+                          onChange={(e) => handleItemChange(index, 'applicationNumber', e.target.value)}
+                          className="form-control"
+                          style={styles.input}
+                          placeholder="App No."
+                        />
+                      </div>
+                      <div style={{ width: '100px' }}>
+                        <input
+                          type="number"
+                          value={item.otherCharges || ''}
+                          onChange={(e) => handleItemChange(index, 'otherCharges', e.target.value)}
+                          className="form-control"
+                          style={styles.input}
+                          placeholder="Charges"
+                        />
+                      </div>
+                      <div style={{ width: '100px' }}>
+                        <input
+                          type="number"
+                          value={item.discount || ''}
+                          onChange={(e) => handleItemChange(index, 'discount', e.target.value)}
+                          className="form-control"
+                          style={styles.input}
+                          placeholder="Discount"
+                        />
+                      </div>
+                      <div style={{ width: '40px' }}>
+                        {formData.items.length > 1 && (
+                          <button
+                            type="button"
+                            style={styles.removeBtn}
+                            onClick={() => removeItemRow(index)}
+                            className="btn"
+                            title="Remove"
+                          >
+                            ✕
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  {!item.workItemId && (
+                    <div className="mt-1 px-1">
+                      <input
+                        type="text"
+                        value={item.workTitle}
+                        onChange={(e) => handleItemChange(index, 'workTitle', e.target.value)}
+                        className="form-control"
+                        style={{ ...styles.input, height: '30px', padding: '4px 8px' }}
+                        placeholder="Type Custom Title here if service is not in list..."
+                      />
+                    </div>
+                  )}
+                </div>
+                ))}
+              </div>
+
+              {/* Work Item Totals Summary Row */}
+              <div className="d-flex justify-content-end gap-3 mt-2 pt-2 border-top">
+                <div style={{ width: '150px' }}>
+                  <label style={{ ...styles.label, marginBottom: '2px' }}>Total Disc (₹)</label>
+                  <input
+                    type="number"
+                    value={formData.totalDiscount}
+                    className="form-control"
+                    style={{ ...styles.input, backgroundColor: '#f9fafb', height: '32px', padding: '4px 8px' }}
+                    readOnly
+                  />
+                </div>
+                <div style={{ width: '150px' }}>
+                  <label style={{ ...styles.label, marginBottom: '2px', fontWeight: '700' }}>Bill Amount (₹)</label>
+                  <input
+                    type="number"
+                    value={formData.amount}
+                    className="form-control"
+                    style={{ ...styles.input, fontWeight: 'bold', color: '#2563eb', height: '32px', padding: '4px 8px' }}
+                    readOnly
+                  />
+                </div>
               </div>
             </div>
 
             {/* Section 4: Status & Notes */}
-            <div style={styles.section}>
-              <h2 style={styles.sectionTitle}>Status & Notes</h2>
-              <div className="row g-4">
-                <div className="col-12 col-md-6">
-                  <label style={styles.label}>Payment Status</label>
+            <div style={{ ...styles.section, borderBottom: 'none' }}>
+              <div className="row g-1">
+                <div className="col-6 col-md-2">
+                  <label style={styles.label}>Pay Status</label>
                   <select
                     name="paymentStatus"
                     value={formData.paymentStatus}
@@ -553,7 +550,7 @@ const AddWork = () => {
                     <option value="Pending">Pending</option>
                   </select>
                 </div>
-                <div className="col-12 col-md-6">
+                <div className="col-6 col-md-2">
                   <label style={styles.label}>Work Status</label>
                   <select
                     name="workStatus"
@@ -566,16 +563,15 @@ const AddWork = () => {
                     <option value="In Progress">In Progress</option>
                   </select>
                 </div>
-                <div className="col-12">
-                  <label style={styles.label}>Notes (Optional)</label>
+                <div className="col-12 col-md-8">
+                  <label style={styles.label}>Notes</label>
                   <textarea
                     name="notes"
                     value={formData.notes}
                     onChange={handleInputChange}
                     className="form-control"
                     style={styles.textarea}
-                    placeholder="Add any additional notes..."
-                    rows="4"
+                    placeholder="Notes..."
                   />
                 </div>
               </div>
@@ -597,7 +593,7 @@ const AddWork = () => {
                 className="btn"
                 disabled={submitting}
               >
-                {submitting ? 'Saving...' : (editingWork ? 'Update Work' : 'Create Work')}
+                {submitting ? 'Saving...' : (editingWork ? 'Update' : 'Create')}
               </button>
             </div>
           </form>
@@ -609,144 +605,159 @@ const AddWork = () => {
 
 const styles = {
   container: {
-    minHeight: '100vh',
+    height: '100vh', // Force height to viewport
     backgroundColor: '#f5f6fa',
-    padding: '24px 32px'
+    padding: '4px 8px', // Ultra-low padding
+    overflow: 'hidden' // Try to prevent scroll if possible
   },
   pageWrapper: {
     maxWidth: '1200px',
-    margin: '0 auto'
+    margin: '0 auto',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
   },
   loadingContainer: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: '50vh'
+    height: '50vh'
   },
   header: {
-    marginBottom: '32px'
+    marginBottom: '4px', // Minimal margin
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between'
   },
   title: {
     margin: 0,
-    fontSize: '28px',
+    fontSize: '16px', // Much smaller
     fontWeight: '700',
     color: '#1a1a2e'
   },
   subtitle: {
-    margin: '8px 0 0 0',
-    fontSize: '15px',
-    color: '#6b7280'
+    margin: 0,
+    fontSize: '11px',
+    color: '#6b7280',
+    marginLeft: '8px'
   },
   formCard: {
     backgroundColor: 'white',
-    borderRadius: '12px',
+    borderRadius: '6px',
     border: '1px solid #e5e7eb',
-    padding: '32px 40px'
+    padding: '8px 12px', // Ultra-low padding
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    overflowY: 'auto' // Allow internal scroll only if necessary
   },
   section: {
-    marginBottom: '36px',
-    paddingBottom: '28px',
+    marginBottom: '8px', // Very tight
+    paddingBottom: '4px',
     borderBottom: '1px solid #f3f4f6'
   },
   sectionTitle: {
-    fontSize: '18px',
+    fontSize: '13px', // Smaller
     fontWeight: '600',
     color: '#374151',
-    marginBottom: '20px',
+    marginBottom: '6px',
     marginTop: 0
   },
   label: {
-    fontSize: '14px',
+    fontSize: '11px', // Tiny but readable
     fontWeight: '500',
     color: '#374151',
-    marginBottom: '8px',
+    marginBottom: '1px',
     display: 'block'
   },
   input: {
-    padding: '12px 16px',
+    padding: '3px 8px', // Minimal padding
+    height: '28px', // Fixed small height
     border: '1px solid #d1d5db',
-    borderRadius: '8px',
-    fontSize: '14px',
+    borderRadius: '4px',
+    fontSize: '12px',
     width: '100%',
     backgroundColor: '#fff',
-    transition: 'border-color 0.2s, box-shadow 0.2s'
+    transition: 'border-color 0.2s'
   },
   textarea: {
-    padding: '12px 16px',
+    padding: '4px 8px',
     border: '1px solid #d1d5db',
-    borderRadius: '8px',
-    fontSize: '14px',
+    borderRadius: '4px',
+    fontSize: '12px',
     width: '100%',
-    resize: 'vertical',
-    minHeight: '100px',
+    resize: 'none', // Disable resize to keep layout fixed
+    minHeight: '30px', // Very small
+    height: '30px',
     fontFamily: 'inherit',
-    backgroundColor: '#fff',
-    transition: 'border-color 0.2s, box-shadow 0.2s'
+    backgroundColor: '#fff'
   },
   workItemsContainer: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px'
+    gap: '2px'
   },
   workItemRow: {
     display: 'flex',
-    gap: '12px',
-    alignItems: 'flex-start'
+    gap: '4px',
+    alignItems: 'flex-end',
+    marginBottom: '2px'
   },
   workItemSelect: {
-    flex: 1
+    flex: 2
   },
   workItemInput: {
     flex: 1
   },
   removeBtn: {
-    padding: '12px 16px',
+    padding: '0 8px',
     backgroundColor: '#fee2e2',
     color: '#dc2626',
     border: '1px solid #fecaca',
-    borderRadius: '8px',
-    fontSize: '14px',
+    borderRadius: '4px',
+    fontSize: '12px',
+    cursor: 'pointer',
+    height: '28px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  addItemBtn: {
+    padding: '2px 10px',
+    backgroundColor: '#f9fafb',
+    color: '#4b5563',
+    border: '1px dashed #d1d5db',
+    borderRadius: '4px',
+    fontSize: '11px',
     fontWeight: '500',
     cursor: 'pointer',
     marginTop: '0'
   },
-  addItemBtn: {
-    padding: '12px 20px',
-    backgroundColor: '#f9fafb',
-    color: '#4b5563',
-    border: '1px dashed #d1d5db',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    alignSelf: 'flex-start',
-    marginTop: '8px'
-  },
   actions: {
     display: 'flex',
     justifyContent: 'flex-end',
-    gap: '12px',
-    marginTop: '8px',
-    paddingTop: '24px'
+    gap: '8px',
+    marginTop: 'auto', // Push to bottom
+    paddingTop: '8px'
   },
   cancelBtn: {
-    padding: '12px 28px',
+    padding: '4px 16px',
     backgroundColor: '#fff',
     color: '#374151',
     border: '1px solid #d1d5db',
-    borderRadius: '8px',
-    fontSize: '14px',
+    borderRadius: '4px',
+    fontSize: '12px',
     fontWeight: '500',
     cursor: 'pointer'
   },
   submitBtn: {
-    padding: '12px 28px',
+    padding: '4px 16px',
     backgroundColor: '#2563eb',
     color: 'white',
     border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
+    borderRadius: '4px',
+    fontSize: '12px',
     fontWeight: '500',
     cursor: 'pointer'
   }
