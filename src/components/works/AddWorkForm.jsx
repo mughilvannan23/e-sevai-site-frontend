@@ -38,7 +38,7 @@ const AddWorkForm = ({
         {/* Section 1: Basic Info */}
         <div style={styles.section}>
           <h3 style={styles.sectionTitle}>Basic Info</h3>
-          <div className="row g-2">
+          <div className="row g-1">
             <div className="col-12 col-md-4">
               <label style={styles.label}>Date</label>
               <input
@@ -46,7 +46,7 @@ const AddWorkForm = ({
                 name="date"
                 value={formData.date}
                 onChange={onInputChange}
-                className="form-control"
+                className="form-control form-control-sm"
                 required
               />
             </div>
@@ -57,7 +57,7 @@ const AddWorkForm = ({
                 name="time"
                 value={formData.time}
                 onChange={onInputChange}
-                className="form-control"
+                className="form-control form-control-sm"
                 required
               />
             </div>
@@ -67,7 +67,7 @@ const AddWorkForm = ({
         {/* Section 2: Customer Details */}
         <div style={styles.section}>
           <h3 style={styles.sectionTitle}>Customer Details</h3>
-          <div className="row g-2">
+          <div className="row g-1">
             <div className="col-12 col-md-6">
               <label style={styles.label}>Customer Name</label>
               <input
@@ -75,7 +75,7 @@ const AddWorkForm = ({
                 name="customerName"
                 value={formData.customerName}
                 onChange={onInputChange}
-                className="form-control"
+                className="form-control form-control-sm"
                 placeholder="Enter customer name"
                 required
               />
@@ -87,7 +87,7 @@ const AddWorkForm = ({
                 name="customerPhone"
                 value={formData.customerPhone}
                 onChange={onInputChange}
-                className="form-control"
+                className="form-control form-control-sm"
                 placeholder="Enter customer phone number"
               />
             </div>
@@ -100,16 +100,16 @@ const AddWorkForm = ({
           <h3 style={styles.sectionTitle}>Work Items</h3>
           <div style={styles.workItemsContainer}>
             <div className="table-responsive">
-              <table className="table table-bordered mb-2 align-middle">
+              <table className="table table-bordered mb-0 align-middle" style={{ fontSize: '11px' }}>
                 <thead className="table-light">
                   <tr>
-                    <th>Work/Service</th>
-                    <th style={{ width: '150px' }}>App. Number</th>
-                    <th style={{ width: '100px' }}>Quantity</th>
-                    <th>Total</th>
-                    <th><label style={styles.label}><b>Other Charges</b> (₹)</label></th>
-                    <th><label style={styles.label}><b>Discount</b> (₹)</label></th>
-                    <th style={{ width: '50px' }}></th>
+                    <th className="py-1">Work/Service</th>
+                    <th className="py-1" style={{ width: '130px' }}>App. Number</th>
+                    <th className="py-1" style={{ width: '90px' }}>Quantity</th>
+                    <th className="py-1">Total</th>
+                    <th className="py-1"><label style={{...styles.label, marginBottom: 0, fontSize: '10px'}}><b>Other</b> (₹)</label></th>
+                    <th className="py-1"><label style={{...styles.label, marginBottom: 0, fontSize: '10px'}}><b>Discount</b> (₹)</label></th>
+                    <th className="py-1" style={{ width: '35px' }}></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -122,11 +122,12 @@ const AddWorkForm = ({
 
                     return (
                       <tr key={index}>
-                        <td>
+                        <td className="p-1">
                           <select
                             value={item.workItemId}
                             onChange={(e) => onItemChange(index, 'workItemId', e.target.value)}
-                            className="form-select form-select-sm"
+                            className="form-select form-select-sm py-0 px-1"
+                            style={{ height: '24px', fontSize: '11px' }}
                             required={!item.workTitle && !item.workItemId}
                           >
                             <option value="">Select Work Item...</option>
@@ -139,59 +140,64 @@ const AddWorkForm = ({
                               type="text"
                               value={item.workTitle}
                               onChange={(e) => onItemChange(index, 'workTitle', e.target.value)}
-                              className="form-control form-control-sm mt-1"
+                              className="form-control form-control-sm mt-1 py-0 px-1"
+                              style={{ height: '24px', fontSize: '11px' }}
                               placeholder="Custom Title"
                             />
                           )}
                         </td>
-                        <td>
+                        <td className="p-1">
                           <input
                             type="text"
                             value={item.applicationNumber || ''}
                             onChange={(e) => onItemChange(index, 'applicationNumber', e.target.value)}
-                            className="form-control form-control-sm"
+                            className="form-control form-control-sm py-0 px-1"
+                            style={{ height: '24px', fontSize: '11px' }}
                             placeholder="Optional"
                           />
                         </td>
-                        <td>
+                        <td className="p-1">
                           <input
                             type="number"
                             min="1"
                             value={item.quantity}
                             onChange={(e) => onItemChange(index, 'quantity', e.target.value)}
-                            className="form-control form-control-sm"
+                            className="form-control form-control-sm py-0 px-1"
+                            style={{ height: '24px', fontSize: '11px' }}
                           />
                         </td>
-                        <td className="fw-bold">₹{rowTotal}</td>
-                        <td>
+                        <td className="fw-bold p-1">₹{rowTotal}</td>
+                        <td className="p-1">
                           <input
                             type="number"
                             value={item.otherCharges}
                             onChange={(e) => onItemChange(index, 'otherCharges', e.target.value)}
-                            className="form-control form-control-sm"
+                            className="form-control form-control-sm py-0 px-1"
+                            style={{ height: '24px', fontSize: '11px' }}
                             placeholder="0.00"
                             min="0"
                             step="0.01"
                           />
                         </td>
-                        <td>
+                        <td className="p-1">
                           <input
                             type="number"
                             value={item.discount}
                             onChange={(e) => onItemChange(index, 'discount', e.target.value)}
-                            className="form-control form-control-sm"
+                            className="form-control form-control-sm py-0 px-1"
+                            style={{ height: '24px', fontSize: '11px' }}
                             placeholder="0.00"
                             min="0"
                             step="0.01"
                           />
                         </td>
-                        <td className="text-center">
+                        <td className="text-center p-1">
                           {formData.items.length > 1 && (
                             <button
                               type="button"
                               onClick={() => removeItemRow(index)}
-                              className="btn btn-sm"
-                              style={{ border: '1px solid #e74c3c', color: '#e74c3c', borderRadius: '10px' }}
+                              className="btn btn-sm p-0 d-flex align-items-center justify-content-center"
+                              style={{ border: '1px solid #e74c3c', color: '#e74c3c', borderRadius: '4px', width: '20px', height: '20px', fontSize: '10px' }}
                             >
                               ✕
                             </button>
@@ -207,21 +213,20 @@ const AddWorkForm = ({
               type="button"
               style={styles.addItemBtn}
               onClick={addItemRow}
-              className="btn"
+              className="btn btn-sm py-1 px-2"
             >
-              Add Another Work
+              + Add Item
             </button>
           </div>
 
-          <div className="row g-2 mt-1">
-            <div className="col-12 col-md-4 mt-3"></div>
-            <div className="col-12 col-md-12 mt-3 text-end d-flex flex-column align-items-end gap-1">
+          <div className="row g-1 mt-0">
+            <div className="col-12 text-end d-flex flex-column align-items-end gap-0">
               {formData.totalDiscount > 0 && (
-                <span style={{ fontSize: '1rem', color: '#e74c3c', fontWeight: '500' }}>
+                <span style={{ fontSize: '0.75rem', color: '#e74c3c', fontWeight: '600' }}>
                   Total Discount: -₹{(parseFloat(formData.totalDiscount) || 0).toFixed(2)}
                 </span>
               )}
-              <strong style={{ fontSize: '1.25rem', color: '#3b8132', fontWeight: '800' }}>
+              <strong style={{ fontSize: '1rem', color: '#3b8132', fontWeight: '800' }}>
                 Final Amount: ₹{(parseFloat(formData.amount) || 0).toFixed(2)}
               </strong>
               {formData.items.some(item => {
@@ -230,15 +235,15 @@ const AddWorkForm = ({
               const rechargeKeywords = ['recharge', 'eb bill', 'electric charge', 'electricity', 'money transfer', 'transfer'];
               return rechargeKeywords.some(key => name.toLowerCase().includes(key.toLowerCase()));
             }) && (
-              <div className="col-12 col-lg-12 mt-2 text-start">
-                <label style={{ ...styles.label, color: '#000', fontWeight: 'bold' }}>Manually Enter Transfer/Recharge Amount (₹)</label>
+              <div className="col-12 col-lg-8 mt-1 text-start align-self-end">
+                <label style={{ ...styles.label, color: '#000', fontWeight: 'bold', fontSize: '10px' }}>Enter Transfer/Recharge Amount (₹)</label>
                 <input
                   type="number"
                   name="applicationFee"
                   value={formData.applicationFee || ''}
                   onChange={onInputChange}
-                  className="form-control"
-                  style={{ border: '2px solid #000' }}
+                  className="form-control form-control-sm py-0 px-1"
+                  style={{ border: '1px solid #000', height: '24px', fontSize: '11px' }}
                   placeholder="0.00"
                   min="0"
                   step="0.01"
@@ -250,10 +255,10 @@ const AddWorkForm = ({
                   const name = (wi ? wi.name : item.workTitle) || '';
                   return name.toLowerCase().includes('handcash to gpay transfer');
                 }) && (
-                  <div className={`mt-2 p-2 rounded d-flex justify-content-between align-items-center ${parseFloat(formData.applicationFee) > shopBalance ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'}`} style={{ fontSize: '0.85rem', border: '1px solid currentColor' }}>
-                    <span><strong>Shop Balance:</strong> ₹{shopBalance.toLocaleString()}</span>
+                  <div className={`mt-1 p-1 rounded d-flex justify-content-between align-items-center ${parseFloat(formData.applicationFee) > shopBalance ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'}`} style={{ fontSize: '0.7rem', border: '1px solid currentColor', lineHeight: '1' }}>
+                    <span><strong>Shop Bal:</strong> ₹{shopBalance.toLocaleString()}</span>
                     {parseFloat(formData.applicationFee) > shopBalance && (
-                      <span className="fw-bold">⚠️ Insufficient Balance</span>
+                      <span className="fw-bold">⚠️ Insufficient</span>
                     )}
                   </div>
                 )}
@@ -266,7 +271,7 @@ const AddWorkForm = ({
         {/* Section 4: Status & Notes */}
         <div style={{ ...styles.section, borderBottom: 'none', marginBottom: 0, paddingBottom: 0 }}>
           <h3 style={styles.sectionTitle}>Status & Notes</h3>
-          <div className="row g-2">
+          <div className="row g-1">
             
             <div className="col-12 col-md-6">
               <label style={styles.label}>Payment Status</label>
@@ -274,7 +279,7 @@ const AddWorkForm = ({
                 name="paymentStatus"
                 value={formData.paymentStatus}
                 onChange={onInputChange}
-                className="form-select"
+                className="form-select form-select-sm"
               >
                 <option value="Paid">Paid</option>
                 <option value="Pending">Pending</option>
@@ -289,7 +294,7 @@ const AddWorkForm = ({
                     name="paymentMethod"
                     value={formData.paymentMethod}
                     onChange={onInputChange}
-                    className="form-select"
+                    className="form-select form-select-sm"
                     required
                   >
                     <option value="">Select Method...</option>
@@ -308,7 +313,7 @@ const AddWorkForm = ({
                         name="gpayAmount"
                         value={formData.gpayAmount || ''}
                         onChange={onInputChange}
-                        className="form-control"
+                        className="form-control form-control-sm"
                         placeholder="0.00"
                         min="0"
                         max={formData.amount}
@@ -323,7 +328,7 @@ const AddWorkForm = ({
                         name="cashAmount"
                         value={formData.cashAmount || ''}
                         onChange={onInputChange}
-                        className="form-control"
+                        className="form-control form-control-sm"
                         placeholder="0.00"
                         min="0"
                         max={formData.amount}
@@ -342,7 +347,7 @@ const AddWorkForm = ({
                 name="workStatus"
                 value={formData.workStatus}
                 onChange={onInputChange}
-                className="form-select"
+                className="form-select form-select-sm"
               >
                 <option value="In Progress">Pending</option>
                 <option value="Completed">Completed</option>
@@ -354,14 +359,16 @@ const AddWorkForm = ({
                 name="notes"
                 value={formData.notes}
                 onChange={onInputChange}
-                className="form-control"
+                className="form-control form-control-sm"
                 placeholder="Add any additional notes..."
-                rows="3"
-                style={{ resize: 'vertical', fontFamily: 'inherit', borderRadius: '10px' }}
+                rows="1"
+                style={{ resize: 'vertical', fontFamily: 'inherit', borderRadius: '6px', minHeight: '30px' }}
               />
             </div>
           </div>
         </div>
+
+
 
         {/* Action buttons */}
         <div style={styles.formActions}>

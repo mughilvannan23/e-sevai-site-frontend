@@ -324,44 +324,50 @@ const AddWorkPage = () => {
   };
 
   return (
-    <div className="container-fluid p-0">
-      <div className="mb-4">
-        <h1 style={{ color: '#3b8132', fontWeight: '700', margin: '0 0 8px 0', letterSpacing: '0.5px' }} className="fs-3">New Sales Entry</h1>
-        <p style={{ color: '#666', margin: 0 }} className="mb-0">Fill in the details to record a new work entry</p>
-      </div>
+    <div className="container-fluid py-1 px-3">
+      <div className="mx-auto" style={{ width: '100%' }}>
+        <div className="mb-1 d-flex align-items-center justify-content-between">
+          <div>
+            <h1 style={{ color: '#3b8132', fontWeight: '700', margin: 0, letterSpacing: '0.4px' }} className="fs-5">New Sales Entry</h1>
+            <p style={{ color: '#666', margin: 0, fontSize: '11px' }}>Fill details to record work entry</p>
+          </div>
+        </div>
 
-      <AddWorkForm
-        formData={formData}
-        onSubmit={handleSubmit}
-        onReset={handleReset}
-        onInputChange={handleInputChange}
-        onItemChange={handleItemChange}
-        addItemRow={addItemRow}
-        removeItemRow={removeItemRow}
-        submitting={submitting}
-        workItems={workItems}
-        shopBalance={shopBalance}
-      />
+        <AddWorkForm
+          formData={formData}
+          onSubmit={handleSubmit}
+          onReset={handleReset}
+          onInputChange={handleInputChange}
+          onItemChange={handleItemChange}
+          addItemRow={addItemRow}
+          removeItemRow={removeItemRow}
+          submitting={submitting}
+          workItems={workItems}
+          shopBalance={shopBalance}
+        />
 
-      <WorkPreviewModal
-        isOpen={showPreview}
-        onClose={() => setShowPreview(false)}
-        onConfirm={handleConfirmSubmit}
-        formData={formData}
-        workItems={workItems}
-      />
-      
-      <div className="mt-3">
-        <button 
-          className="btn" 
-          style={{ backgroundColor: 'white', color: '#3b8132', border: '1px solid #3b8132', borderRadius: '10px', fontWeight: '600', padding: '10px 24px' }}
-          onClick={() => navigate('/employee/works')}
-        >
-          Cancel & View All Entries
-        </button>
+
+        <WorkPreviewModal
+          isOpen={showPreview}
+          onClose={() => setShowPreview(false)}
+          onConfirm={handleConfirmSubmit}
+          formData={formData}
+          workItems={workItems}
+        />
+        
+        <div className="mt-2 text-center">
+          <button 
+            className="btn btn-sm" 
+            style={{ backgroundColor: 'white', color: '#3b8132', border: '1px solid #3b8132', borderRadius: '8px', fontWeight: '600', padding: '6px 16px', fontSize: '12px' }}
+            onClick={() => navigate('/employee/works')}
+          >
+            Cancel & View All Entries
+          </button>
+        </div>
       </div>
     </div>
   );
 };
+
 
 export default AddWorkPage;

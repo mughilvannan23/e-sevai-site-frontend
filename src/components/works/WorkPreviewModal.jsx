@@ -110,19 +110,20 @@ const WorkPreviewModal = ({ isOpen, onClose, onConfirm, formData, workItems }) =
                 <span style={{ ...styles.previewValue, color: '#e74c3c' }}>-₹{formData.totalDiscount}</span>
               </div>
             )}
-            <div style={{ ...styles.previewRow, marginTop: '10px', fontSize: '18px' }}>
+            <div style={{ ...styles.previewRow, marginTop: '8px', fontSize: '15px' }}>
               <span style={{ ...styles.previewLabel, fontWeight: 'bold' }}>Final Amount:</span>
-              <span style={{ ...styles.previewValue, color: '#3b8132', fontSize: '20px' }}>₹{formData.amount}</span>
+              <span style={{ ...styles.previewValue, color: '#3b8132', fontSize: '17px' }}>₹{formData.amount}</span>
             </div>
           </div>
 
           {formData.notes && (
             <div style={styles.previewSection}>
               <h3 style={styles.previewTitle}>Notes</h3>
-              <p style={{ fontSize: '14px', color: '#555', margin: 0 }}>{formData.notes}</p>
+              <p style={{ fontSize: '13px', color: '#555', margin: 0 }}>{formData.notes}</p>
             </div>
           )}
         </div>
+
 
         <div style={styles.modalFooter}>
           <button style={styles.editModalBtn} onClick={onClose}>
