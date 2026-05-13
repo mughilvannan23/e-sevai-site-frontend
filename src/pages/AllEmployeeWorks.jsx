@@ -13,7 +13,7 @@ const AllEmployeeWorks = () => {
   const [pagination, setPagination] = useState({});
   const [selectedWork, setSelectedWork] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  
+
   const [filters, setFilters] = useState({
     page: 1,
     limit: 10,
@@ -51,9 +51,9 @@ const AllEmployeeWorks = () => {
         setWorks(response.data.works);
         setPagination(response.data.pagination);
       }
-    } catch (err) { 
+    } catch (err) {
       console.error('Error fetching works:', err);
-      error('Failed to fetch works'); 
+      error('Failed to fetch works');
     }
     finally { setLoading(false); }
   };
@@ -121,35 +121,35 @@ const AllEmployeeWorks = () => {
           <div className="row g-3">
             <div className="col-12 col-md-4">
               <label style={styles.label}>Search Customer/Work</label>
-              <input 
-                type="text" 
-                name="search" 
-                value={filters.search} 
-                onChange={handleFilterChange} 
-                placeholder="Search..." 
-                className="form-control" 
+              <input
+                type="text"
+                name="search"
+                value={filters.search}
+                onChange={handleFilterChange}
+                placeholder="Search..."
+                className="form-control"
                 style={{ borderRadius: '10px' }}
               />
             </div>
             <div className="col-12 col-sm-6 col-md-4">
               <label style={styles.label}>From Date</label>
-              <input 
-                type="date" 
-                name="startDate" 
-                value={filters.startDate} 
-                onChange={handleFilterChange} 
-                className="form-control" 
+              <input
+                type="date"
+                name="startDate"
+                value={filters.startDate}
+                onChange={handleFilterChange}
+                className="form-control"
                 style={{ borderRadius: '10px' }}
               />
             </div>
             <div className="col-12 col-sm-6 col-md-4">
               <label style={styles.label}>To Date</label>
-              <input 
-                type="date" 
-                name="endDate" 
-                value={filters.endDate} 
-                onChange={handleFilterChange} 
-                className="form-control" 
+              <input
+                type="date"
+                name="endDate"
+                value={filters.endDate}
+                onChange={handleFilterChange}
+                className="form-control"
                 style={{ borderRadius: '10px' }}
               />
             </div>
@@ -157,11 +157,11 @@ const AllEmployeeWorks = () => {
           <div className="row g-3">
             <div className="col-12 col-md-4">
               <label style={styles.label}>Employee</label>
-              <select 
-                name="employeeId" 
-                value={filters.employeeId} 
-                onChange={handleFilterChange} 
-                className="form-select" 
+              <select
+                name="employeeId"
+                value={filters.employeeId}
+                onChange={handleFilterChange}
+                className="form-select"
                 style={{ borderRadius: '10px' }}
               >
                 <option value="">All Employees</option>
@@ -172,11 +172,11 @@ const AllEmployeeWorks = () => {
             </div>
             <div className="col-12 col-sm-6 col-md-4">
               <label style={styles.label}>Payment Status</label>
-              <select 
-                name="paymentStatus" 
-                value={filters.paymentStatus} 
-                onChange={handleFilterChange} 
-                className="form-select" 
+              <select
+                name="paymentStatus"
+                value={filters.paymentStatus}
+                onChange={handleFilterChange}
+                className="form-select"
                 style={{ borderRadius: '10px' }}
               >
                 <option value="">All</option>
@@ -186,11 +186,11 @@ const AllEmployeeWorks = () => {
             </div>
             <div className="col-12 col-sm-6 col-md-4">
               <label style={styles.label}>Work Status</label>
-              <select 
-                name="workStatus" 
-                value={filters.workStatus} 
-                onChange={handleFilterChange} 
-                className="form-select" 
+              <select
+                name="workStatus"
+                value={filters.workStatus}
+                onChange={handleFilterChange}
+                className="form-select"
                 style={{ borderRadius: '10px' }}
               >
                 <option value="">All</option>
@@ -201,9 +201,9 @@ const AllEmployeeWorks = () => {
           </div>
           <div className="d-flex flex-column flex-sm-row gap-2 mt-2">
             <button type="submit" style={styles.searchBtn} className="btn w-100 w-sm-auto text-white">Apply Filters</button>
-            <button 
-              type="button" 
-              style={styles.filterResetBtn} 
+            <button
+              type="button"
+              style={styles.filterResetBtn}
               className="btn w-100 w-sm-auto"
               onClick={() => setFilters({ page: 1, limit: 10, search: '', startDate: '', endDate: '', employeeId: '', paymentStatus: '', workStatus: '' })}
             >
@@ -253,8 +253,8 @@ const AllEmployeeWorks = () => {
                 <td style={styles.td}>{getStatusBadge(work.workStatus, 'work')}</td>
                 <td style={styles.td}>{formatTimeOnly(work.createdAt)}</td>
                 <td style={styles.td}>
-                  <button 
-                    className="btn btn-sm" 
+                  <button
+                    className="btn btn-sm"
                     style={{ backgroundColor: '#3b8132', color: 'white', borderRadius: '8px', padding: '5px 15px', fontWeight: '600' }}
                     onClick={() => handleViewWork(work)}
                   >
@@ -274,12 +274,12 @@ const AllEmployeeWorks = () => {
 
       {pagination.totalPages > 1 && (
         <div className="mt-4 d-flex justify-content-center">
-          <Pagination 
-            currentPage={pagination.currentPage} 
-            totalPages={pagination.totalPages} 
-            totalItems={pagination.totalWorks} 
-            itemsPerPage={pagination.limit} 
-            onPageChange={(page) => setFilters(prev => ({ ...prev, page }))} 
+          <Pagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            totalItems={pagination.totalWorks}
+            itemsPerPage={pagination.limit}
+            onPageChange={(page) => setFilters(prev => ({ ...prev, page }))}
           />
         </div>
       )}
@@ -305,7 +305,7 @@ const AllEmployeeWorks = () => {
                       <div className="mb-2"><strong>Date:</strong> {new Date(selectedWork.date).toLocaleDateString('en-IN')}</div>
                     </div>
                   </div>
-                  
+
                   {/* Status Info */}
                   <div className="col-md-6">
                     <div className="p-3 bg-white rounded shadow-sm">

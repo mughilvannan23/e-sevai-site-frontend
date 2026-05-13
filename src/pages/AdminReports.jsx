@@ -245,9 +245,9 @@ const AdminReports = () => {
   const getWorkTitles = (work) => {
     return work.items && work.items.length > 0
       ? work.items.map(item => {
-          const appNum = item.applicationNumber ? ` [#${item.applicationNumber}]` : '';
-          return `${item.title}${appNum} (x${item.quantity || 1})`;
-        }).join(', ')
+        const appNum = item.applicationNumber ? ` [#${item.applicationNumber}]` : '';
+        return `${item.title}${appNum} (x${item.quantity || 1})`;
+      }).join(', ')
       : work.workTitle || '';
   };
 
@@ -595,7 +595,7 @@ const AdminReports = () => {
                             <td style={styles.td}>{formatCurrency(work.gpayAmount || 0)}</td>
                             <td style={styles.td}>{formatCurrency(work.cashAmount || 0)}</td>
                             <td style={{ ...styles.td, fontWeight: 'bold' }}>{formatCurrency(work.totalAmount || work.amount || 0)}</td>
-                             <td style={styles.td}>{work.employee?.name || 'Unknown'}</td>
+                            <td style={styles.td}>{work.employee?.name || 'Unknown'}</td>
                             <td style={styles.td}>{work.employee?.mobile || 'N/A'}</td>
                             <td style={{ ...styles.td, whiteSpace: 'normal', maxWidth: '200px' }}>{getWorkTitles(work)}</td>
                             <td style={styles.td}>{formatCurrency(workCharge)}</td>
@@ -618,7 +618,7 @@ const AdminReports = () => {
                             </td>
                             <td style={styles.td}>
                               {work.notes ? (
-                                <button 
+                                <button
                                   onClick={() => {
                                     setSelectedNote(work.notes);
                                     setShowNotesModal(true);
@@ -633,7 +633,7 @@ const AdminReports = () => {
                               )}
                             </td>
                             <td style={styles.td}>
-                              <button 
+                              <button
                                 onClick={() => {
                                   setSelectedWork(work);
                                   setShowDetailsModal(true);
@@ -757,8 +757,8 @@ const AdminReports = () => {
           <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
             <div style={styles.modalHeader}>
               <h4 style={styles.modalTitle}>Work Notes</h4>
-              <button 
-                style={styles.closeBtn} 
+              <button
+                style={styles.closeBtn}
                 onClick={() => setShowNotesModal(false)}
               >
                 ✕
@@ -777,8 +777,8 @@ const AdminReports = () => {
           <div style={{ ...styles.modalContent, maxWidth: '600px' }} onClick={e => e.stopPropagation()}>
             <div style={styles.modalHeader}>
               <h4 style={styles.modalTitle}>Work Details</h4>
-              <button 
-                style={styles.closeBtn} 
+              <button
+                style={styles.closeBtn}
                 onClick={() => setShowDetailsModal(false)}
               >
                 ✕

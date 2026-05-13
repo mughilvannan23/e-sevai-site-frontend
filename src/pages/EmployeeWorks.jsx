@@ -156,22 +156,29 @@ const EmployeeWorks = () => {
   const handlePrint = (work) => {
     const printWindow = window.open('', '_blank');
 
+    const totalPresetAmount = work.items?.reduce((sum, i) => sum + (i.presetAmount || 0), 0) || 0;
     const itemsHtml = work.items?.length
       ? work.items.map(i => {
         const qty = i.quantity || 1;
         const price = (i.workChargeAtTime || 0) + (i.serviceChargeAtTime || 0);
-        const subtotal = qty * price + (i.otherCharges || 0);
+        const presetAmt = i.presetAmount || 0;
+        const otherC = i.otherCharges || 0;
         const itemDiscount = i.discount || 0;
-        const total = subtotal - itemDiscount;
+        const subtotal = (qty * price) + presetAmt + otherC - itemDiscount;
+
+        const chargeLabel = i.presetChargeType && i.presetChargeType !== 'None' ? i.presetChargeType : 'Amt';
 
         return `
           <div class="row">
-            <span>${i.title}</span>
-            <span>${qty} x ₹${price} = ₹${subtotal}</span>
+            <span class="bold">${i.title}</span>
+            <span class="bold">₹${subtotal.toLocaleString()}</span>
           </div>
-          ${itemDiscount > 0 ? `<div class="row small-text"><span>Discount:</span><span>-₹${itemDiscount}</span></div>` : ''}
+          ${price > 0 ? `<div class="row small-text"><span>Rate:</span><span>${qty} x ₹${price} = ₹${qty * price}</span></div>` : ''}
+          ${presetAmt > 0 ? `<div class="row small-text"><span>${chargeLabel}:</span><span>₹${presetAmt.toLocaleString()}</span></div>` : ''}
+          ${otherC > 0 ? `<div class="row small-text"><span>Other:</span><span>₹${otherC.toLocaleString()}</span></div>` : ''}
+          ${itemDiscount > 0 ? `<div class="row small-text"><span>Discount:</span><span>-₹${itemDiscount.toLocaleString()}</span></div>` : ''}
           ${i.applicationNumber
-            ? `<div class="row"><span>App No:</span><span>${i.applicationNumber}</span></div>`
+            ? `<div class="row small-text"><span>App No:</span><span>${i.applicationNumber}</span></div>`
             : ''
           }
         `;
@@ -182,39 +189,48 @@ const EmployeeWorks = () => {
   <html>
   <head>
     <style>
-      body { width: 280px; font-family: monospace; font-size: 12px; padding: 5px; }
+      body { width: 280px; font-family: 'Courier New', Courier, monospace; font-size: 12px; padding: 10px; color: #000; }
       .center { text-align: center; }
       .bold { font-weight: bold; }
-      .line { border-top: 1px dashed #000; margin: 6px 0; }
-      .row { display: flex; justify-content: space-between; margin: 2px 0; }
-      .title { font-size: 14px; font-weight: bold; text-align: center; }
-      .small-text { font-size: 10px; color: #555; }
+      .line { border-top: 1px dashed #000; margin: 8px 0; }
+      .row { display: flex; justify-content: space-between; margin: 4px 0; }
+      .header-title { font-size: 16px; font-weight: bold; text-align: center; line-height: 1.2; }
+      .small-text { font-size: 11px; color: #333; }
+      .total-section { margin-top: 10px; border-top: 1px solid #000; padding-top: 5px; }
     </style>
   </head>
   <body>
-    <div class="title">SEVAGAN CSC &<br/>E-SEVA CENTRE</div>
+    <div class="header-title">SEVAGAN CSC &<br/>E-SEVA CENTRE</div>
+    <div class="center small-text">Tiruchirappalli, Tamil Nadu</div>
     <div class="line"></div>
 
     <div class="row">
-      <span>${new Date(work.date).toLocaleDateString()}</span>
-      <span>${new Date(work.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+      <span>Date: ${new Date(work.date).toLocaleDateString('en-IN')}</span>
+      <span>Time: ${new Date(work.date).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
     </div>
 
     <div class="line"></div>
-    <div>Customer: ${work.customerName}</div>
-    <div>Phone: ${work.customerPhone || '-'}</div>
+    <div><span class="bold">Customer:</span> ${work.customerName}</div>
+    ${work.customerPhone ? `<div><span class="bold">Phone:</span> ${work.customerPhone}</div>` : ''}
 
     <div class="line"></div>
-    <div class="bold row"><span>Work</span><span>Amt</span></div>
+    <div class="bold row"><span>Description</span><span>Amount</span></div>
+    <div class="line" style="margin-top: 2px;"></div>
 
     ${itemsHtml}
 
-    <div class="line"></div>
-    ${work.totalDiscount > 0 ? `<div class="row"><span>Total Discount:</span><span>-₹${work.totalDiscount}</span></div>` : ''}
-    <div class="row bold"><span>FINAL AMOUNT</span><span>₹${work.amount}</span></div>
+    <div class="total-section">
+      ${totalPresetAmount > 0 ? `<div class="row"><span>Recharge/Transfer Total:</span><span>₹${totalPresetAmount.toLocaleString()}</span></div>` : ''}
+      ${work.totalDiscount > 0 ? `<div class="row"><span>Total Discount:</span><span>-₹${work.totalDiscount.toLocaleString()}</span></div>` : ''}
+      <div class="row bold" style="font-size: 14px;"><span>FINAL PAYABLE</span><span>₹${(work.totalAmount || work.amount || 0).toLocaleString()}</span></div>
+    </div>
 
     <div class="line"></div>
-    <div class="center">Thank You<br/>Visit Again 🙏</div>
+    
+
+    <div class="line"></div>
+    <div class="center bold">Thank You! Visit Again 🙏</div>
+
   </body>
   </html>`;
 
@@ -222,6 +238,18 @@ const EmployeeWorks = () => {
     printWindow.document.close();
     printWindow.print();
   };
+
+    // <div class="center small-text" style="margin-top: 5px;">* Software generated bill *</div>
+  // <div class="row small-text">
+  //   //   <span>Payment Method:</span>
+  //   //   <span>${work.paymentMethod || 'Cash'}</span>
+  //   // </div>
+    // ${work.paymentMethod === 'Both' ? `
+    //   <div class="row small-text"><span>GPay Portion:</span><span>₹${work.gpayAmount || 0}</span></div>
+    //   <div class="row small-text"><span>Cash Portion:</span><span>₹${work.cashAmount || 0}</span></div>
+    // ` : ''}
+    
+    // ${work.notes ? `<div class="line"></div><div class="small-text"><span class="bold">Notes:</span> ${work.notes}</div>` : ''}
 
   const formatDateTime = (date) => {
     if (!date) return '-';
