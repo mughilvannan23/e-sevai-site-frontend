@@ -153,11 +153,11 @@ const EmployeeWorks = () => {
   };
 
   // ── Print ──────────────────────────────────────────────────────────────────
- const handlePrint = (work) => {
-  const printWindow = window.open('', '_blank');
+  const handlePrint = (work) => {
+    const printWindow = window.open('', '_blank');
 
-  const itemsHtml = work.items?.length
-    ? work.items.map(i => {
+    const itemsHtml = work.items?.length
+      ? work.items.map(i => {
         const qty = i.quantity || 1;
         const price = (i.workChargeAtTime || 0) + (i.serviceChargeAtTime || 0);
         const subtotal = qty * price + (i.otherCharges || 0);
@@ -170,15 +170,15 @@ const EmployeeWorks = () => {
             <span>${qty} x ₹${price} = ₹${subtotal}</span>
           </div>
           ${itemDiscount > 0 ? `<div class="row small-text"><span>Discount:</span><span>-₹${itemDiscount}</span></div>` : ''}
-          ${i.applicationNumber 
-            ? `<div class="row"><span>App No:</span><span>${i.applicationNumber}</span></div>` 
+          ${i.applicationNumber
+            ? `<div class="row"><span>App No:</span><span>${i.applicationNumber}</span></div>`
             : ''
           }
         `;
       }).join('')
-    : '';
+      : '';
 
-  const content = `
+    const content = `
   <html>
   <head>
     <style>
@@ -218,10 +218,10 @@ const EmployeeWorks = () => {
   </body>
   </html>`;
 
-  printWindow.document.write(content);
-  printWindow.document.close();
-  printWindow.print();
-};
+    printWindow.document.write(content);
+    printWindow.document.close();
+    printWindow.print();
+  };
 
   const formatDateTime = (date) => {
     if (!date) return '-';
@@ -257,8 +257,8 @@ const EmployeeWorks = () => {
       </div>
 
       <div className="d-flex justify-content-end mb-4">
-        <button 
-          className="btn" 
+        <button
+          className="btn"
           style={{ backgroundColor: '#3b8132', color: 'white', borderRadius: '10px', fontWeight: '700', padding: '10px 24px', boxShadow: '0 4px 10px rgba(59, 129, 50, 0.2)' }}
           onClick={() => navigate('/add-work')}
         >

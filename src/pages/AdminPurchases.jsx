@@ -5,7 +5,7 @@ import Loading from '../components/common/Loading';
 
 const AdminPurchases = () => {
     const [purchases, setPurchases] = useState([]);
-    const [shopBalance, setShopBalance] = useState(0);
+    const [balances, setBalances] = useState({ shopBalance: 0, gpayBalance: 0 });
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [filter, setFilter] = useState('all');
@@ -16,6 +16,8 @@ const AdminPurchases = () => {
         amount: '',
         date: new Date().toISOString().split('T')[0]
     });
+    const [isEditing, setIsEditing] = useState(false);
+    const [editId, setEditId] = useState(null);
 
     const { showToast } = useToast();
 
@@ -26,7 +28,10 @@ const AdminPurchases = () => {
             const response = await purchaseAPI.getAllPurchases(params);
             if (response.data.success) {
                 setPurchases(response.data.purchases);
-                setShopBalance(response.data.shopBalance);
+                setBalances({
+                    shopBalance: response.data.shopBalance.handCashBalance,
+                    gpayBalance: response.data.shopBalance.gpayBalance
+                });
             }
         } catch (error) {
             console.error('Fetch purchases error:', error);
@@ -52,29 +57,68 @@ const AdminPurchases = () => {
             return;
         }
 
-        if (Number(formData.amount) > shopBalance) {
-            showToast('Insufficient balance', 'error');
+        try {
+            setSubmitting(true);
+            let response;
+            if (isEditing) {
+                response = await purchaseAPI.updatePurchase(editId, formData);
+            } else {
+                if (Number(formData.amount) > balances.shopBalance) {
+                    showToast('Insufficient balance', 'error');
+                    setSubmitting(false);
+                    return;
+                }
+                response = await purchaseAPI.createPurchase(formData);
+            }
+
+            if (response.data.success) {
+                showToast(isEditing ? 'Purchase updated successfully' : 'Purchase added successfully', 'success');
+                closeModal();
+                fetchPurchases();
+            }
+        } catch (error) {
+            showToast(error.response?.data?.message || `Failed to ${isEditing ? 'update' : 'add'} purchase`, 'error');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleEdit = (purchase) => {
+        setFormData({
+            orderName: purchase.orderName,
+            amount: purchase.amount,
+            date: new Date(purchase.date).toISOString().split('T')[0]
+        });
+        setIsEditing(true);
+        setEditId(purchase._id);
+        setShowModal(true);
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this purchase? This will add the amount back to the shop balance.')) {
             return;
         }
 
         try {
-            setSubmitting(true);
-            const response = await purchaseAPI.createPurchase(formData);
+            const response = await purchaseAPI.deletePurchase(id);
             if (response.data.success) {
-                showToast('Purchase added successfully', 'success');
-                setShowModal(false);
-                setFormData({
-                    orderName: '',
-                    amount: '',
-                    date: new Date().toISOString().split('T')[0]
-                });
+                showToast('Purchase deleted successfully', 'success');
                 fetchPurchases();
             }
         } catch (error) {
-            showToast(error.response?.data?.message || 'Failed to add purchase', 'error');
-        } finally {
-            setSubmitting(false);
+            showToast(error.response?.data?.message || 'Failed to delete purchase', 'error');
         }
+    };
+
+    const closeModal = () => {
+        setShowModal(false);
+        setIsEditing(false);
+        setEditId(null);
+        setFormData({
+            orderName: '',
+            amount: '',
+            date: new Date().toISOString().split('T')[0]
+        });
     };
 
     const formatCurrency = (amount) => {
@@ -90,22 +134,49 @@ const AdminPurchases = () => {
         <div className="container-fluid py-4" style={{ backgroundColor: '#ffffff', minHeight: '100vh' }}>
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h2 className="h3 mb-0" style={{ color: '#3b8132', fontWeight: '700' }}>Purchase Management</h2>
-                <button 
-                    className="btn d-flex align-items-center gap-2"
-                    style={{ backgroundColor: '#3b8132', color: 'white', borderRadius: '10px', padding: '10px 20px', fontWeight: '600' }}
-                    onClick={() => setShowModal(true)}
-                >
-                    <span style={{ fontSize: '1.2rem' }}>+</span> New Purchase
-                </button>
+                <div className="d-flex gap-2">
+                    <button
+                        className="btn d-flex align-items-center gap-2"
+                        style={{ border: '1px solid #3b8132', color: '#3b8132', borderRadius: '10px', padding: '10px 20px', fontWeight: '600' }}
+                        onClick={fetchPurchases}
+                        disabled={loading}
+                    >
+                        {loading ? '...' : 'Refresh'}
+                    </button>
+                    <button
+                        className="btn d-flex align-items-center gap-2"
+                        style={{ backgroundColor: '#3b8132', color: 'white', borderRadius: '10px', padding: '10px 20px', fontWeight: '600' }}
+                        onClick={() => {
+                            closeModal();
+                            setShowModal(true);
+                        }}
+                    >
+                        <span style={{ fontSize: '1.2rem' }}>+</span> New Purchase
+                    </button>
+                </div>
             </div>
 
             {/* Shop Balance Card */}
             <div className="row mb-4">
                 <div className="col-md-4">
-                    <div className="card shadow-sm border-0" style={{ backgroundColor: '#3b8132', color: 'white', borderRadius: '10px' }}>
-                        <div className="card-body p-4">
-                            <h6 className="card-subtitle mb-2 opacity-75">Current Shop Balance (Cash)</h6>
-                            <h3 className="card-title mb-0" style={{ fontWeight: '700', fontSize: '28px' }}>{formatCurrency(shopBalance)}</h3>
+                    <div className="card shadow-sm border-0" style={{ backgroundColor: '#ffffff', borderRadius: '10px', border: '1px solid #3b8132', height: '100%' }}>
+                        <div className="card-body p-3">
+                            <div className="d-flex align-items-center">
+                                <div style={{ width: '40px', height: '40px', backgroundColor: '#3b8132', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '20px', marginRight: '15px' }}>🏪</div>
+                                <div className="flex-grow-1">
+                                    <div className="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#3b8132' }}>₹{(balances.shopBalance || 0).toLocaleString()}</h3>
+                                            <p style={{ margin: 0, fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase' }}>Cash Balance</p>
+                                        </div>
+                                        <div style={{ textAlign: 'right', borderLeft: '1px solid #eee', paddingLeft: '10px' }}>
+                                            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#0dcaf0' }}>₹{(balances.gpayBalance || 0).toLocaleString()}</h3>
+                                            <p style={{ margin: 0, fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase' }}>GPay Balance</p>
+                                        </div>
+                                    </div>
+                                    <p style={{ margin: '5px 0 0 0', fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase', borderTop: '1px solid #eee', paddingTop: '5px' }}>Shop Balance</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -117,7 +188,7 @@ const AdminPurchases = () => {
                     <div className="row g-3 align-items-end">
                         <div className="col-md-3">
                             <label className="form-label text-muted small fw-bold">FILTER BY PERIOD</label>
-                            <select 
+                            <select
                                 className="form-select"
                                 style={{ borderRadius: '10px' }}
                                 value={filter}
@@ -129,13 +200,13 @@ const AdminPurchases = () => {
                                 <option value="custom">Custom Range</option>
                             </select>
                         </div>
-                        
+
                         {filter === 'custom' && (
                             <>
                                 <div className="col-md-3">
                                     <label className="form-label text-muted small fw-bold">START DATE</label>
-                                    <input 
-                                        type="date" 
+                                    <input
+                                        type="date"
                                         className="form-control"
                                         style={{ borderRadius: '10px' }}
                                         value={dateRange.startDate}
@@ -144,8 +215,8 @@ const AdminPurchases = () => {
                                 </div>
                                 <div className="col-md-3">
                                     <label className="form-label text-muted small fw-bold">END DATE</label>
-                                    <input 
-                                        type="date" 
+                                    <input
+                                        type="date"
                                         className="form-control"
                                         style={{ borderRadius: '10px' }}
                                         value={dateRange.endDate}
@@ -168,6 +239,7 @@ const AdminPurchases = () => {
                                     <th className="px-4 py-3" style={{ color: '#3b8132', borderBottom: '2px solid #3b8132' }}>Order Name</th>
                                     <th className="px-4 py-3" style={{ color: '#3b8132', borderBottom: '2px solid #3b8132' }}>Amount</th>
                                     <th className="px-4 py-3" style={{ color: '#3b8132', borderBottom: '2px solid #3b8132' }}>Date & Time</th>
+                                    <th className="px-4 py-3 text-end" style={{ color: '#3b8132', borderBottom: '2px solid #3b8132' }}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -181,6 +253,24 @@ const AdminPurchases = () => {
                                                     dateStyle: 'medium',
                                                     timeStyle: 'short'
                                                 })}
+                                            </td>
+                                            <td className="px-4 py-3 text-end">
+                                                <div className="d-flex justify-content-end gap-2">
+                                                    <button
+                                                        className="btn btn-sm"
+                                                        style={{ color: '#3b8132', border: '1px solid #3b8132', borderRadius: '8px' }}
+                                                        onClick={() => handleEdit(purchase)}
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        className="btn btn-sm"
+                                                        style={{ color: '#e74c3c', border: '1px solid #e74c3c', borderRadius: '8px' }}
+                                                        onClick={() => handleDelete(purchase._id)}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
@@ -202,17 +292,17 @@ const AdminPurchases = () => {
                 <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1100 }}>
                     <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content border-0 shadow" style={{ borderRadius: '10px' }}>
-                            <div className="modal-header text-white border-0" style={{ backgroundColor: '#3b8132', borderRadius: '10px 10px 0 0' }}>
-                                <h5 className="modal-title fw-bold">New Purchase</h5>
-                                <button type="button" className="btn-close btn-close-white" onClick={() => setShowModal(false)}></button>
+                            <div className="modal-header text-white border-0" style={{ backgroundColor: isEditing ? '#3b8132' : '#3b8132', borderRadius: '10px 10px 0 0' }}>
+                                <h5 className="modal-title fw-bold">{isEditing ? 'Edit Purchase' : 'New Purchase'}</h5>
+                                <button type="button" className="btn-close btn-close-white" onClick={closeModal} aria-label="Close" style={{ opacity: 1 }}></button>
                             </div>
                             <form onSubmit={handleSubmit}>
                                 <div className="modal-body p-4">
                                     <div className="mb-3">
                                         <label className="form-label fw-bold small" style={{ color: '#2c3e50' }}>ORDER NAME</label>
-                                        <input 
-                                            type="text" 
-                                            className="form-control" 
+                                        <input
+                                            type="text"
+                                            className="form-control"
                                             style={{ borderRadius: '10px' }}
                                             name="orderName"
                                             value={formData.orderName}
@@ -223,9 +313,9 @@ const AdminPurchases = () => {
                                     </div>
                                     <div className="mb-3">
                                         <label className="form-label fw-bold small" style={{ color: '#2c3e50' }}>AMOUNT (₹)</label>
-                                        <input 
-                                            type="number" 
-                                            className="form-control" 
+                                        <input
+                                            type="number"
+                                            className="form-control"
                                             style={{ borderRadius: '10px' }}
                                             name="amount"
                                             value={formData.amount}
@@ -235,14 +325,14 @@ const AdminPurchases = () => {
                                             min="0"
                                         />
                                         <div className="form-text" style={{ color: '#3b8132' }}>
-                                            Available Balance: {formatCurrency(shopBalance)}
+                                            Available Balance: {formatCurrency(balances.shopBalance)}
                                         </div>
                                     </div>
                                     <div className="mb-3">
                                         <label className="form-label fw-bold small" style={{ color: '#2c3e50' }}>DATE</label>
-                                        <input 
-                                            type="date" 
-                                            className="form-control" 
+                                        <input
+                                            type="date"
+                                            className="form-control"
                                             style={{ borderRadius: '10px' }}
                                             name="date"
                                             value={formData.date}
@@ -251,16 +341,16 @@ const AdminPurchases = () => {
                                     </div>
                                 </div>
                                 <div className="modal-footer border-0 p-4 pt-0">
-                                    <button 
-                                        type="button" 
-                                        className="btn" 
+                                    <button
+                                        type="button"
+                                        className="btn"
                                         style={{ border: '1px solid #3b8132', color: '#3b8132', borderRadius: '10px', padding: '10px 20px' }}
-                                        onClick={() => setShowModal(false)}
+                                        onClick={closeModal}
                                     >
                                         Cancel
                                     </button>
-                                    <button 
-                                        type="submit" 
+                                    <button
+                                        type="submit"
                                         className="btn px-4"
                                         style={{ backgroundColor: '#3b8132', color: 'white', borderRadius: '10px', padding: '10px 20px', fontWeight: '600' }}
                                         disabled={submitting}

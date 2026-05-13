@@ -7,7 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const EmployeeDashboard = () => {
   const [stats, setStats] = useState(null);
-  const [balance, setBalance] = useState(0);
+  const [balances, setBalances] = useState({ shopBalance: 0, gpayBalance: 0 });
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { success, error } = useToast();
@@ -29,7 +29,10 @@ const EmployeeDashboard = () => {
         setStats(statsRes.data.stats);
       }
       if (balanceRes.data.success) {
-        setBalance(balanceRes.data.shopBalance);
+        setBalances({
+          shopBalance: balanceRes.data.shopBalance,
+          gpayBalance: balanceRes.data.gpayBalance
+        });
       }
     } catch (err) {
       console.error('Error fetching stats:', err);
@@ -65,7 +68,22 @@ const EmployeeDashboard = () => {
       {stats && (
         <div className="row g-3 mb-4">
           <div className="col-12 col-sm-6 col-md-6 col-lg-3">
-            <StatCard title="Shop Balance" value={`₹${balance.toLocaleString()}`} icon="🏢" color="#3b8132" />
+            <div style={{ ...styles.statCard, borderColor: '#3b8132' }}>
+              <div style={{ ...styles.statIcon, backgroundColor: '#3b8132' }}>🏪</div>
+              <div style={styles.statContent}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0' }}>₹{(balances.shopBalance || 0).toLocaleString()}</h3>
+                    <p style={{ ...styles.statTitle, fontSize: '10px' }}>Cash Balance</p>
+                  </div>
+                  <div style={{ textAlign: 'right', borderLeft: '1px solid #eee', paddingLeft: '10px' }}>
+                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0', color: '#0dcaf0' }}>₹{(balances.gpayBalance || 0).toLocaleString()}</h3>
+                    <p style={{ ...styles.statTitle, fontSize: '10px' }}>GPay Balance</p>
+                  </div>
+                </div>
+                <p style={{ ...styles.statTitle, marginTop: '5px', borderTop: '1px solid #eee', paddingTop: '5px' }}>Shop Balance</p>
+              </div>
+            </div>
           </div>
           <div className="col-12 col-sm-6 col-md-6 col-lg-3">
             <StatCard title="Today's Tasks" value={stats.todayWorks} icon="📋" color="#3498db" />

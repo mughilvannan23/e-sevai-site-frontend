@@ -33,11 +33,11 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      
+
       // Don't redirect if we are already on the login page or it's a login request
       const isLoginPage = window.location.hash.includes('/login') || window.location.pathname.includes('/login');
       const isLoginRequest = error.config.url.includes('/login');
-      
+
       if (!isLoginPage && !isLoginRequest) {
         window.location.href = '/#/login';
       }
@@ -67,6 +67,7 @@ export const userAPI = {
 export const workAPI = {
   createWork: (data) => api.post('/works', data),
   getMyWorks: (params) => api.get('/works', { params }),
+  getAllEmployeeWorks: (params) => api.get('/works/all-works', { params }),
   getWorkById: (id) => api.get(`/works/${id}`),
   updateWork: (id, data) => api.put(`/works/${id}`, data),
   deleteWork: (id) => api.delete(`/works/${id}`),
@@ -94,6 +95,8 @@ export const adminAPI = {
 export const purchaseAPI = {
   getAllPurchases: (params) => api.get('/purchases', { params }),
   createPurchase: (data) => api.post('/purchases', data),
+  updatePurchase: (id, data) => api.put(`/purchases/${id}`, data),
+  deletePurchase: (id) => api.delete(`/purchases/${id}`),
 };
 
 export default api;

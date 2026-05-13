@@ -17,7 +17,7 @@ const defaultFormData = {
   gpayAmount: '',
   cashAmount: '',
   totalAmount: '',
-  items: [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' }],
+  items: [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', presetAmount: '0', presetChargeType: 'None', discount: '0', applicationNumber: '' }],
   amount: '',
   totalDiscount: '0',
   paymentStatus: 'Pending',
@@ -34,6 +34,7 @@ const AddWorkPage = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [workItems, setWorkItems] = useState([]);
   const [shopBalance, setShopBalance] = useState(0);
+  const [gpayBalance, setGpayBalance] = useState(0);
 
   useEffect(() => {
     fetchWorkItems();
@@ -56,6 +57,7 @@ const AddWorkPage = () => {
       const response = await workAPI.getShopBalance();
       if (response.data.success) {
         setShopBalance(response.data.shopBalance);
+        setGpayBalance(response.data.gpayBalance);
       }
     } catch (err) {
       console.error('Error fetching shop balance:', err);
@@ -66,13 +68,14 @@ const AddWorkPage = () => {
     const { name, value } = e.target;
     setFormData(prev => {
       const updated = { ...prev, [name]: value };
-      
+
       // Recalculate amount if applicationFee changes or if it's already there
       const { total, discountTotal } = updated.items.reduce((acc, item) => {
         const qty = parseInt(item.quantity) || 1;
         const otherC = parseFloat(item.otherCharges) || 0;
+        const presetC = parseFloat(item.presetAmount) || 0;
         const itemDisc = parseFloat(item.discount) || 0;
-        let rowCost = otherC - itemDisc;
+        let rowCost = otherC + presetC - itemDisc;
         if (item.workItemId) {
           const wi = workItems.find(w => w._id === item.workItemId);
           rowCost += (wi ? (wi.workCharge + wi.serviceCharge) * qty : 0);
@@ -80,7 +83,7 @@ const AddWorkPage = () => {
         acc.total += rowCost;
         acc.discountTotal += itemDisc;
         return acc;
-      }, { total: parseFloat(updated.applicationFee) || 0, discountTotal: 0 });
+      }, { total: 0, discountTotal: 0 });
 
       updated.amount = total.toString();
       updated.totalDiscount = discountTotal.toString();
@@ -140,17 +143,13 @@ const AddWorkPage = () => {
     let newItems = [...formData.items];
 
     if (field === 'workItemId' && value !== '') {
-      const existingIndex = newItems.findIndex((item, i) => i !== index && item.workItemId === value);
-      if (existingIndex !== -1) {
-        newItems[existingIndex].quantity = (parseInt(newItems[existingIndex].quantity) || 1) + 1;
-        if (newItems.length > 1) {
-          newItems.splice(index, 1);
-        } else {
-          newItems[index] = { workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' };
-        }
-      } else {
-        newItems[index] = { ...newItems[index], [field]: value };
-      }
+      const selectedWI = workItems.find(w => w._id === value);
+      newItems[index] = { 
+        ...newItems[index], 
+        [field]: value,
+        presetChargeType: selectedWI ? selectedWI.chargeType : 'None',
+        presetAmount: '0' 
+      };
     } else {
       newItems[index] = { ...newItems[index], [field]: value };
     }
@@ -158,8 +157,9 @@ const AddWorkPage = () => {
     const { total, discountTotal } = newItems.reduce((acc, item) => {
       const qty = parseInt(item.quantity) || 1;
       const otherC = parseFloat(item.otherCharges) || 0;
+      const presetC = parseFloat(item.presetAmount) || 0;
       const itemDisc = parseFloat(item.discount) || 0;
-      let rowCost = otherC - itemDisc;
+      let rowCost = otherC + presetC - itemDisc;
       if (item.workItemId) {
         const wi = workItems.find(w => w._id === item.workItemId);
         rowCost += (wi ? (wi.workCharge + wi.serviceCharge) * qty : 0);
@@ -167,13 +167,13 @@ const AddWorkPage = () => {
       acc.total += rowCost;
       acc.discountTotal += itemDisc;
       return acc;
-    }, { total: parseFloat(formData.applicationFee) || 0, discountTotal: 0 });
+    }, { total: 0, discountTotal: 0 });
     setFormData(prev => {
-      const updated = { 
-        ...prev, 
-        items: newItems, 
-        amount: total.toString(), 
-        totalDiscount: discountTotal.toString() 
+      const updated = {
+        ...prev,
+        items: newItems,
+        amount: total.toString(),
+        totalDiscount: discountTotal.toString()
       };
 
       // Sync payment amounts if Paid
@@ -202,7 +202,7 @@ const AddWorkPage = () => {
   const addItemRow = () => {
     setFormData(prev => ({
       ...prev,
-      items: [...prev.items, { workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' }]
+      items: [...prev.items, { workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', presetAmount: '0', presetChargeType: 'None', discount: '0', applicationNumber: '' }]
     }));
   };
 
@@ -211,8 +211,9 @@ const AddWorkPage = () => {
     const { total, discountTotal } = newItems.reduce((acc, item) => {
       const qty = parseInt(item.quantity) || 1;
       const otherC = parseFloat(item.otherCharges) || 0;
+      const presetC = parseFloat(item.presetAmount) || 0;
       const itemDisc = parseFloat(item.discount) || 0;
-      let rowCost = otherC - itemDisc;
+      let rowCost = otherC + presetC - itemDisc;
       if (item.workItemId) {
         const wi = workItems.find(w => w._id === item.workItemId);
         rowCost += (wi ? (wi.workCharge + wi.serviceCharge) * qty : 0);
@@ -278,7 +279,7 @@ const AddWorkPage = () => {
 
   const handleConfirmSubmit = async () => {
     setShowPreview(false);
-    
+
     let finalGpay = 0;
     let finalCash = 0;
     const currentAmount = parseFloat(formData.amount) || 0;
@@ -324,50 +325,44 @@ const AddWorkPage = () => {
   };
 
   return (
-    <div className="container-fluid py-1 px-3">
-      <div className="mx-auto" style={{ width: '100%' }}>
-        <div className="mb-1 d-flex align-items-center justify-content-between">
-          <div>
-            <h1 style={{ color: '#3b8132', fontWeight: '700', margin: 0, letterSpacing: '0.4px' }} className="fs-5">New Sales Entry</h1>
-            <p style={{ color: '#666', margin: 0, fontSize: '11px' }}>Fill details to record work entry</p>
-          </div>
-        </div>
+    <div className="container-fluid p-0">
+      <div className="mb-2">
+        <h1 style={{ color: '#3b8132', fontWeight: '700', margin: '0', letterSpacing: '0.5px' }} className="fs-5">New Sales Entry</h1>
+      </div>
 
-        <AddWorkForm
-          formData={formData}
-          onSubmit={handleSubmit}
-          onReset={handleReset}
-          onInputChange={handleInputChange}
-          onItemChange={handleItemChange}
-          addItemRow={addItemRow}
-          removeItemRow={removeItemRow}
-          submitting={submitting}
-          workItems={workItems}
-          shopBalance={shopBalance}
-        />
+      <AddWorkForm
+        formData={formData}
+        onSubmit={handleSubmit}
+        onReset={handleReset}
+        onInputChange={handleInputChange}
+        onItemChange={handleItemChange}
+        addItemRow={addItemRow}
+        removeItemRow={removeItemRow}
+        submitting={submitting}
+        workItems={workItems}
+        shopBalance={shopBalance}
+        gpayBalance={gpayBalance}
+      />
 
+      <WorkPreviewModal
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        onConfirm={handleConfirmSubmit}
+        formData={formData}
+        workItems={workItems}
+      />
 
-        <WorkPreviewModal
-          isOpen={showPreview}
-          onClose={() => setShowPreview(false)}
-          onConfirm={handleConfirmSubmit}
-          formData={formData}
-          workItems={workItems}
-        />
-        
-        <div className="mt-2 text-center">
-          <button 
-            className="btn btn-sm" 
-            style={{ backgroundColor: 'white', color: '#3b8132', border: '1px solid #3b8132', borderRadius: '8px', fontWeight: '600', padding: '6px 16px', fontSize: '12px' }}
-            onClick={() => navigate('/employee/works')}
-          >
-            Cancel & View All Entries
-          </button>
-        </div>
+      <div className="mt-1">
+        <button
+          className="btn btn-sm"
+          style={{ backgroundColor: 'white', color: '#3b8132', border: '1px solid #3b8132', borderRadius: '8px', fontWeight: '600', padding: '4px 16px' }}
+          onClick={() => navigate('/employee/works')}
+        >
+          Cancel & View All Entries
+        </button>
       </div>
     </div>
   );
 };
-
 
 export default AddWorkPage;

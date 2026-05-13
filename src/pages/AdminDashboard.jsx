@@ -79,12 +79,22 @@ const AdminDashboard = () => {
             />
           </div>
           <div className="col-12 col-sm-6 col-lg">
-            <StatCard
-              title="Shop Balance (Cash)"
-              value={`₹${(stats.revenue.shopBalance || 0).toLocaleString()}`}
-              icon="🏪"
-              color="#3b8132"
-            />
+            <div style={{ ...styles.statCard, borderColor: '#3b8132' }}>
+              <div style={{ ...styles.statIcon, backgroundColor: '#3b8132' }}>🏪</div>
+              <div style={styles.statContent}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0' }}>₹{(stats.revenue.shopBalance || 0).toLocaleString()}</h3>
+                    <p style={{ ...styles.statTitle, fontSize: '10px' }}>Cash Balance</p>
+                  </div>
+                  <div style={{ textAlign: 'right', borderLeft: '1px solid #eee', paddingLeft: '10px' }}>
+                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0', color: '#0dcaf0' }}>₹{(stats.revenue.gpayBalance || 0).toLocaleString()}</h3>
+                    <p style={{ ...styles.statTitle, fontSize: '10px' }}>GPay Balance</p>
+                  </div>
+                </div>
+                <p style={{ ...styles.statTitle, marginTop: '5px', borderTop: '1px solid #eee', paddingTop: '5px' }}>Shop Balance</p>
+              </div>
+            </div>
           </div>
         </div>
       )}

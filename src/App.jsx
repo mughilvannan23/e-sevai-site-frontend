@@ -17,6 +17,7 @@ import AdminProfile from './pages/AdminProfile';
 import AdminPurchases from './pages/AdminPurchases';
 import EmployeeDashboard from './pages/EmployeeDashboard';
 import EmployeeWorks from './pages/EmployeeWorks';
+import AllEmployeeWorks from './pages/AllEmployeeWorks';
 import EmployeeReports from './pages/EmployeeReports';
 import AddWorkPage from './pages/AddWorkPage';
 
@@ -95,9 +96,13 @@ const ProtectedRoute = ({ requiredRole }) => {
             <span style={styles.navIcon}>➕</span>
             <span>Add New Entry</span>
           </Link>
-          <Link to="/employee/works" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/works') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Sales Entries">
+          <Link to="/employee/works" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/works') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="All Works">
             <span style={styles.navIcon}>📝</span>
-            <span>Sales Entries</span>
+            <span>All Works</span>
+          </Link>
+          <Link to="/employee/all-works" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/all-works') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="All Employee Works">
+            <span style={styles.navIcon}>🏢</span>
+            <span>All Employee Works</span>
           </Link>
           <Link to="/employee/reports" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/reports') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Reports">
             <span style={styles.navIcon}>📉</span>
@@ -249,6 +254,7 @@ function App() {
               <Route element={<ProtectedRoute requiredRole="employee" />}>
                 <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
                 <Route path="/employee/works" element={<EmployeeWorks />} />
+                <Route path="/employee/all-works" element={<AllEmployeeWorks />} />
                 <Route path="/employee/reports" element={<EmployeeReports />} />
                 <Route path="/add-work" element={<AddWorkPage />} />
               </Route>
@@ -384,7 +390,7 @@ const styles = {
     overflowX: 'hidden'
   },
   content: {
-    padding: '20px',
+    padding: '10px',
     maxWidth: '100%',
     margin: '0',
     width: '100%'

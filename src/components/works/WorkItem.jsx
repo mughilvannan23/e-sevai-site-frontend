@@ -47,17 +47,17 @@ const WorkItem = ({
         )}
       </td>
       <td style={styles.td}>
-        <span style={{ color: '#3b8132', fontWeight: '800' }}>
-          ₹{(work.applicationFee || 0).toLocaleString()}
+        <span style={{ color: '#0dcaf0', fontWeight: '800' }}>
+          ₹{(work.items?.reduce((sum, item) => sum + (item.presetAmount || 0), 0) || 0).toLocaleString()}
         </span>
       </td>
       <td style={{ ...styles.td, maxWidth: '200px', whiteSpace: 'normal' }}>
         <div>
           {work.items && work.items.length > 0
             ? work.items.map(i => {
-                const appNum = i.applicationNumber ? ` [#${i.applicationNumber}]` : '';
-                return `${i.title}${appNum} (x${i.quantity || 1})`;
-              }).join(', ')
+              const appNum = i.applicationNumber ? ` [#${i.applicationNumber}]` : '';
+              return `${i.title}${appNum} (x${i.quantity || 1})`;
+            }).join(', ')
             : work.workTitle}
         </div>
       </td>

@@ -143,6 +143,7 @@ input, select, textarea {
   padding: 10px 15px !important;
   font-size: 14px !important;
   transition: all 0.2s ease !important;
+  color: var(--text-color) !important;
 }
 
 .form-control:focus, .form-select:focus {
@@ -193,4 +194,55 @@ input, select, textarea {
 @media (min-width: 769px) {
   .hidden-desktop { display: none; }
   .flex-desktop { display: flex; }
+}
+
+/* Global Button Visibility Fixes */
+.btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Ensure text is always visible on buttons */
+.btn:not(.btn-primary):not(.bg-primary) {
+  color: var(--text-color) !important;
+}
+
+/* Specific button type visibility */
+.btn-outline-primary {
+  color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.btn-outline-danger {
+  color: var(--danger-color) !important;
+  border-color: var(--danger-color) !important;
+}
+
+/* Hover effects for custom styled buttons */
+button[style*="background-color: #ffffff"]:hover,
+button[style*="backgroundColor: '#ffffff'"]:hover {
+  background-color: #f8f9fa !important;
+  filter: brightness(0.95);
+}
+
+button[style*="background-color: #3b8132"]:hover,
+button[style*="backgroundColor: '#3b8132'"]:hover {
+  filter: brightness(1.1);
+}
+
+/* Fix for dropdown trigger text */
+.dropdown-toggle::after {
+  vertical-align: middle !important;
+}
+
+/* Ensure labels don't clip */
+label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

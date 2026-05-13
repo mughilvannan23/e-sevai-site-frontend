@@ -17,7 +17,7 @@ const WorkPreviewModal = ({ isOpen, onClose, onConfirm, formData, workItems }) =
       <div style={styles.modalContainer} onClick={e => e.stopPropagation()}>
         <div style={styles.modalHeader}>
           <h2 style={styles.modalTitle}>Confirm Submission</h2>
-          <button 
+          <button
             onClick={onClose}
             style={{ border: 'none', background: 'none', fontSize: '20px', cursor: 'pointer', color: '#666' }}
           >
@@ -61,11 +61,21 @@ const WorkPreviewModal = ({ isOpen, onClose, onConfirm, formData, workItems }) =
                   const wc = wi ? wi.workCharge : 0;
                   const sc = wi ? wi.serviceCharge : 0;
                   const qty = parseInt(item.quantity) || 1;
-                  const rowTotal = (wc + sc) * qty;
+                  const otherC = parseFloat(item.otherCharges) || 0;
+                  const presetC = parseFloat(item.presetAmount) || 0;
+                  const rowTotal = (wc + sc) * qty + otherC + presetC;
 
                   return (
                     <tr key={index}>
-                      <td style={styles.itemTd}>{getWorkItemName(item.workItemId, item.workTitle)}</td>
+                      <td style={styles.itemTd}>
+                        <div>{getWorkItemName(item.workItemId, item.workTitle)}</div>
+                        {(otherC > 0 || presetC > 0) && (
+                          <div style={{ fontSize: '11px', color: '#666' }}>
+                            {otherC > 0 && <span>Other: ₹{otherC} </span>}
+                            {presetC > 0 && <span>{wi?.chargeType || 'Preset'}: ₹{presetC}</span>}
+                          </div>
+                        )}
+                      </td>
                       <td style={styles.itemTd}>{item.applicationNumber || '-'}</td>
                       <td style={styles.itemTd}>{item.quantity}</td>
                       <td style={styles.itemTd}>₹{rowTotal}</td>
@@ -110,20 +120,19 @@ const WorkPreviewModal = ({ isOpen, onClose, onConfirm, formData, workItems }) =
                 <span style={{ ...styles.previewValue, color: '#e74c3c' }}>-₹{formData.totalDiscount}</span>
               </div>
             )}
-            <div style={{ ...styles.previewRow, marginTop: '8px', fontSize: '15px' }}>
+            <div style={{ ...styles.previewRow, marginTop: '10px', fontSize: '18px' }}>
               <span style={{ ...styles.previewLabel, fontWeight: 'bold' }}>Final Amount:</span>
-              <span style={{ ...styles.previewValue, color: '#3b8132', fontSize: '17px' }}>₹{formData.amount}</span>
+              <span style={{ ...styles.previewValue, color: '#3b8132', fontSize: '20px' }}>₹{formData.amount}</span>
             </div>
           </div>
 
           {formData.notes && (
             <div style={styles.previewSection}>
               <h3 style={styles.previewTitle}>Notes</h3>
-              <p style={{ fontSize: '13px', color: '#555', margin: 0 }}>{formData.notes}</p>
+              <p style={{ fontSize: '14px', color: '#555', margin: 0 }}>{formData.notes}</p>
             </div>
           )}
         </div>
-
 
         <div style={styles.modalFooter}>
           <button style={styles.editModalBtn} onClick={onClose}>
@@ -147,3 +156,14 @@ const WorkPreviewModal = ({ isOpen, onClose, onConfirm, formData, workItems }) =
 };
 
 export default WorkPreviewModal;
+// @keyframes modalFadeIn {
+//             from { opacity: 0; transform: translateY(-20px); }
+//             to { opacity: 1; transform: translateY(0); }
+// }
+// `}
+//       </style>
+//     </div>
+//   );
+// };
+
+// export default WorkPreviewModal;

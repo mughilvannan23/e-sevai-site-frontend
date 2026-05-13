@@ -20,7 +20,7 @@ const defaultFormData = {
   gpayAmount: '',
   cashAmount: '',
   totalAmount: '',
-  items: [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' }],
+  items: [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', presetAmount: '0', presetChargeType: 'None', discount: '0', applicationNumber: '' }],
   amount: '',
   totalDiscount: '0',
   paymentStatus: 'Pending',
@@ -56,9 +56,10 @@ const AdminWorks = () => {
   });
 
   // ── Presets State ──────────────────────────────────────────────────────────
-  const [newItem, setNewItem] = useState({ name: '', workCharge: '', serviceCharge: '', status: true });
+  const [newItem, setNewItem] = useState({ name: '', workCharge: '', serviceCharge: '', chargeType: 'None', status: true });
   const [editingPreset, setEditingPreset] = useState(null);
   const [shopBalance, setShopBalance] = useState(0);
+  const [gpayBalance, setGpayBalance] = useState(0);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [transferData, setTransferData] = useState({
     presetName: '',
@@ -119,6 +120,7 @@ const AdminWorks = () => {
       const response = await adminAPI.getDashboardStats();
       if (response.data.success) {
         setShopBalance(response.data.stats.revenue.shopBalance || 0);
+        setGpayBalance(response.data.stats.revenue.gpayBalance || 0);
       }
     } catch (err) {
       console.error('Error fetching shop balance:', err);
@@ -143,13 +145,14 @@ const AdminWorks = () => {
     const { name, value } = e.target;
     setEditFormData(prev => {
       const updated = { ...prev, [name]: value };
-      
+
       // Recalculate amount if applicationFee changes or if it's already there
       const { total, discountTotal } = updated.items.reduce((acc, item) => {
         const qty = parseInt(item.quantity) || 1;
         const otherC = parseFloat(item.otherCharges) || 0;
+        const presetC = parseFloat(item.presetAmount) || 0;
         const itemDisc = parseFloat(item.discount) || 0;
-        let rowCost = otherC - itemDisc;
+        let rowCost = otherC + presetC - itemDisc;
         if (item.workItemId) {
           const wi = workItems.find(w => w._id === item.workItemId);
           rowCost += (wi ? (wi.workCharge + wi.serviceCharge) * qty : 0);
@@ -157,7 +160,7 @@ const AdminWorks = () => {
         acc.total += rowCost;
         acc.discountTotal += itemDisc;
         return acc;
-      }, { total: parseFloat(updated.applicationFee) || 0, discountTotal: 0 });
+      }, { total: 0, discountTotal: 0 });
 
       updated.amount = total.toString();
       updated.totalDiscount = discountTotal.toString();
@@ -216,14 +219,13 @@ const AdminWorks = () => {
   const handleItemChange = (index, field, value) => {
     let newItems = [...editFormData.items];
     if (field === 'workItemId' && value !== '') {
-      const existingIndex = newItems.findIndex((item, i) => i !== index && item.workItemId === value);
-      if (existingIndex !== -1) {
-        newItems[existingIndex].quantity = (parseInt(newItems[existingIndex].quantity) || 1) + 1;
-        if (newItems.length > 1) newItems.splice(index, 1);
-        else newItems[index] = { workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', applicationNumber: '' };
-      } else {
-        newItems[index] = { ...newItems[index], [field]: value };
-      }
+      const selectedWI = workItems.find(w => w._id === value);
+      newItems[index] = { 
+        ...newItems[index], 
+        [field]: value,
+        presetChargeType: selectedWI ? selectedWI.chargeType : 'None',
+        presetAmount: '0' 
+      };
     } else {
       newItems[index] = { ...newItems[index], [field]: value };
     }
@@ -231,8 +233,9 @@ const AdminWorks = () => {
     const { total, discountTotal } = newItems.reduce((acc, item) => {
       const qty = parseInt(item.quantity) || 1;
       const otherC = parseFloat(item.otherCharges) || 0;
+      const presetC = parseFloat(item.presetAmount) || 0;
       const itemDisc = parseFloat(item.discount) || 0;
-      let rowCost = otherC - itemDisc;
+      let rowCost = otherC + presetC - itemDisc;
       if (item.workItemId) {
         const wi = workItems.find(w => w._id === item.workItemId);
         rowCost += (wi ? (wi.workCharge + wi.serviceCharge) * qty : 0);
@@ -240,10 +243,10 @@ const AdminWorks = () => {
       acc.total += rowCost;
       acc.discountTotal += itemDisc;
       return acc;
-    }, { total: parseFloat(editFormData.applicationFee) || 0, discountTotal: 0 });
+    }, { total: 0, discountTotal: 0 });
     setEditFormData(prev => {
       const updated = { ...prev, items: newItems, amount: total.toString(), totalDiscount: discountTotal.toString() };
-      
+
       // Sync payment amounts if Paid
       if (updated.paymentStatus === 'Paid') {
         if (updated.paymentMethod === 'GPay') {
@@ -265,7 +268,7 @@ const AdminWorks = () => {
   };
 
   const addItemRow = () => {
-    setEditFormData(prev => ({ ...prev, items: [...prev.items, { workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' }] }));
+    setEditFormData(prev => ({ ...prev, items: [...prev.items, { workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', presetAmount: '0', presetChargeType: 'None', discount: '0', applicationNumber: '' }] }));
   };
 
   const removeItemRow = (index) => {
@@ -273,8 +276,9 @@ const AdminWorks = () => {
     const { total, discountTotal } = newItems.reduce((acc, item) => {
       const qty = parseInt(item.quantity) || 1;
       const otherC = parseFloat(item.otherCharges) || 0;
+      const presetC = parseFloat(item.presetAmount) || 0;
       const itemDisc = parseFloat(item.discount) || 0;
-      let rowCost = otherC - itemDisc;
+      let rowCost = otherC + presetC - itemDisc;
       if (item.workItemId) {
         const wi = workItems.find(w => w._id === item.workItemId);
         rowCost += (wi ? (wi.workCharge + wi.serviceCharge) * qty : 0);
@@ -282,7 +286,7 @@ const AdminWorks = () => {
       acc.total += rowCost;
       acc.discountTotal += itemDisc;
       return acc;
-    }, { total: parseFloat(editFormData.applicationFee) || 0, discountTotal: 0 });
+    }, { total: 0, discountTotal: 0 });
     setEditFormData(prev => {
       const updated = {
         ...prev,
@@ -338,13 +342,13 @@ const AdminWorks = () => {
 
     try {
       setSubmitting(true);
-      const payload = { 
-        ...editFormData, 
+      const payload = {
+        ...editFormData,
         gpayAmount: finalGpay,
         cashAmount: finalCash,
         totalAmount: editFormData.paymentStatus === 'Paid' ? currentAmount : 0,
         amount: currentAmount,
-        date: new Date(`${editFormData.date}T${editFormData.time || '00:00'}`) 
+        date: new Date(`${editFormData.date}T${editFormData.time || '00:00'}`)
       };
       const response = await workAPI.updateWork(editingItemId, payload);
 
@@ -372,15 +376,17 @@ const AdminWorks = () => {
       gpayAmount: work.gpayAmount?.toString() || '',
       cashAmount: work.cashAmount?.toString() || '',
       totalAmount: work.totalAmount?.toString() || work.amount?.toString() || '',
-      items: work.items?.length > 0 
-        ? work.items.map(i => ({ 
-            workItemId: i.workItemId || '', 
-            workTitle: i.title || '', 
-            quantity: i.quantity || 1, 
-            otherCharges: (i.otherCharges || 0).toString(),
-            discount: (i.discount || 0).toString(),
-            applicationNumber: i.applicationNumber || ''
-          }))
+      items: work.items?.length > 0
+        ? work.items.map(i => ({
+          workItemId: i.workItemId || '',
+          workTitle: i.title || '',
+          quantity: i.quantity || 1,
+          otherCharges: (i.otherCharges || 0).toString(),
+          presetAmount: (i.presetAmount || 0).toString(),
+          presetChargeType: i.presetChargeType || 'None',
+          discount: (i.discount || 0).toString(),
+          applicationNumber: i.applicationNumber || ''
+        }))
         : [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' }],
       amount: work.amount.toString(),
       totalDiscount: (work.totalDiscount || 0).toString(),
@@ -411,13 +417,14 @@ const AdminWorks = () => {
       name: newItem.name.trim(),
       workCharge: Number(newItem.workCharge),
       serviceCharge: Number(newItem.serviceCharge),
+      chargeType: newItem.chargeType,
       status: newItem.status
     };
     try {
       let response = editingPreset ? await adminAPI.updateWorkItem(editingPreset._id, payload) : await adminAPI.createWorkItem(payload);
       if (response.data.success) {
         success(editingPreset ? 'Work Item updated successfully' : 'Work Item created successfully');
-        setNewItem({ name: '', workCharge: '', serviceCharge: '', status: true });
+        setNewItem({ name: '', workCharge: '', serviceCharge: '', chargeType: 'None', status: true });
         setEditingPreset(null);
         fetchWorkItems();
       }
@@ -430,6 +437,7 @@ const AdminWorks = () => {
       name: item.name,
       workCharge: item.workCharge?.toString() || '',
       serviceCharge: item.serviceCharge?.toString() || '',
+      chargeType: item.chargeType || 'None',
       status: item.status !== undefined ? item.status : item.isActive
     });
   };
@@ -480,7 +488,7 @@ const AdminWorks = () => {
         amount: parseFloat(transferData.amount),
         date: transferData.date
       };
-      
+
       const response = await purchaseAPI.createPurchase(payload);
       if (response.data.success) {
         success('Transfer recorded successfully');
@@ -504,9 +512,9 @@ const AdminWorks = () => {
     const isPayment = type === 'payment';
     const positive = isPayment ? status === 'Paid' : status === 'Completed';
     return (
-      <span style={{ 
-        ...styles.badge, 
-        backgroundColor: positive ? '#3b8132' : (isPayment ? '#e74c3c' : '#f39c12'), 
+      <span style={{
+        ...styles.badge,
+        backgroundColor: positive ? '#3b8132' : (isPayment ? '#e74c3c' : '#f39c12'),
         color: 'white',
         borderRadius: '20px'
       }}>
@@ -525,30 +533,30 @@ const AdminWorks = () => {
       </div>
 
       <div className="d-flex flex-wrap gap-2 mb-4">
-        <button 
-          style={{ 
-            ...styles.tab, 
+        <button
+          style={{
+            ...styles.tab,
             ...(activeTab === 'entries' ? { backgroundColor: '#3b8132', color: 'white', borderColor: '#3b8132' } : { backgroundColor: 'white', color: '#3b8132', borderColor: '#3b8132' }),
             borderRadius: '10px',
             padding: '12px 24px',
             fontWeight: '700',
             transition: 'all 0.2s ease'
-          }} 
-          className="flex-grow-1 flex-sm-grow-0" 
+          }}
+          className="flex-grow-1 flex-sm-grow-0"
           onClick={() => setActiveTab('entries')}
         >
           Employee Work Entries
         </button>
-        <button 
-          style={{ 
-            ...styles.tab, 
+        <button
+          style={{
+            ...styles.tab,
             ...(activeTab === 'items' ? { backgroundColor: '#3b8132', color: 'white', borderColor: '#3b8132' } : { backgroundColor: 'white', color: '#3b8132', borderColor: '#3b8132' }),
             borderRadius: '10px',
             padding: '12px 24px',
             fontWeight: '700',
             transition: 'all 0.2s ease'
-          }} 
-          className="flex-grow-1 flex-sm-grow-0" 
+          }}
+          className="flex-grow-1 flex-sm-grow-0"
           onClick={() => setActiveTab('items')}
         >
           Admin Work Pricing Presets
@@ -628,6 +636,7 @@ const AdminWorks = () => {
                 workItems={workItems}
                 isEditing={true}
                 shopBalance={shopBalance}
+                gpayBalance={gpayBalance}
               />
             )}
           />
@@ -682,6 +691,20 @@ const AdminWorks = () => {
                 />
               </div>
               <div className="col-12 col-md-2 d-flex flex-column gap-2">
+                <label style={styles.label}>Type</label>
+                <select
+                  value={newItem.chargeType}
+                  onChange={(e) => setNewItem({ ...newItem, chargeType: e.target.value })}
+                  className="form-select"
+                  style={{ borderRadius: '10px' }}
+                >
+                  <option value="None">None</option>
+                  <option value="GPay">GPay</option>
+                  <option value="Hand Cash">Hand Cash</option>
+                  <option value="Recharge">Recharge</option>
+                </select>
+              </div>
+              <div className="col-12 col-md-2 d-flex flex-column gap-2">
                 <label style={styles.label}>Status</label>
                 <select
                   value={newItem.status ? 'active' : 'inactive'}
@@ -713,6 +736,7 @@ const AdminWorks = () => {
                   <th style={styles.th}>Application Fees (₹)</th>
                   <th style={styles.th}>Service Charge (₹)</th>
                   <th style={styles.th}>Total (₹)</th>
+                  <th style={styles.th}>Type</th>
                   <th style={styles.th}>Status</th>
                   <th style={styles.th}>Actions</th>
                 </tr>
@@ -724,6 +748,15 @@ const AdminWorks = () => {
                     <td style={styles.td}>₹{item.workCharge?.toLocaleString() || '0'}</td>
                     <td style={styles.td}>₹{item.serviceCharge?.toLocaleString() || '0'}</td>
                     <td style={styles.td}><strong>₹{(item.workCharge + item.serviceCharge)?.toLocaleString() || '0'}</strong></td>
+                    <td style={styles.td}>
+                      <span style={{
+                        ...styles.badge,
+                        backgroundColor: item.chargeType === 'GPay' ? '#0dcaf0' : item.chargeType === 'Hand Cash' ? '#f39c12' : item.chargeType === 'Recharge' ? '#9b59b6' : '#95a5a6',
+                        color: 'white'
+                      }}>
+                        {item.chargeType || 'None'}
+                      </span>
+                    </td>
                     <td style={styles.td}>
                       <span style={{
                         ...styles.badge,
@@ -742,18 +775,18 @@ const AdminWorks = () => {
                           {(item.status !== undefined ? item.status : item.isActive) ? 'Set Inactive' : 'Set Active'}
                         </button>
                         {item.name.toLowerCase().includes('transfer') && (
-                          <button 
-                            style={{ ...presetStyles.editBtn, backgroundColor: '#3498db' }} 
-                            className="btn btn-sm text-white" 
+                          <button
+                            style={{ ...presetStyles.editBtn, backgroundColor: '#3498db' }}
+                            className="btn btn-sm text-white"
                             onClick={() => handleOpenTransferModal(item.name)}
                           >
                             Transfer
                           </button>
                         )}
                         {item.name.toLowerCase().includes('recharge') && (
-                          <button 
-                            style={{ ...presetStyles.editBtn, backgroundColor: '#e67e22' }} 
-                            className="btn btn-sm text-white" 
+                          <button
+                            style={{ ...presetStyles.editBtn, backgroundColor: '#e67e22' }}
+                            className="btn btn-sm text-white"
                             onClick={() => handleOpenTransferModal(item.name)}
                           >
                             Recharge
@@ -792,9 +825,9 @@ const AdminWorks = () => {
 
                   <div className="mb-3">
                     <label className="form-label fw-bold small text-muted">ENTER AMOUNT (₹)</label>
-                    <input 
-                      type="number" 
-                      className="form-control form-control-lg text-center" 
+                    <input
+                      type="number"
+                      className="form-control form-control-lg text-center"
                       style={{ borderRadius: '12px', border: '2px solid #e0e0e0', fontWeight: '700' }}
                       value={transferData.amount}
                       onChange={(e) => setTransferData({ ...transferData, amount: e.target.value })}
@@ -808,9 +841,9 @@ const AdminWorks = () => {
 
                   <div className="mb-3">
                     <label className="form-label fw-bold small text-muted">DATE</label>
-                    <input 
-                      type="date" 
-                      className="form-control" 
+                    <input
+                      type="date"
+                      className="form-control"
                       style={{ borderRadius: '10px' }}
                       value={transferData.date}
                       onChange={(e) => setTransferData({ ...transferData, date: e.target.value })}
@@ -826,16 +859,16 @@ const AdminWorks = () => {
                   )}
                 </div>
                 <div className="modal-footer border-0 p-4 pt-0">
-                  <button 
-                    type="button" 
-                    className="btn px-4" 
+                  <button
+                    type="button"
+                    className="btn px-4"
                     style={{ border: '1px solid #3b8132', color: '#3b8132', borderRadius: '10px', fontWeight: '600' }}
                     onClick={() => setShowTransferModal(false)}
                   >
                     Cancel
                   </button>
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="btn px-5"
                     style={{ backgroundColor: '#3b8132', color: 'white', borderRadius: '10px', fontWeight: '700', boxShadow: '0 4px 12px rgba(59, 129, 50, 0.2)' }}
                     disabled={transferSubmitting || (parseFloat(transferData.amount) > shopBalance)}
