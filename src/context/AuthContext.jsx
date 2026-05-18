@@ -23,15 +23,50 @@ export const AuthProvider = ({ children }) => {
 
     if (token && userData) {
       try {
-        setUser(JSON.parse(userData));
+        const decodedUser = JSON.parse(userData);
+        // Parse JWT to check expiration
+        const jwtPayload = JSON.parse(atob(token.split('.')[1]));
+        const isExpired = Date.now() >= jwtPayload.exp * 1000;
+        
+        if (isExpired) {
+          console.log('[AuthContext] Token expired, logging out');
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          setUser(null);
+        } else {
+          setUser(decodedUser);
+        }
       } catch (error) {
-        console.error('Error parsing user data:', error);
+        console.error('Error parsing user data or token:', error);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       }
     }
     setLoading(false);
   }, []);
+
+  // Periodic check for token expiration
+  useEffect(() => {
+    if (!user) return;
+
+    const checkToken = () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const jwtPayload = JSON.parse(atob(token.split('.')[1]));
+          if (Date.now() >= jwtPayload.exp * 1000) {
+            logout();
+            window.location.href = '/#/login';
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+    };
+
+    const intervalId = setInterval(checkToken, 60000); // Check every minute
+    return () => clearInterval(intervalId);
+  }, [user]);
 
   const login = async (loginData) => {
     console.log('[AuthContext] login called with mobile:', loginData.mobile);
@@ -91,7 +126,8 @@ export const AuthProvider = ({ children }) => {
     clearError,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
-    isEmployee: user?.role === 'employee'
+    isEmployee: user?.role === 'employee',
+    isSuperAdmin: user?.role === 'superadmin'
   };
 
   return (

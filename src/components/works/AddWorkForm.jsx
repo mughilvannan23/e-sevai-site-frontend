@@ -231,11 +231,11 @@ const AddWorkForm = ({
               <strong style={{ fontSize: '1.25rem', color: '#3b8132', fontWeight: '800' }}>
                 Final Amount: ₹{(parseFloat(formData.amount) || 0).toFixed(2)}
               </strong>
-              
+
               {formData.items.some(item => (item.presetChargeType === 'Hand Cash' || item.presetChargeType === 'GPay' || item.presetChargeType === 'Recharge')) && (
                 <div className="mt-2 p-2 rounded bg-light d-flex justify-content-between" style={{ fontSize: '0.85rem', border: '1px solid #ddd' }}>
-                   <div><strong>Cash Balance:</strong> ₹{(shopBalance || 0).toLocaleString()}</div>
-                   <div className="ms-3" style={{ color: '#0dcaf0' }}><strong>GPay Balance:</strong> ₹{(gpayBalance || 0).toLocaleString()}</div>
+                  <div><strong>Cash Balance:</strong> ₹{(shopBalance || 0).toLocaleString()}</div>
+                  <div className="ms-3" style={{ color: '#0dcaf0' }}><strong>GPay Balance:</strong> ₹{(gpayBalance || 0).toLocaleString()}</div>
                 </div>
               )}
             </div>

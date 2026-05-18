@@ -13,46 +13,22 @@ const WorkItem = ({
   isEditing
 }) => {
   return (
-    <tr style={isEditing ? { backgroundColor: 'rgba(59, 129, 50, 0.08)' } : {}}>
+    <tr style={isEditing ? { backgroundColor: 'rgba(59, 129, 50, 0.08)', transition: 'all 0.2s ease' } : { transition: 'all 0.2s ease' }}>
+      <td style={{ ...styles.td, whiteSpace: 'nowrap' }}>
+        {new Date(work.date).toLocaleDateString('en-IN')}
+      </td>
       {isAdmin && (
         <td style={styles.td}>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span className="fw-bold">{work.employee?.name || 'N/A'}</span>
-            <span className="text-muted small">{work.employee?.mobile || ''}</span>
-          </div>
+          <div className="fw-bold" style={{ color: '#2c3e50' }}>{work.employee?.name || 'N/A'}</div>
+          <div className="text-muted small">{work.employee?.employeeId || ''}</div>
         </td>
       )}
-      <td style={{ ...styles.td, whiteSpace: 'nowrap' }}>
-        {formatDateTime(work.date)}
-      </td>
-      <td style={{ ...styles.td, maxWidth: '150px' }}>
-        <div className="text-truncate fw-bold">{work.customerName}</div>
+      <td style={styles.td}>
+        <div className="fw-bold">{work.customerName}</div>
         <div className="text-muted small">{work.customerPhone || '-'}</div>
       </td>
-      <td style={styles.td}>
-        {work.paymentMethod || 'Cash'}
-      </td>
-      <td style={styles.td}>
-        ₹{(work.gpayAmount || 0).toLocaleString()}
-      </td>
-      <td style={styles.td}>
-        ₹{(work.cashAmount || 0).toLocaleString()}
-      </td>
-      <td style={styles.td}>
-        <div className="fw-bold">₹{(work.totalAmount || work.amount || 0).toLocaleString()}</div>
-        {work.totalDiscount > 0 && (
-          <div className="text-danger small" style={{ fontSize: '0.75rem' }}>
-            Disc: -₹{work.totalDiscount.toLocaleString()}
-          </div>
-        )}
-      </td>
-      <td style={styles.td}>
-        <span style={{ color: '#0dcaf0', fontWeight: '800' }}>
-          ₹{(work.items?.reduce((sum, item) => sum + (item.presetAmount || 0), 0) || 0).toLocaleString()}
-        </span>
-      </td>
-      <td style={{ ...styles.td, maxWidth: '200px', whiteSpace: 'normal' }}>
-        <div>
+      <td style={{ ...styles.td, maxWidth: '250px' }}>
+        <div className="text-truncate">
           {work.items && work.items.length > 0
             ? work.items.map(i => {
               const appNum = i.applicationNumber ? ` [#${i.applicationNumber}]` : '';
@@ -61,8 +37,14 @@ const WorkItem = ({
             : work.workTitle}
         </div>
       </td>
+      <td style={{ ...styles.td, fontWeight: '700', color: '#2c3e50' }}>
+        ₹{(work.totalAmount || work.amount || 0).toLocaleString()}
+      </td>
       <td style={styles.td}>{getStatusBadge(work.paymentStatus, 'payment')}</td>
       <td style={styles.td}>{getStatusBadge(work.workStatus, 'work')}</td>
+      <td style={styles.td}>
+        {work.createdAt ? new Date(work.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }) : '-'}
+      </td>
       <td style={styles.td}>
         <div className="d-flex flex-column flex-md-row gap-1 gap-md-2">
           {/* Employee should NOT have Edit/Delete */}

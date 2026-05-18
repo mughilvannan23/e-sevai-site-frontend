@@ -809,7 +809,7 @@ const AdminReports = () => {
                           <td>{item.applicationNumber || '-'}</td>
                           <td>{item.quantity}</td>
                           <td>
-                            ₹{((item.workChargeAtTime + item.serviceChargeAtTime) * item.quantity + (item.otherCharges || 0) - (item.discount || 0)).toFixed(2)}
+                            ₹{((item.workChargeAtTime + item.serviceChargeAtTime) * item.quantity + (item.presetAmount || 0) + (item.otherCharges || 0) - (item.discount || 0)).toFixed(2)}
                             {item.discount > 0 && <span className="text-danger small ms-1">(-₹{item.discount})</span>}
                           </td>
                         </tr>

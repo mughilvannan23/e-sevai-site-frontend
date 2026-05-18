@@ -70,7 +70,7 @@ const AddWorkPage = () => {
       const updated = { ...prev, [name]: value };
 
       // Recalculate amount if applicationFee changes or if it's already there
-      const { total, discountTotal } = updated.items.reduce((acc, item) => {
+      const { total, discountTotal, appFeeTotal } = updated.items.reduce((acc, item) => {
         const qty = parseInt(item.quantity) || 1;
         const otherC = parseFloat(item.otherCharges) || 0;
         const presetC = parseFloat(item.presetAmount) || 0;
@@ -82,11 +82,13 @@ const AddWorkPage = () => {
         }
         acc.total += rowCost;
         acc.discountTotal += itemDisc;
+        acc.appFeeTotal += presetC;
         return acc;
-      }, { total: 0, discountTotal: 0 });
+      }, { total: 0, discountTotal: 0, appFeeTotal: 0 });
 
       updated.amount = total.toString();
       updated.totalDiscount = discountTotal.toString();
+      updated.applicationFee = appFeeTotal;
 
       const currentAmount = total;
 
@@ -154,7 +156,7 @@ const AddWorkPage = () => {
       newItems[index] = { ...newItems[index], [field]: value };
     }
 
-    const { total, discountTotal } = newItems.reduce((acc, item) => {
+    const { total, discountTotal, appFeeTotal } = newItems.reduce((acc, item) => {
       const qty = parseInt(item.quantity) || 1;
       const otherC = parseFloat(item.otherCharges) || 0;
       const presetC = parseFloat(item.presetAmount) || 0;
@@ -166,14 +168,16 @@ const AddWorkPage = () => {
       }
       acc.total += rowCost;
       acc.discountTotal += itemDisc;
+      acc.appFeeTotal += presetC;
       return acc;
-    }, { total: 0, discountTotal: 0 });
+    }, { total: 0, discountTotal: 0, appFeeTotal: 0 });
     setFormData(prev => {
       const updated = {
         ...prev,
         items: newItems,
         amount: total.toString(),
-        totalDiscount: discountTotal.toString()
+        totalDiscount: discountTotal.toString(),
+        applicationFee: appFeeTotal
       };
 
       // Sync payment amounts if Paid
@@ -208,7 +212,7 @@ const AddWorkPage = () => {
 
   const removeItemRow = (index) => {
     const newItems = formData.items.filter((_, i) => i !== index);
-    const { total, discountTotal } = newItems.reduce((acc, item) => {
+    const { total, discountTotal, appFeeTotal } = newItems.reduce((acc, item) => {
       const qty = parseInt(item.quantity) || 1;
       const otherC = parseFloat(item.otherCharges) || 0;
       const presetC = parseFloat(item.presetAmount) || 0;
@@ -220,15 +224,17 @@ const AddWorkPage = () => {
       }
       acc.total += rowCost;
       acc.discountTotal += itemDisc;
+      acc.appFeeTotal += presetC;
       return acc;
-    }, { total: 0, discountTotal: 0 });
+    }, { total: 0, discountTotal: 0, appFeeTotal: 0 });
 
     setFormData(prev => {
       const updated = {
         ...prev,
         items: newItems.length ? newItems : [{ workItemId: '', workTitle: '', quantity: 1, otherCharges: '0', discount: '0', applicationNumber: '' }],
         amount: total.toString(),
-        totalDiscount: discountTotal.toString()
+        totalDiscount: discountTotal.toString(),
+        applicationFee: appFeeTotal
       };
 
       // Sync payment amounts if Paid

@@ -26,17 +26,14 @@ const WorkList = ({
         <table className="table table-hover mb-0" style={{ minWidth: '800px' }}>
           <thead>
             <tr>
-              {isAdmin && <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Employee</th>}
               <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Date</th>
+              {isAdmin && <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Employee</th>}
               <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Customer</th>
-              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Payment Method</th>
-              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>GPay</th>
-              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Cash</th>
-              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Total</th>
-              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>App Fee</th>
-              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Work Title</th>
-              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Payment</th>
+              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Work/Service</th>
+              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Amount</th>
+              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Payment Status</th>
               <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Work Status</th>
+              <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Created Time</th>
               <th style={{ ...styles.th, color: '#3b8132', fontWeight: '700' }}>Actions</th>
             </tr>
           </thead>
@@ -56,7 +53,7 @@ const WorkList = ({
                 />
                 {editingItemId === work._id && (
                   <tr>
-                    <td colSpan={isAdmin ? 12 : 11} style={{ padding: '24px', backgroundColor: 'rgba(59, 129, 50, 0.03)' }}>
+                    <td colSpan={isAdmin ? 9 : 8} style={{ padding: '24px', backgroundColor: 'rgba(59, 129, 50, 0.03)' }}>
                       {renderEditForm(work)}
                     </td>
                   </tr>

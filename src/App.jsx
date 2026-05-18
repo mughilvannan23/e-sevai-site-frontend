@@ -20,6 +20,7 @@ import EmployeeWorks from './pages/EmployeeWorks';
 import AllEmployeeWorks from './pages/AllEmployeeWorks';
 import EmployeeReports from './pages/EmployeeReports';
 import AddWorkPage from './pages/AddWorkPage';
+import SuperAdminDashboard from './pages/SuperAdminDashboard';
 
 
 
@@ -27,7 +28,7 @@ import AddWorkPage from './pages/AddWorkPage';
 
 // Protected route wrapper
 const ProtectedRoute = ({ requiredRole }) => {
-  const { user, logout, isAuthenticated, isAdmin, isEmployee, loading } = useAuth();
+  const { user, logout, isAuthenticated, isAdmin, isEmployee, isSuperAdmin, loading } = useAuth();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [isHovered, setIsHovered] = React.useState(false);
   const location = useLocation();
@@ -38,11 +39,17 @@ const ProtectedRoute = ({ requiredRole }) => {
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
   if (requiredRole === 'admin' && !isAdmin) {
+    if (isSuperAdmin) return <Navigate to="/superadmin/dashboard" replace />;
     return <Navigate to="/employee/dashboard" replace />;
   }
 
   if (requiredRole === 'employee' && !isEmployee) {
+    if (isSuperAdmin) return <Navigate to="/superadmin/dashboard" replace />;
     return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  if (requiredRole === 'superadmin' && !isSuperAdmin) {
+    return <Navigate to={isAdmin ? "/admin/dashboard" : "/employee/dashboard"} replace />;
   }
 
   const handleLogout = () => {
@@ -53,10 +60,19 @@ const ProtectedRoute = ({ requiredRole }) => {
   const handleCloseSidebar = () => setSidebarOpen(false);
 
   const isActive = (path) => location.pathname === path;
-  const dashboardPath = isAdmin ? '/admin/dashboard' : '/employee/dashboard';
+  const dashboardPath = isSuperAdmin ? '/superadmin/dashboard' : (isAdmin ? '/admin/dashboard' : '/employee/dashboard');
 
   const NavLinks = ({ collapsed = false }) => (
     <div style={{ opacity: collapsed ? 0 : 1, transition: 'opacity 0.2s ease', pointerEvents: collapsed ? 'none' : 'auto' }}>
+      {isSuperAdmin && (
+        <>
+          <Link to="/superadmin/dashboard" className="nav-link" style={{ ...styles.navLink, ...(isActive('/superadmin/dashboard') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Shop Management">
+            <span style={styles.navIcon}>⚙️</span>
+            <span>Shop Management</span>
+          </Link>
+        </>
+      )}
+
       {isAdmin && (
         <>
           <Link to="/admin/dashboard" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/dashboard') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Dashboard">
@@ -134,7 +150,7 @@ const ProtectedRoute = ({ requiredRole }) => {
         }}>
           <div className="d-flex align-items-center justify-content-between mb-2">
             <Link to={dashboardPath} style={{ ...styles.brandLink, opacity: collapsed ? 0 : 1, transition: 'opacity 0.2s' }}>
-              <span style={styles.brandText}>SEVAGAN CENTRE</span>
+              <span style={styles.brandText}>{user?.shopName?.toUpperCase() || 'SEVAGAN CENTRE'}</span>
             </Link>
             {collapsed && (
               <div style={{
@@ -158,7 +174,7 @@ const ProtectedRoute = ({ requiredRole }) => {
           <div className="mt-auto pt-4 px-1" style={{ opacity: collapsed ? 0 : 1, transition: 'opacity 0.2s' }}>
             <div className="mb-3">
               <div style={styles.userName}>{user?.name}</div>
-              <div style={styles.userRole}>{isAdmin ? 'Admin' : user?.employeeId}</div>
+              <div style={styles.userRole}>{isSuperAdmin ? 'Super Admin' : (isAdmin ? 'Admin' : user?.employeeId)}</div>
             </div>
             <button type="button" className="btn btn-danger w-100" onClick={handleLogout} title="Logout">
               Logout
@@ -176,7 +192,7 @@ const ProtectedRoute = ({ requiredRole }) => {
         <div className="d-flex align-items-center justify-content-between p-3">
           <Link to={dashboardPath} style={styles.mobileBrandLink}>
             {/* <span style={styles.brandIcon}>🏢</span> */}
-            <span style={{ fontSize: '14px', fontWeight: '700', color: 'white' }}>SEVAGAN</span>
+            <span style={{ fontSize: '14px', fontWeight: '700', color: 'white' }}>{user?.shopName?.toUpperCase() || 'SEVAGAN'}</span>
           </Link>
           <button className="btn btn-light" onClick={() => setSidebarOpen(true)} style={styles.hamburgerBtn}>
             ☰
@@ -248,6 +264,11 @@ function App() {
                 <Route path="/admin/reports" element={<AdminReports />} />
                 <Route path="/admin/purchases" element={<AdminPurchases />} />
                 <Route path="/admin/profile" element={<AdminProfile />} />
+              </Route>
+
+              {/* Super Admin */}
+              <Route element={<ProtectedRoute requiredRole="superadmin" />}>
+                <Route path="/superadmin/dashboard" element={<SuperAdminDashboard />} />
               </Route>
 
               {/* Employee */}

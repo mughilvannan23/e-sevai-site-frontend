@@ -345,14 +345,15 @@ const AllEmployeeWorks = () => {
                               const workC = item.workChargeAtTime || 0;
                               const serviceC = item.serviceChargeAtTime || 0;
                               const otherC = item.otherCharges || 0;
+                              const presetAmt = item.presetAmount || 0;
                               const disc = item.discount || 0;
-                              const subtotal = (workC + serviceC) * qty + otherC - disc;
+                              const subtotal = (workC + serviceC) * qty + otherC + presetAmt - disc;
                               return (
                                 <tr key={idx}>
                                   <td>{item.title}</td>
                                   <td>{item.applicationNumber || '-'}</td>
                                   <td className="text-center">{qty}</td>
-                                  <td className="text-end">₹{workC}</td>
+                                  <td className="text-end">₹{workC + presetAmt}</td>
                                   <td className="text-end">₹{serviceC}</td>
                                   <td className="text-end">₹{otherC}</td>
                                   <td className="text-end text-danger">-₹{disc}</td>
