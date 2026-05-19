@@ -406,7 +406,6 @@ const AddWork = () => {
                 )}
               </div>
             </div>
-            </div>
 
             {/* Section 3: Work Items */}
             <div style={styles.section}>
@@ -665,7 +664,7 @@ const styles = {
     marginTop: 0
   },
   label: {
-    fontSize: '11px', // Tiny but readable
+    fontSize: '13px', // Tiny but readable
     fontWeight: '500',
     color: '#374151',
     marginBottom: '1px',

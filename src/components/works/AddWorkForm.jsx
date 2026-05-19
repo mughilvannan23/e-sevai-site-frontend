@@ -1,5 +1,163 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { workStyles as styles } from './workStyles';
+
+const SearchableSelect = ({ value, onChange, options, placeholder, required }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const wrapperRef = useRef(null);
+
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        // Also check if the click is inside the portal
+        const portal = document.getElementById(`portal-${search}`); // Optional check if needed
+        // For simplicity, just check if it's clicking on option (handled by onClick)
+        // If clicking outside both, close it. We can add a ref to the portal if needed.
+        // But mousedown on options fires before this if we use onClick in options.
+      }
+    };
+    // To handle outside click when using portal, it's easier to use a backdrop or just check if event target is inside the dropdown container.
+  }, []);
+
+  // Use a backdrop for the portal to handle outside clicks cleanly
+  const handleClose = () => {
+    setIsOpen(false);
+    setSearch('');
+  };
+
+  useEffect(() => {
+    const updatePos = () => {
+      if (isOpen && wrapperRef.current) {
+        const rect = wrapperRef.current.getBoundingClientRect();
+        setDropdownPos({
+          top: rect.bottom + window.scrollY,
+          left: rect.left + window.scrollX,
+          width: rect.width
+        });
+      }
+    };
+    
+    if (isOpen) {
+      updatePos();
+      window.addEventListener('scroll', updatePos, true);
+      window.addEventListener('resize', updatePos);
+    }
+    
+    return () => {
+      window.removeEventListener('scroll', updatePos, true);
+      window.removeEventListener('resize', updatePos);
+    };
+  }, [isOpen]);
+
+  const filteredOptions = options.filter(opt => 
+    opt.label.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const selectedOpt = options.find(opt => opt.value === value);
+
+  return (
+    <div ref={wrapperRef} style={{ position: 'relative', width: '100%' }}>
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        className="form-select form-select-sm"
+        style={{
+          cursor: 'pointer',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          color: selectedOpt ? 'inherit' : '#6c757d'
+        }}
+      >
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {selectedOpt ? selectedOpt.label : placeholder}
+        </span>
+      </div>
+      
+      {/* Hidden input to handle 'required' attribute */}
+      <input 
+        type="text" 
+        style={{ opacity: 0, position: 'absolute', height: 0, width: 0, padding: 0, border: 'none' }} 
+        value={value} 
+        onChange={() => {}} 
+        required={required}
+      />
+      
+      {isOpen && createPortal(
+        <>
+          <div 
+            onClick={handleClose}
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999 }}
+          />
+          <div style={{
+            position: 'absolute',
+            top: `${dropdownPos.top}px`,
+            left: `${dropdownPos.left}px`,
+            width: `${dropdownPos.width}px`,
+            zIndex: 10000,
+            backgroundColor: '#fff',
+            border: '1px solid #ced4da',
+            borderRadius: '4px',
+            marginTop: '4px',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+            maxHeight: '250px',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search service..."
+              autoFocus
+              style={{
+                padding: '6px 10px',
+                border: 'none',
+                borderBottom: '1px solid #eee',
+                outline: 'none',
+                width: '100%',
+                fontSize: '13px'
+              }}
+            />
+            <div style={{ overflowY: 'auto' }}>
+              <div 
+                onClick={() => { onChange(''); handleClose(); }}
+                style={{ padding: '6px 10px', cursor: 'pointer', borderBottom: '1px solid #eee', color: '#6c757d', fontSize: '13px' }}
+              >
+                {placeholder}
+              </div>
+              {filteredOptions.length === 0 ? (
+                <div style={{ padding: '6px 10px', color: '#6c757d', fontSize: '13px', textAlign: 'center' }}>
+                  No services found
+                </div>
+              ) : (
+                filteredOptions.map(opt => (
+                  <div
+                    key={opt.value}
+                    onClick={() => { onChange(opt.value); handleClose(); }}
+                    style={{
+                      padding: '6px 10px',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      backgroundColor: opt.value === value ? '#e9ecef' : 'transparent'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = opt.value === value ? '#e9ecef' : 'transparent'}
+                  >
+                    {opt.label}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
+    </div>
+  );
+};
 
 const AddWorkForm = ({
   formData,
@@ -111,17 +269,13 @@ const AddWorkForm = ({
                     return (
                       <tr key={index}>
                         <td>
-                          <select
+                          <SearchableSelect
                             value={item.workItemId}
-                            onChange={(e) => onItemChange(index, 'workItemId', e.target.value)}
-                            className="form-select form-select-sm"
+                            onChange={(value) => onItemChange(index, 'workItemId', value)}
+                            options={workItems.map(w => ({ value: w._id, label: w.name }))}
+                            placeholder="Select Work Item..."
                             required={!item.workTitle && !item.workItemId}
-                          >
-                            <option value="">Select Work Item...</option>
-                            {workItems.map(w => (
-                              <option key={w._id} value={w._id}>{w.name}</option>
-                            ))}
-                          </select>
+                          />
                           {!item.workItemId && (
                             <input
                               type="text"

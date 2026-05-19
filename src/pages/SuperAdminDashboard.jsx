@@ -11,7 +11,9 @@ const SuperAdminDashboard = () => {
     shopName: '',
     mobile: '',
     password: '',
-    isActive: true
+    isActive: true,
+    subscriptionMonths: '',
+    subscriptionEndDate: ''
   });
   const { success, error: showError } = useToast();
 
@@ -64,7 +66,9 @@ const SuperAdminDashboard = () => {
       shopName: admin.shopName || '',
       mobile: admin.mobile || '',
       password: '',
-      isActive: admin.isActive
+      isActive: admin.isActive,
+      subscriptionMonths: '',
+      subscriptionEndDate: admin.subscriptionEndDate ? new Date(admin.subscriptionEndDate).toISOString().split('T')[0] : ''
     });
     setShowModal(true);
   };
@@ -75,7 +79,9 @@ const SuperAdminDashboard = () => {
       shopName: '',
       mobile: '',
       password: '',
-      isActive: true
+      isActive: true,
+      subscriptionMonths: '',
+      subscriptionEndDate: ''
     });
   };
 
@@ -107,15 +113,17 @@ const SuperAdminDashboard = () => {
                 <tr>
                   <th className="px-4 py-3 border-0 text-muted" style={{ fontWeight: '600' }}>Shop Name</th>
                   <th className="px-4 py-3 border-0 text-muted" style={{ fontWeight: '600' }}>Mobile Number</th>
+                  <th className="px-4 py-3 border-0 text-muted" style={{ fontWeight: '600' }}>Subscription Start</th>
+                  <th className="px-4 py-3 border-0 text-muted" style={{ fontWeight: '600' }}>Subscription End</th>
+                  <th className="px-4 py-3 border-0 text-muted" style={{ fontWeight: '600' }}>Remaining</th>
                   <th className="px-4 py-3 border-0 text-muted" style={{ fontWeight: '600' }}>Status</th>
-                  <th className="px-4 py-3 border-0 text-muted" style={{ fontWeight: '600' }}>Joined Date</th>
                   <th className="px-4 py-3 border-0 text-muted text-end" style={{ fontWeight: '600' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {admins.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="text-center py-4 text-muted">No shop admins found.</td>
+                    <td colSpan="7" className="text-center py-4 text-muted">No shop admins found.</td>
                   </tr>
                 ) : (
                   admins.map(admin => (
@@ -124,13 +132,31 @@ const SuperAdminDashboard = () => {
                         <div className="fw-bold text-dark">{admin.shopName || 'Default Shop'}</div>
                       </td>
                       <td className="px-4 py-3">{admin.mobile}</td>
-                      <td className="px-4 py-3">
-                        <span className={`badge rounded-pill ${admin.isActive ? 'bg-success' : 'bg-danger'}`} style={{ padding: '6px 12px' }}>
-                          {admin.isActive ? 'Active' : 'Inactive'}
-                        </span>
+                      <td className="px-4 py-3 text-muted">
+                        {admin.subscriptionStartDate ? new Date(admin.subscriptionStartDate).toLocaleDateString() : 'N/A'}
                       </td>
                       <td className="px-4 py-3 text-muted">
-                        {new Date(admin.createdAt).toLocaleDateString()}
+                        {admin.subscriptionEndDate ? new Date(admin.subscriptionEndDate).toLocaleDateString() : 'N/A'}
+                      </td>
+                      <td className="px-4 py-3">
+                        {(() => {
+                          if (!admin.subscriptionEndDate) return '-';
+                          const end = new Date(admin.subscriptionEndDate);
+                          const now = new Date();
+                          const diffTime = end - now;
+                          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                          if (diffDays < 0) return <span className="text-danger fw-bold">{Math.abs(diffDays)} days ago</span>;
+                          if (diffDays <= 7) return <span className="text-warning fw-bold">{diffDays} days left</span>;
+                          return <span className="text-success">{diffDays} days left</span>;
+                        })()}
+                      </td>
+                      <td className="px-4 py-3">
+                        {(() => {
+                          const isExpired = admin.subscriptionEndDate && new Date(admin.subscriptionEndDate) < new Date();
+                          if (isExpired) return <span className="badge rounded-pill bg-danger" style={{ padding: '6px 12px' }}>Expired</span>;
+                          if (!admin.isActive) return <span className="badge rounded-pill bg-secondary" style={{ padding: '6px 12px' }}>Inactive</span>;
+                          return <span className="badge rounded-pill bg-success" style={{ padding: '6px 12px' }}>Active</span>;
+                        })()}
                       </td>
                       <td className="px-4 py-3 text-end">
                         <button 
@@ -200,6 +226,35 @@ const SuperAdminDashboard = () => {
                         placeholder="Enter password"
                         minLength="6"
                       />
+                    </div>
+
+                    <div className="row mb-3">
+                      <div className="col-md-6">
+                        <label className="form-label text-muted fw-semibold">Add Subscription (Months)</label>
+                        <select
+                          className="form-select form-select-lg bg-light"
+                          name="subscriptionMonths"
+                          value={formData.subscriptionMonths}
+                          onChange={handleInputChange}
+                        >
+                          <option value="">Select Duration</option>
+                          <option value="1">1 Month</option>
+                          <option value="3">3 Months</option>
+                          <option value="6">6 Months</option>
+                          <option value="12">1 Year</option>
+                        </select>
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label text-muted fw-semibold">OR Custom End Date</label>
+                        <input
+                          type="date"
+                          className="form-control form-control-lg bg-light"
+                          name="subscriptionEndDate"
+                          value={formData.subscriptionEndDate}
+                          onChange={handleInputChange}
+                          disabled={!!formData.subscriptionMonths} // Disable if months selected
+                        />
+                      </div>
                     </div>
 
                     <div className="mb-4 form-check form-switch d-flex align-items-center gap-2">

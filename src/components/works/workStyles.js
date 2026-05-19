@@ -60,7 +60,7 @@ export const workStyles = {
     marginTop: 0
   },
   label: {
-    fontSize: '11px',
+    fontSize: '13px',
     fontWeight: '500',
     color: '#2c3e50',
     marginBottom: '0px',
