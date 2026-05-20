@@ -190,28 +190,6 @@ const AddWorkForm = ({
         {/* Section 1: Entry Details */}
         <div style={styles.section}>
           <div className="row g-1">
-            <div className="col-6 col-md-3">
-              <label style={styles.label}>Date</label>
-              <input
-                type="date"
-                name="date"
-                value={formData.date}
-                onChange={onInputChange}
-                className="form-control form-control-sm"
-                required
-              />
-            </div>
-            <div className="col-6 col-md-3">
-              <label style={styles.label}>Time</label>
-              <input
-                type="time"
-                name="time"
-                value={formData.time}
-                onChange={onInputChange}
-                className="form-control form-control-sm"
-                required
-              />
-            </div>
             <div className="col-12 col-md-3">
               <label style={styles.label}>Customer Name</label>
               <input
@@ -233,6 +211,28 @@ const AddWorkForm = ({
                 onChange={onInputChange}
                 className="form-control form-control-sm"
                 placeholder="Phone"
+              />
+            </div>
+            <div className="col-6 col-md-3">
+              <label style={styles.label}>Date</label>
+              <input
+                type="date"
+                name="date"
+                value={formData.date}
+                onChange={onInputChange}
+                className="form-control form-control-sm"
+                required
+              />
+            </div>
+            <div className="col-6 col-md-3">
+              <label style={styles.label}>Time</label>
+              <input
+                type="time"
+                name="time"
+                value={formData.time}
+                onChange={onInputChange}
+                className="form-control form-control-sm"
+                required
               />
             </div>
           </div>
@@ -264,7 +264,8 @@ const AddWorkForm = ({
                     const qty = parseInt(item.quantity) || 1;
                     const otherC = parseFloat(item.otherCharges) || 0;
                     const presetC = parseFloat(item.presetAmount) || 0;
-                    const rowTotal = (wc + sc) * qty + otherC + presetC;
+                    const isAEPS = item.presetChargeType === 'AEPS' || (wi && wi.chargeType === 'AEPS');
+                    const rowTotal = (wc + sc) * qty + otherC + (isAEPS ? 0 : presetC);
 
                     return (
                       <tr key={index}>
@@ -386,7 +387,7 @@ const AddWorkForm = ({
                 Final Amount: ₹{(parseFloat(formData.amount) || 0).toFixed(2)}
               </strong>
 
-              {formData.items.some(item => (item.presetChargeType === 'Hand Cash' || item.presetChargeType === 'GPay' || item.presetChargeType === 'Recharge')) && (
+              {formData.items.some(item => (item.presetChargeType === 'Hand Cash' || item.presetChargeType === 'GPay' || item.presetChargeType === 'Recharge' || item.presetChargeType === 'AEPS' || (workItems.find(w => w._id === item.workItemId)?.chargeType === 'AEPS'))) && (
                 <div className="mt-2 p-2 rounded bg-light d-flex justify-content-between" style={{ fontSize: '0.85rem', border: '1px solid #ddd' }}>
                   <div><strong>Cash Balance:</strong> ₹{(shopBalance || 0).toLocaleString()}</div>
                   <div className="ms-3" style={{ color: '#0dcaf0' }}><strong>GPay Balance:</strong> ₹{(gpayBalance || 0).toLocaleString()}</div>

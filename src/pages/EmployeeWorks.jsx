@@ -156,7 +156,7 @@ const EmployeeWorks = () => {
   const handlePrint = (work) => {
     const printWindow = window.open('', '_blank');
 
-    const totalPresetAmount = work.items?.reduce((sum, i) => sum + (i.presetAmount || 0), 0) || 0;
+    const totalPresetAmount = work.items?.reduce((sum, i) => sum + (i.presetChargeType === 'AEPS' ? 0 : (i.presetAmount || 0)), 0) || 0;
     const itemsHtml = work.items?.length
       ? work.items.map(i => {
         const qty = i.quantity || 1;
@@ -164,7 +164,8 @@ const EmployeeWorks = () => {
         const presetAmt = i.presetAmount || 0;
         const otherC = i.otherCharges || 0;
         const itemDiscount = i.discount || 0;
-        const subtotal = (qty * price) + presetAmt + otherC - itemDiscount;
+        const isAEPS = i.presetChargeType === 'AEPS';
+        const subtotal = (qty * price) + (isAEPS ? 0 : presetAmt) + otherC - itemDiscount;
 
         const chargeLabel = i.presetChargeType && i.presetChargeType !== 'None' ? i.presetChargeType : 'Amt';
 
@@ -265,7 +266,7 @@ const EmployeeWorks = () => {
     return (
       <span style={{
         ...styles.badge,
-        backgroundColor: positive ? 'var(--success-color)' : (isPayment ? 'var(--danger-color)' : 'var(--warning-color)'),
+        backgroundColor: positive ? 'var(--success-color)' : (isPayment ? (status === 'None' ? '#95a5a6' : 'var(--danger-color)') : 'var(--warning-color)'),
         color: 'white'
       }}>
         {type === 'work' ? formatWorkStatus(status) : status}

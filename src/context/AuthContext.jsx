@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showWarning, setShowWarning] = useState(false);
 
   // Check if user is authenticated on mount
   useEffect(() => {
@@ -54,9 +55,14 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           const jwtPayload = JSON.parse(atob(token.split('.')[1]));
-          if (Date.now() >= jwtPayload.exp * 1000) {
+          const timeUntilExpiry = jwtPayload.exp * 1000 - Date.now();
+          
+          if (timeUntilExpiry <= 0) {
+            setShowWarning(false);
             logout();
             window.location.href = '/#/login';
+          } else if (timeUntilExpiry <= 60000 && timeUntilExpiry > 0) { // 1 minute before expiry
+            setShowWarning(true);
           }
         } catch (e) {
           // ignore
@@ -64,9 +70,30 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    const intervalId = setInterval(checkToken, 60000); // Check every minute
+    const intervalId = setInterval(checkToken, 10000); // Check every 10 seconds
     return () => clearInterval(intervalId);
   }, [user]);
+
+  const handleContinueSession = async () => {
+    try {
+      const response = await authAPI.refreshToken();
+      if (response.data.success) {
+        localStorage.setItem('token', response.data.token);
+        setShowWarning(false);
+      }
+    } catch (error) {
+      console.error('Failed to refresh token', error);
+      setShowWarning(false);
+      logout();
+      window.location.href = '/#/login';
+    }
+  };
+
+  const handleLogoutNow = () => {
+    setShowWarning(false);
+    logout();
+    window.location.href = '/#/login';
+  };
 
   const login = async (loginData) => {
     console.log('[AuthContext] login called with mobile:', loginData.mobile);
@@ -133,6 +160,48 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={value}>
       {children}
+      {showWarning && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '24px',
+            borderRadius: '12px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            maxWidth: '400px',
+            textAlign: 'center'
+          }}>
+            <h4 style={{ color: '#e74c3c', marginBottom: '16px' }}>Session Expiring</h4>
+            <p style={{ marginBottom: '24px', color: '#555' }}>
+              Your session is about to expire.<br/>
+              Do you want to continue your session?
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+              <button 
+                onClick={handleLogoutNow}
+                className="btn btn-outline-danger"
+                style={{ minWidth: '100px' }}
+              >
+                Logout
+              </button>
+              <button 
+                onClick={handleContinueSession}
+                className="btn btn-success"
+                style={{ minWidth: '100px', backgroundColor: '#3b8132', borderColor: '#3b8132' }}
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AuthContext.Provider>
   );
 };

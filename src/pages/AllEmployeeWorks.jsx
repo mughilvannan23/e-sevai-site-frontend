@@ -94,7 +94,7 @@ const AllEmployeeWorks = () => {
     return (
       <span style={{
         ...styles.badge,
-        backgroundColor: positive ? '#3b8132' : (isPayment ? '#e74c3c' : '#f39c12'),
+        backgroundColor: positive ? '#3b8132' : (isPayment ? (status === 'None' ? '#95a5a6' : '#e74c3c') : '#f39c12'),
         color: 'white',
         fontSize: '0.75rem',
         padding: '4px 10px'
@@ -347,13 +347,14 @@ const AllEmployeeWorks = () => {
                               const otherC = item.otherCharges || 0;
                               const presetAmt = item.presetAmount || 0;
                               const disc = item.discount || 0;
-                              const subtotal = (workC + serviceC) * qty + otherC + presetAmt - disc;
+                              const isAEPS = item.presetChargeType === 'AEPS';
+                              const subtotal = (workC + serviceC) * qty + otherC + (isAEPS ? 0 : presetAmt) - disc;
                               return (
                                 <tr key={idx}>
                                   <td>{item.title}</td>
                                   <td>{item.applicationNumber || '-'}</td>
                                   <td className="text-center">{qty}</td>
-                                  <td className="text-end">₹{workC + presetAmt}</td>
+                                  <td className="text-end">₹{workC + (isAEPS ? 0 : presetAmt)}</td>
                                   <td className="text-end">₹{serviceC}</td>
                                   <td className="text-end">₹{otherC}</td>
                                   <td className="text-end text-danger">-₹{disc}</td>

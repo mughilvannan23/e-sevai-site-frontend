@@ -75,14 +75,21 @@ const AddWorkPage = () => {
         const otherC = parseFloat(item.otherCharges) || 0;
         const presetC = parseFloat(item.presetAmount) || 0;
         const itemDisc = parseFloat(item.discount) || 0;
-        let rowCost = otherC + presetC - itemDisc;
+        
+        let isAEPS = item.presetChargeType === 'AEPS';
+        if (item.workItemId) {
+          const wi = workItems.find(w => w._id === item.workItemId);
+          if (wi && wi.chargeType === 'AEPS') isAEPS = true;
+        }
+        
+        let rowCost = otherC + (isAEPS ? 0 : presetC) - itemDisc;
         if (item.workItemId) {
           const wi = workItems.find(w => w._id === item.workItemId);
           rowCost += (wi ? (wi.workCharge + wi.serviceCharge) * qty : 0);
         }
         acc.total += rowCost;
         acc.discountTotal += itemDisc;
-        acc.appFeeTotal += presetC;
+        if (!isAEPS) acc.appFeeTotal += presetC;
         return acc;
       }, { total: 0, discountTotal: 0, appFeeTotal: 0 });
 

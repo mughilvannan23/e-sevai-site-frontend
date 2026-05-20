@@ -152,14 +152,21 @@ const AdminWorks = () => {
         const otherC = parseFloat(item.otherCharges) || 0;
         const presetC = parseFloat(item.presetAmount) || 0;
         const itemDisc = parseFloat(item.discount) || 0;
-        let rowCost = otherC + presetC - itemDisc;
+        
+        let isAEPS = item.presetChargeType === 'AEPS';
+        if (item.workItemId) {
+          const wi = workItems.find(w => w._id === item.workItemId);
+          if (wi && wi.chargeType === 'AEPS') isAEPS = true;
+        }
+        
+        let rowCost = otherC + (isAEPS ? 0 : presetC) - itemDisc;
         if (item.workItemId) {
           const wi = workItems.find(w => w._id === item.workItemId);
           rowCost += (wi ? (wi.workCharge + wi.serviceCharge) * qty : 0);
         }
         acc.total += rowCost;
         acc.discountTotal += itemDisc;
-        acc.appFeeTotal += presetC;
+        if (!isAEPS) acc.appFeeTotal += presetC;
         return acc;
       }, { total: 0, discountTotal: 0, appFeeTotal: 0 });
 
@@ -519,7 +526,7 @@ const AdminWorks = () => {
     return (
       <span style={{
         ...styles.badge,
-        backgroundColor: positive ? '#3b8132' : (isPayment ? '#e74c3c' : '#f39c12'),
+        backgroundColor: positive ? '#3b8132' : (isPayment ? (status === 'None' ? '#95a5a6' : '#e74c3c') : '#f39c12'),
         color: 'white',
         borderRadius: '20px'
       }}>
@@ -707,6 +714,7 @@ const AdminWorks = () => {
                   <option value="GPay">GPay</option>
                   <option value="Hand Cash">Hand Cash</option>
                   <option value="Recharge">Recharge</option>
+                  <option value="AEPS">AEPS</option>
                 </select>
               </div>
               <div className="col-12 col-md-2 d-flex flex-column gap-2">

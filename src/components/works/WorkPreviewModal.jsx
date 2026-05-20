@@ -63,7 +63,8 @@ const WorkPreviewModal = ({ isOpen, onClose, onConfirm, formData, workItems }) =
                   const qty = parseInt(item.quantity) || 1;
                   const otherC = parseFloat(item.otherCharges) || 0;
                   const presetC = parseFloat(item.presetAmount) || 0;
-                  const rowTotal = (wc + sc) * qty + otherC + presetC;
+                  const isAEPS = item.presetChargeType === 'AEPS' || (wi && wi.chargeType === 'AEPS');
+                  const rowTotal = (wc + sc) * qty + otherC + (isAEPS ? 0 : presetC);
 
                   return (
                     <tr key={index}>
