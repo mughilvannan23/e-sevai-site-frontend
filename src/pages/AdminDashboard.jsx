@@ -88,8 +88,8 @@ const AdminDashboard = () => {
                     <p style={{ ...styles.statTitle, fontSize: '10px' }}>Cash Balance</p>
                   </div>
                   <div style={{ textAlign: 'right', borderLeft: '1px solid #eee', paddingLeft: '10px' }}>
-                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0', color: '#0dcaf0' }}>₹{(stats.revenue.gpayBalance || 0).toLocaleString()}</h3>
-                    <p style={{ ...styles.statTitle, fontSize: '10px' }}>GPay Balance</p>
+                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0', color: '#0dcaf0' }}>₹{(stats.revenue.todayGpay || 0).toLocaleString()}</h3>
+                    <p style={{ ...styles.statTitle, fontSize: '10px' }}>Today's GPay</p>
                   </div>
                 </div>
                 <p style={{ ...styles.statTitle, marginTop: '5px', borderTop: '1px solid #eee', paddingTop: '5px' }}>Shop Balance</p>

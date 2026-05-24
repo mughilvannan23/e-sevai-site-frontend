@@ -7,7 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const EmployeeDashboard = () => {
   const [stats, setStats] = useState(null);
-  const [balances, setBalances] = useState({ shopBalance: 0, gpayBalance: 0 });
+  const [balances, setBalances] = useState({ shopBalance: 0, gpayBalance: 0, todayGpay: 0 });
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { success, error } = useToast();
@@ -31,7 +31,8 @@ const EmployeeDashboard = () => {
       if (balanceRes.data.success) {
         setBalances({
           shopBalance: balanceRes.data.shopBalance,
-          gpayBalance: balanceRes.data.gpayBalance
+          gpayBalance: balanceRes.data.gpayBalance,
+          todayGpay: balanceRes.data.todayGpay
         });
       }
     } catch (err) {
@@ -77,8 +78,8 @@ const EmployeeDashboard = () => {
                     <p style={{ ...styles.statTitle, fontSize: '10px' }}>Cash Balance</p>
                   </div>
                   <div style={{ textAlign: 'right', borderLeft: '1px solid #eee', paddingLeft: '10px' }}>
-                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0', color: '#0dcaf0' }}>₹{(balances.gpayBalance || 0).toLocaleString()}</h3>
-                    <p style={{ ...styles.statTitle, fontSize: '10px' }}>GPay Balance</p>
+                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0', color: '#0dcaf0' }}>₹{(balances.todayGpay || 0).toLocaleString()}</h3>
+                    <p style={{ ...styles.statTitle, fontSize: '10px' }}>Today's GPay</p>
                   </div>
                 </div>
                 <p style={{ ...styles.statTitle, marginTop: '5px', borderTop: '1px solid #eee', paddingTop: '5px' }}>Shop Balance</p>

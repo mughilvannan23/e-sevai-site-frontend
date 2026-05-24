@@ -8,24 +8,142 @@ import Loading from './components/common/Loading';
 import Login from './components/common/Login';
 import LiveClock from './components/common/LiveClock';
 
-// Import pages
-import AdminDashboard from './pages/AdminDashboard';
-import AdminWorks from './pages/AdminWorks';
-import AdminEmployees from './pages/AdminEmployees';
-import AdminReports from './pages/AdminReports';
-import AdminProfile from './pages/AdminProfile';
-import AdminPurchases from './pages/AdminPurchases';
-import EmployeeDashboard from './pages/EmployeeDashboard';
-import EmployeeWorks from './pages/EmployeeWorks';
-import AllEmployeeWorks from './pages/AllEmployeeWorks';
-import EmployeeReports from './pages/EmployeeReports';
-import AddWorkPage from './pages/AddWorkPage';
-import SuperAdminDashboard from './pages/SuperAdminDashboard';
+// Import pages with React.lazy
+const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
+const AdminWorks = React.lazy(() => import('./pages/AdminWorks'));
+const AdminEmployees = React.lazy(() => import('./pages/AdminEmployees'));
+const AdminReports = React.lazy(() => import('./pages/AdminReports'));
+const AdminProfile = React.lazy(() => import('./pages/AdminProfile'));
+const AdminPurchases = React.lazy(() => import('./pages/AdminPurchases'));
+const EmployeeDashboard = React.lazy(() => import('./pages/EmployeeDashboard'));
+const EmployeeWorks = React.lazy(() => import('./pages/EmployeeWorks'));
+const AllEmployeeWorks = React.lazy(() => import('./pages/AllEmployeeWorks'));
+const EmployeeReports = React.lazy(() => import('./pages/EmployeeReports'));
+const AddWorkPage = React.lazy(() => import('./pages/AddWorkPage'));
+const SuperAdminDashboard = React.lazy(() => import('./pages/SuperAdminDashboard'));
 
+const NavLinks = ({ collapsed = false, isSuperAdmin, isAdmin, isEmployee, isActive, handleCloseSidebar }) => (
+  <div style={{ opacity: collapsed ? 0 : 1, transition: 'opacity 0.2s ease', pointerEvents: collapsed ? 'none' : 'auto' }}>
+    {isSuperAdmin && (
+      <>
+        <Link to="/superadmin/dashboard" className="nav-link" style={{ ...styles.navLink, ...(isActive('/superadmin/dashboard') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Shop Management">
+          <span style={styles.navIcon}>⚙️</span>
+          <span>Shop Management</span>
+        </Link>
+      </>
+    )}
 
+    {isAdmin && (
+      <>
+        <Link to="/admin/dashboard" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/dashboard') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Dashboard">
+          <span style={styles.navIcon}>📊</span>
+          <span>Dashboard</span>
+        </Link>
+        <Link to="/admin/employees" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/employees') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Employees">
+          <span style={styles.navIcon}>👥</span>
+          <span>Employees</span>
+        </Link>
+        <Link to="/admin/works" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/works') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Works List">
+          <span style={styles.navIcon}>💼</span>
+          <span>Works List</span>
+        </Link>
+        <Link to="/admin/reports" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/reports') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Reports">
+          <span style={styles.navIcon}>📈</span>
+          <span>Reports</span>
+        </Link>
+        <Link to="/admin/purchases" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/purchases') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Purchase">
+          <span style={styles.navIcon}>🛒</span>
+          <span>Purchase</span>
+        </Link>
+        <Link to="/admin/profile" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/profile') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Profile">
+          <span style={styles.navIcon}>👤</span>
+          <span>Profile</span>
+        </Link>
+      </>
+    )}
 
+    {isEmployee && (
+      <>
+        <Link to="/employee/dashboard" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/dashboard') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Dashboard">
+          <span style={styles.navIcon}>📊</span>
+          <span>Dashboard</span>
+        </Link>
+        <Link to="/add-work" className="nav-link" style={{ ...styles.navLink, ...(isActive('/add-work') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Add New Entry">
+          <span style={styles.navIcon}>➕</span>
+          <span>Add New Entry</span>
+        </Link>
+        <Link to="/employee/works" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/works') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="All Works">
+          <span style={styles.navIcon}>📝</span>
+          <span>All Works</span>
+        </Link>
+        <Link to="/employee/all-works" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/all-works') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="All Employee Works">
+          <span style={styles.navIcon}>🏢</span>
+          <span>All Employee Works</span>
+        </Link>
+        <Link to="/employee/reports" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/reports') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Reports">
+          <span style={styles.navIcon}>📉</span>
+          <span>Reports</span>
+        </Link>
+      </>
+    )}
+  </div>
+);
 
+const SidebarContent = ({ mobile = false, isHovered, isSuperAdmin, isAdmin, isEmployee, isActive, handleCloseSidebar, user, dashboardPath, handleLogout }) => {
+  const collapsed = !mobile && !isHovered;
 
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      overflow: 'hidden',
+      width: mobile ? '250px' : (isHovered ? '250px' : '40px'),
+      transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+    }}>
+      <div style={{
+        padding: '24px 16px',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        width: '250px',
+      }}>
+        <div className="d-flex align-items-center justify-content-between mb-2">
+          <Link to={dashboardPath} style={{ ...styles.brandLink, opacity: collapsed ? 0 : 1, transition: 'opacity 0.2s' }}>
+            <span style={styles.brandText}>{user?.shopName?.toUpperCase() || 'SEVAGAN CENTRE'}</span>
+          </Link>
+          {collapsed && (
+            <div style={{
+              position: 'absolute',
+              left: '0',
+              width: '40px',
+              textAlign: 'center',
+              fontSize: '24px',
+              color: 'rgba(255,255,255,0.7)',
+              marginTop: '-10px'
+            }}>
+              ⋮
+            </div>
+          )}
+        </div>
+
+        <nav className="nav nav-pills flex-column gap-2 mt-4">
+          <NavLinks collapsed={collapsed} isSuperAdmin={isSuperAdmin} isAdmin={isAdmin} isEmployee={isEmployee} isActive={isActive} handleCloseSidebar={handleCloseSidebar} />
+        </nav>
+
+        <div className="mt-auto pt-4 px-1" style={{ opacity: collapsed ? 0 : 1, transition: 'opacity 0.2s' }}>
+          <div className="mb-3">
+            <div style={styles.userName}>{user?.name}</div>
+            <div style={styles.userRole}>{isSuperAdmin ? 'Super Admin' : (isAdmin ? 'Admin' : user?.employeeId)}</div>
+          </div>
+          <button type="button" className="btn btn-danger w-100" onClick={handleLogout} title="Logout">
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 // Protected route wrapper
 const ProtectedRoute = ({ requiredRole }) => {
   const { user, logout, isAuthenticated, isAdmin, isEmployee, isSuperAdmin, loading } = useAuth();
@@ -62,129 +180,6 @@ const ProtectedRoute = ({ requiredRole }) => {
   const isActive = (path) => location.pathname === path;
   const dashboardPath = isSuperAdmin ? '/superadmin/dashboard' : (isAdmin ? '/admin/dashboard' : '/employee/dashboard');
 
-  const NavLinks = ({ collapsed = false }) => (
-    <div style={{ opacity: collapsed ? 0 : 1, transition: 'opacity 0.2s ease', pointerEvents: collapsed ? 'none' : 'auto' }}>
-      {isSuperAdmin && (
-        <>
-          <Link to="/superadmin/dashboard" className="nav-link" style={{ ...styles.navLink, ...(isActive('/superadmin/dashboard') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Shop Management">
-            <span style={styles.navIcon}>⚙️</span>
-            <span>Shop Management</span>
-          </Link>
-        </>
-      )}
-
-      {isAdmin && (
-        <>
-          <Link to="/admin/dashboard" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/dashboard') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Dashboard">
-            <span style={styles.navIcon}>📊</span>
-            <span>Dashboard</span>
-          </Link>
-          <Link to="/admin/employees" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/employees') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Employees">
-            <span style={styles.navIcon}>👥</span>
-            <span>Employees</span>
-          </Link>
-          <Link to="/admin/works" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/works') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Works List">
-            <span style={styles.navIcon}>💼</span>
-            <span>Works List</span>
-          </Link>
-          <Link to="/admin/reports" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/reports') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Reports">
-            <span style={styles.navIcon}>📈</span>
-            <span>Reports</span>
-          </Link>
-          <Link to="/admin/purchases" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/purchases') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Purchase">
-            <span style={styles.navIcon}>🛒</span>
-            <span>Purchase</span>
-          </Link>
-          <Link to="/admin/profile" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/profile') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Profile">
-            <span style={styles.navIcon}>👤</span>
-            <span>Profile</span>
-          </Link>
-        </>
-      )}
-
-      {isEmployee && (
-        <>
-          <Link to="/employee/dashboard" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/dashboard') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Dashboard">
-            <span style={styles.navIcon}>📊</span>
-            <span>Dashboard</span>
-          </Link>
-          <Link to="/add-work" className="nav-link" style={{ ...styles.navLink, ...(isActive('/add-work') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Add New Entry">
-            <span style={styles.navIcon}>➕</span>
-            <span>Add New Entry</span>
-          </Link>
-          <Link to="/employee/works" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/works') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="All Works">
-            <span style={styles.navIcon}>📝</span>
-            <span>All Works</span>
-          </Link>
-          <Link to="/employee/all-works" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/all-works') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="All Employee Works">
-            <span style={styles.navIcon}>🏢</span>
-            <span>All Employee Works</span>
-          </Link>
-          <Link to="/employee/reports" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/reports') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Reports">
-            <span style={styles.navIcon}>📉</span>
-            <span>Reports</span>
-          </Link>
-        </>
-      )}
-    </div>
-  );
-
-  const SidebarContent = ({ mobile = false }) => {
-    const collapsed = !mobile && !isHovered;
-
-    return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        overflow: 'hidden',
-        width: mobile ? '250px' : (isHovered ? '250px' : '40px'),
-        transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-      }}>
-        <div style={{
-          padding: '24px 16px',
-          display: 'flex',
-          flexDirection: 'column',
-          height: '100%',
-          width: '250px', // Content always keeps its width
-        }}>
-          <div className="d-flex align-items-center justify-content-between mb-2">
-            <Link to={dashboardPath} style={{ ...styles.brandLink, opacity: collapsed ? 0 : 1, transition: 'opacity 0.2s' }}>
-              <span style={styles.brandText}>{user?.shopName?.toUpperCase() || 'SEVAGAN CENTRE'}</span>
-            </Link>
-            {collapsed && (
-              <div style={{
-                position: 'absolute',
-                left: '0',
-                width: '40px',
-                textAlign: 'center',
-                fontSize: '24px',
-                color: 'rgba(255,255,255,0.7)',
-                marginTop: '-10px'
-              }}>
-                ⋮
-              </div>
-            )}
-          </div>
-
-          <nav className="nav nav-pills flex-column gap-2 mt-4">
-            <NavLinks collapsed={collapsed} />
-          </nav>
-
-          <div className="mt-auto pt-4 px-1" style={{ opacity: collapsed ? 0 : 1, transition: 'opacity 0.2s' }}>
-            <div className="mb-3">
-              <div style={styles.userName}>{user?.name}</div>
-              <div style={styles.userRole}>{isSuperAdmin ? 'Super Admin' : (isAdmin ? 'Admin' : user?.employeeId)}</div>
-            </div>
-            <button type="button" className="btn btn-danger w-100" onClick={handleLogout} title="Logout">
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <>
       {/* Mobile Header - only visible on mobile */}
@@ -215,7 +210,17 @@ const ProtectedRoute = ({ requiredRole }) => {
             overflow: 'visible'
           }}
         >
-          <SidebarContent />
+          <SidebarContent 
+            isHovered={isHovered} 
+            isSuperAdmin={isSuperAdmin} 
+            isAdmin={isAdmin} 
+            isEmployee={isEmployee} 
+            isActive={isActive} 
+            handleCloseSidebar={handleCloseSidebar} 
+            user={user} 
+            dashboardPath={dashboardPath} 
+            handleLogout={handleLogout} 
+          />
         </aside>
 
         {/* Mobile Offcanvas Sidebar */}
@@ -223,7 +228,18 @@ const ProtectedRoute = ({ requiredRole }) => {
           <>
             <div style={styles.offcanvasBackdrop} onClick={handleCloseSidebar}></div>
             <aside className="d-md-none d-flex flex-column" style={styles.offcanvasSidebarContent}>
-              <SidebarContent mobile={true} />
+              <SidebarContent 
+                mobile={true} 
+                isHovered={isHovered} 
+                isSuperAdmin={isSuperAdmin} 
+                isAdmin={isAdmin} 
+                isEmployee={isEmployee} 
+                isActive={isActive} 
+                handleCloseSidebar={handleCloseSidebar} 
+                user={user} 
+                dashboardPath={dashboardPath} 
+                handleLogout={handleLogout} 
+              />
             </aside>
           </>
         )}
@@ -252,38 +268,40 @@ function App() {
       <ToastProvider>
         <HashRouter>
           <div style={styles.app}>
-            <Routes>
-              {/* Public */}
-              <Route path="/login" element={<Login />} />
+            <React.Suspense fallback={<Loading text="Loading..." />}>
+              <Routes>
+                {/* Public */}
+                <Route path="/login" element={<Login />} />
 
-              {/* Admin */}
-              <Route element={<ProtectedRoute requiredRole="admin" />}>
-                <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                <Route path="/admin/works" element={<AdminWorks />} />
-                <Route path="/admin/employees" element={<AdminEmployees />} />
-                <Route path="/admin/reports" element={<AdminReports />} />
-                <Route path="/admin/purchases" element={<AdminPurchases />} />
-                <Route path="/admin/profile" element={<AdminProfile />} />
-              </Route>
+                {/* Admin */}
+                <Route element={<ProtectedRoute requiredRole="admin" />}>
+                  <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                  <Route path="/admin/works" element={<AdminWorks />} />
+                  <Route path="/admin/employees" element={<AdminEmployees />} />
+                  <Route path="/admin/reports" element={<AdminReports />} />
+                  <Route path="/admin/purchases" element={<AdminPurchases />} />
+                  <Route path="/admin/profile" element={<AdminProfile />} />
+                </Route>
 
-              {/* Super Admin */}
-              <Route element={<ProtectedRoute requiredRole="superadmin" />}>
-                <Route path="/superadmin/dashboard" element={<SuperAdminDashboard />} />
-              </Route>
+                {/* Super Admin */}
+                <Route element={<ProtectedRoute requiredRole="superadmin" />}>
+                  <Route path="/superadmin/dashboard" element={<SuperAdminDashboard />} />
+                </Route>
 
-              {/* Employee */}
-              <Route element={<ProtectedRoute requiredRole="employee" />}>
-                <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
-                <Route path="/employee/works" element={<EmployeeWorks />} />
-                <Route path="/employee/all-works" element={<AllEmployeeWorks />} />
-                <Route path="/employee/reports" element={<EmployeeReports />} />
-                <Route path="/add-work" element={<AddWorkPage />} />
-              </Route>
+                {/* Employee */}
+                <Route element={<ProtectedRoute requiredRole="employee" />}>
+                  <Route path="/employee/dashboard" element={<EmployeeDashboard />} />
+                  <Route path="/employee/works" element={<EmployeeWorks />} />
+                  <Route path="/employee/all-works" element={<AllEmployeeWorks />} />
+                  <Route path="/employee/reports" element={<EmployeeReports />} />
+                  <Route path="/add-work" element={<AddWorkPage />} />
+                </Route>
 
-              {/* Redirects */}
-              <Route path="/" element={<Navigate to="/login" replace />} />
-              <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
+                {/* Redirects */}
+                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="*" element={<Navigate to="/login" replace />} />
+              </Routes>
+            </React.Suspense>
             <LiveClock />
           </div>
         </HashRouter>
