@@ -1,0 +1,1 @@
+var e=e=>e===`In Progress`?`Pending`:e;export{e as t};
