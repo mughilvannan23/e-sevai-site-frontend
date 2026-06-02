@@ -44,6 +44,14 @@ const AdminWorks = () => {
   const [editFormData, setEditFormData] = useState(defaultFormData);
   const [submitting, setSubmitting] = useState(false);
 
+  const [selectedWork, setSelectedWork] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
+  const handleViewWork = (work) => {
+    setSelectedWork(work);
+    setShowModal(true);
+  };
+
   const [filters, setFilters] = useState({
     page: 1,
     limit: 10,
@@ -440,7 +448,7 @@ const AdminWorks = () => {
         setEditingPreset(null);
         fetchWorkItems();
       }
-    } catch (err) { error('Failed to save Work Item'); }
+    } catch (err) { error(err.response?.data?.message || 'Failed to save Work Item'); }
   };
 
   const handleEditWorkItem = (item) => {
@@ -630,6 +638,7 @@ const AdminWorks = () => {
             loading={loading}
             onEdit={handleEditClick}
             onDelete={handleDeleteWork}
+            onView={handleViewWork}
             formatDateTime={formatDateTime}
             getStatusBadge={getStatusBadge}
             isAdmin={true}
@@ -894,6 +903,145 @@ const AdminWorks = () => {
           </div>
         </div>
       )}
+
+      {/* View Detail Modal */}
+      {showModal && selectedWork && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1060 }}>
+          <div className="modal-dialog modal-lg modal-dialog-centered">
+            <div className="modal-content" style={{ borderRadius: '20px', border: 'none', overflow: 'hidden' }}>
+              <div className="modal-header text-white" style={{ backgroundColor: '#3b8132', padding: '20px' }}>
+                <h5 className="modal-title fw-bold">Work Details</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setShowModal(false)}></button>
+              </div>
+              <div className="modal-body p-4" style={{ backgroundColor: '#f8f9fa' }}>
+                <div className="row g-4">
+                  {/* Basic Info */}
+                  <div className="col-md-6">
+                    <div className="p-3 bg-white rounded shadow-sm">
+                      <h6 className="text-muted mb-3 border-bottom pb-2">Customer & Employee</h6>
+                      <div className="mb-2"><strong>Employee:</strong> {selectedWork.employee?.name} ({selectedWork.employee?.employeeId})</div>
+                      <div className="mb-2"><strong>Customer:</strong> {selectedWork.customerName}</div>
+                      <div className="mb-2"><strong>Phone:</strong> {selectedWork.customerPhone || '-'}</div>
+                      <div className="mb-2"><strong>Date:</strong> {new Date(selectedWork.date).toLocaleDateString('en-IN')}</div>
+                    </div>
+                  </div>
+
+                  {/* Status Info */}
+                  <div className="col-md-6">
+                    <div className="p-3 bg-white rounded shadow-sm">
+                      <h6 className="text-muted mb-3 border-bottom pb-2">Status & Payment</h6>
+                      <div className="mb-2 d-flex justify-content-between">
+                        <strong>Work Status:</strong> {getStatusBadge(selectedWork.workStatus, 'work')}
+                      </div>
+                      <div className="mb-2 d-flex justify-content-between">
+                        <strong>Payment Status:</strong> {getStatusBadge(selectedWork.paymentStatus, 'payment')}
+                      </div>
+                      <div className="mb-2"><strong>Payment Method:</strong> {selectedWork.paymentMethod || 'Cash'}</div>
+                      <div className="mb-2 text-muted small"><strong>Created At:</strong> {formatDateTime(selectedWork.createdAt)}</div>
+                    </div>
+                  </div>
+
+                  {/* Items Table */}
+                  <div className="col-12">
+                    <div className="p-3 bg-white rounded shadow-sm">
+                      <h6 className="text-muted mb-3 border-bottom pb-2">Work Items</h6>
+                      <div className="table-responsive">
+                        <table className="table table-sm">
+                          <thead>
+                            <tr>
+                              <th>Title</th>
+                              <th>App. No</th>
+                              <th className="text-center">Qty</th>
+                              <th className="text-end">Fees</th>
+                              <th className="text-end">Service</th>
+                              <th className="text-end">Other</th>
+                              <th className="text-end">Disc.</th>
+                              <th className="text-end">Subtotal</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedWork.items?.map((item, idx) => {
+                              const qty = item.quantity || 1;
+                              const workC = item.workChargeAtTime || 0;
+                              const serviceC = item.serviceChargeAtTime || 0;
+                              const otherC = item.otherCharges || 0;
+                              const presetAmt = item.presetAmount || 0;
+                              const disc = item.discount || 0;
+                              const isAEPS = item.presetChargeType === 'AEPS';
+                              const subtotal = (workC + serviceC) * qty + otherC + (isAEPS ? 0 : presetAmt) - disc;
+                              return (
+                                <tr key={idx}>
+                                  <td>
+                                    {item.title}
+                                    {isAEPS && <span className="ms-1 small text-primary fw-bold">[AEPS: ₹{item.presetAmount || 0}]</span>}
+                                  </td>
+                                  <td>{item.applicationNumber || '-'}</td>
+                                  <td className="text-center">{qty}</td>
+                                  <td className="text-end">₹{workC + (isAEPS ? 0 : presetAmt)}</td>
+                                  <td className="text-end">₹{serviceC}</td>
+                                  <td className="text-end">₹{otherC}</td>
+                                  <td className="text-end text-danger">-₹{disc}</td>
+                                  <td className="text-end fw-bold">₹{subtotal.toLocaleString()}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Totals & Notes */}
+                  <div className="col-md-7">
+                    <div className="p-3 bg-white rounded shadow-sm h-100">
+                      <h6 className="text-muted mb-2">Notes</h6>
+                      <p className="mb-0 text-secondary" style={{ whiteSpace: 'pre-wrap' }}>{selectedWork.notes || 'No notes available.'}</p>
+                    </div>
+                  </div>
+                  <div className="col-md-5">
+                    <div className="p-3 bg-dark text-white rounded shadow-sm h-100 d-flex flex-column justify-content-center">
+                      <div className="d-flex justify-content-between mb-2">
+                        <span>Base Amount:</span>
+                        <span>₹{(selectedWork.amount + (selectedWork.totalDiscount || 0)).toLocaleString()}</span>
+                      </div>
+                      <div className="d-flex justify-content-between mb-2 text-danger">
+                        <span>Total Discount:</span>
+                        <span>-₹{(selectedWork.totalDiscount || 0).toLocaleString()}</span>
+                      </div>
+                      {selectedWork.items?.some(i => i.presetChargeType === 'AEPS') && (
+                        <div className="d-flex justify-content-between mb-2 text-warning">
+                          <span>AEPS Withdrawal:</span>
+                          <span>₹{selectedWork.items.reduce((sum, i) => sum + (i.presetChargeType === 'AEPS' ? (i.presetAmount || 0) : 0), 0).toLocaleString()}</span>
+                        </div>
+                      )}
+                      <div className="border-top pt-2 mt-2 d-flex justify-content-between align-items-center">
+                        <h5 className="mb-0">FINAL TOTAL</h5>
+                        <h4 className="mb-0 text-success">₹{(selectedWork.totalAmount || selectedWork.amount || 0).toLocaleString()}</h4>
+                      </div>
+                      {selectedWork.paymentMethod === 'Both' && (
+                        <div className="mt-3 pt-2 border-top small text-muted">
+                          <div className="d-flex justify-content-between">
+                            <span>GPay Portion:</span>
+                            <span>₹{selectedWork.gpayAmount || 0}</span>
+                          </div>
+                          <div className="d-flex justify-content-between">
+                            <span>Cash Portion:</span>
+                            <span>₹{selectedWork.cashAmount || 0}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer p-3 border-0">
+                <button type="button" className="btn btn-secondary px-4" onClick={() => setShowModal(false)} style={{ borderRadius: '10px' }}>Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

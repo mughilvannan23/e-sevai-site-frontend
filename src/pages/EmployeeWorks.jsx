@@ -157,6 +157,7 @@ const EmployeeWorks = () => {
     const printWindow = window.open('', '_blank');
 
     const totalPresetAmount = work.items?.reduce((sum, i) => sum + (i.presetChargeType === 'AEPS' ? 0 : (i.presetAmount || 0)), 0) || 0;
+    const totalAepsAmount = work.items?.reduce((sum, i) => sum + (i.presetChargeType === 'AEPS' ? (i.presetAmount || 0) : 0), 0) || 0;
     const itemsHtml = work.items?.length
       ? work.items.map(i => {
         const qty = i.quantity || 1;
@@ -223,7 +224,8 @@ const EmployeeWorks = () => {
     <div class="total-section">
       ${totalPresetAmount > 0 ? `<div class="row"><span>Recharge/Transfer Total:</span><span>₹${totalPresetAmount.toLocaleString()}</span></div>` : ''}
       ${work.totalDiscount > 0 ? `<div class="row"><span>Total Discount:</span><span>-₹${work.totalDiscount.toLocaleString()}</span></div>` : ''}
-      <div class="row bold" style="font-size: 14px;"><span>FINAL PAYABLE</span><span>₹${(work.totalAmount || work.amount || 0).toLocaleString()}</span></div>
+      ${totalAepsAmount > 0 ? `<div class="row" style="color: #444;"><span>AEPS Withdrawal:</span><span>₹${totalAepsAmount.toLocaleString()}</span></div>` : ''}
+      <div class="row bold" style="font-size: 14px; margin-top: 5px;"><span>FINAL PAYABLE</span><span>₹${(work.totalAmount || work.amount || 0).toLocaleString()}</span></div>
     </div>
 
     <div class="line"></div>

@@ -485,14 +485,22 @@ const AdminReports = () => {
                       </span>
                     </div>
                   </div>
-                  {/* <div className="col-12 col-sm-6 col-md-4 col-lg">
+                  <div className="col-12 col-sm-6 col-md-4 col-lg">
                     <div style={{ ...styles.summaryItem, borderLeft: '4px solid #e67e22' }} className="h-100">
-                      <span style={styles.summaryLabel} className="d-block mb-1">Total Recharge Amt</span>
+                      <span style={styles.summaryLabel} className="d-block mb-1">Total App Fees (Recharge)</span>
                       <span style={{ ...styles.summaryValue, color: '#e67e22' }}>
-                        {formatCurrency(reportSummary.totalApplicationFee ?? detailedWorks.reduce((sum, w) => sum + (w.applicationFee || 0), 0))}
+                        {formatCurrency(detailedWorks.reduce((sum, w) => sum + (w.applicationFee || 0), 0))}
                       </span>
                     </div>
-                  </div> */}
+                  </div>
+                  <div className="col-12 col-sm-6 col-md-4 col-lg">
+                    <div style={{ ...styles.summaryItem, borderLeft: '4px solid #f39c12' }} className="h-100">
+                      <span style={styles.summaryLabel} className="d-block mb-1">Total AEPS Amount</span>
+                      <span style={{ ...styles.summaryValue, color: '#f39c12' }}>
+                        {formatCurrency(detailedWorks.reduce((sum, w) => sum + (w.items ? w.items.reduce((s, i) => s + (i.presetChargeType === 'AEPS' ? (i.presetAmount || 0) : 0), 0) : 0), 0))}
+                      </span>
+                    </div>
+                  </div>
                   <div className="col-12 col-sm-6 col-md-4 col-lg">
                     <div style={styles.summaryItem} className="h-100">
                       <span style={styles.summaryLabel} className="d-block mb-1">Total Other Charges</span>
@@ -566,6 +574,7 @@ const AdminReports = () => {
                         <th style={styles.th}>Service Name</th>
                         <th style={styles.th}>Application Fees</th>
                         <th style={{ ...styles.th, color: '#3b8132' }}>Recharge Amt</th>
+                        <th style={{ ...styles.th, color: '#3b8132' }}>AEPS Amount</th>
                         <th style={styles.th}>Service Charge</th>
                         <th style={styles.th}>Expected Cost</th>
                         <th style={styles.th}>Other Charges</th>
@@ -597,11 +606,14 @@ const AdminReports = () => {
                             <td style={{ ...styles.td, fontWeight: 'bold' }}>{formatCurrency(work.totalAmount || work.amount || 0)}</td>
                             <td style={styles.td}>{work.employee?.name || 'Unknown'}</td>
                             <td style={styles.td}>{work.employee?.mobile || 'N/A'}</td>
-                            <td style={{ ...styles.td, whiteSpace: 'normal', maxWidth: '200px' }}>{getWorkTitles(work)}</td>
-                            <td style={styles.td}>{formatCurrency(workCharge)}</td>
-                            <td style={{ ...styles.td, color: '#e67e22', fontWeight: 'bold' }}>{formatCurrency(work.applicationFee || 0)}</td>
-                            <td style={styles.td}>{formatCurrency(serviceCharge)}</td>
-                            <td style={styles.td}>{formatCurrency(expectedBaseCost)}</td>
+                              <td style={{ ...styles.td, whiteSpace: 'normal', maxWidth: '200px' }}>{getWorkTitles(work)}</td>
+                              <td style={styles.td}>{formatCurrency(workCharge)}</td>
+                              <td style={{ ...styles.td, color: '#e67e22', fontWeight: 'bold' }}>{formatCurrency(work.applicationFee || 0)}</td>
+                              <td style={{ ...styles.td, color: '#3b8132', fontWeight: 'bold' }}>
+                                {formatCurrency(work.items ? work.items.reduce((sum, i) => sum + (i.presetChargeType === 'AEPS' ? (i.presetAmount || 0) : 0), 0) : 0)}
+                              </td>
+                              <td style={styles.td}>{formatCurrency(serviceCharge)}</td>
+                              <td style={styles.td}>{formatCurrency(expectedBaseCost)}</td>
                             <td style={styles.td}>{formatCurrency(work.otherCharges || 0)}</td>
                             <td style={{ ...styles.td, color: '#e74c3c' }}>{formatCurrency(work.totalDiscount || 0)}</td>
                             <td style={{ ...styles.td, color: work.paymentStatus === 'Paid' ? 'inherit' : '#e74c3c' }}>

@@ -57,7 +57,7 @@ const AddWorkPage = () => {
       const response = await workAPI.getShopBalance();
       if (response.data.success) {
         setShopBalance(response.data.shopBalance);
-        setGpayBalance(response.data.gpayBalance);
+        setGpayBalance(response.data.todayGpay); // Map todayGpay to the gpayBalance state variable used for the UI
       }
     } catch (err) {
       console.error('Error fetching shop balance:', err);

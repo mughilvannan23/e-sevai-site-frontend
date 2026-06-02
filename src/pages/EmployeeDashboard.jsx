@@ -95,6 +95,24 @@ const EmployeeDashboard = () => {
           <div className="col-12 col-sm-6 col-md-6 col-lg-3">
             <StatCard title="Total Works" value={stats.totalWorks} icon="📊" color="#f39c12" />
           </div>
+          <div className="col-12 col-sm-6 col-md-6 col-lg-3">
+            <div style={{ ...styles.statCard, borderColor: '#e67e22' }}>
+              <div style={{ ...styles.statIcon, backgroundColor: '#e67e22' }}>💳</div>
+              <div style={styles.statContent}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0' }}>{stats.aeps?.count || 0}</h3>
+                    <p style={{ ...styles.statTitle, fontSize: '10px' }}>Total Count</p>
+                  </div>
+                  <div style={{ textAlign: 'right', borderLeft: '1px solid #eee', paddingLeft: '10px' }}>
+                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0', color: '#e67e22' }}>₹{(stats.aeps?.amount || 0).toLocaleString()}</h3>
+                    <p style={{ ...styles.statTitle, fontSize: '10px' }}>Total Amount</p>
+                  </div>
+                </div>
+                <p style={{ ...styles.statTitle, marginTop: '5px', borderTop: '1px solid #eee', paddingTop: '5px' }}>AEPS Works</p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

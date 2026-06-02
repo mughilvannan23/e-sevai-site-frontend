@@ -6,6 +6,7 @@ const WorkItem = ({
   onEdit,
   onDelete,
   onPrint,
+  onView,
   formatDateTime,
   getStatusBadge,
   isAdmin,
@@ -32,7 +33,8 @@ const WorkItem = ({
           {work.items && work.items.length > 0
             ? work.items.map(i => {
               const appNum = i.applicationNumber ? ` [#${i.applicationNumber}]` : '';
-              return `${i.title}${appNum} (x${i.quantity || 1})`;
+              const aepsInfo = i.presetChargeType === 'AEPS' ? ` [AEPS: ₹${i.presetAmount || 0}]` : '';
+              return `${i.title}${appNum}${aepsInfo} (x${i.quantity || 1})`;
             }).join(', ')
             : work.workTitle}
         </div>
@@ -51,6 +53,15 @@ const WorkItem = ({
           {/* Admin should have Edit/Delete */}
           {isAdmin && (
             <>
+              {onView && (
+                <button
+                  className="btn btn-sm"
+                  style={{ backgroundColor: '#3b8132', color: 'white', borderRadius: '8px', padding: '5px 15px', fontWeight: '600' }}
+                  onClick={() => onView(work)}
+                >
+                  View
+                </button>
+              )}
               <button
                 style={styles.editBtn}
                 className="btn btn-sm text-white w-100 w-md-auto"

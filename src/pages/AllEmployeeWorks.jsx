@@ -244,7 +244,10 @@ const AllEmployeeWorks = () => {
                 <td style={{ ...styles.td, maxWidth: '250px' }}>
                   <div className="text-truncate">
                     {work.items && work.items.length > 0
-                      ? work.items.map(i => `${i.title} (x${i.quantity || 1})`).join(', ')
+                      ? work.items.map(i => {
+                          const aepsInfo = i.presetChargeType === 'AEPS' ? ` [AEPS: ₹${i.presetAmount || 0}]` : '';
+                          return `${i.title}${aepsInfo} (x${i.quantity || 1})`;
+                        }).join(', ')
                       : work.workTitle}
                   </div>
                 </td>
@@ -351,7 +354,10 @@ const AllEmployeeWorks = () => {
                               const subtotal = (workC + serviceC) * qty + otherC + (isAEPS ? 0 : presetAmt) - disc;
                               return (
                                 <tr key={idx}>
-                                  <td>{item.title}</td>
+                                  <td>
+                                    {item.title}
+                                    {isAEPS && <span className="ms-1 small text-primary fw-bold">[AEPS: ₹{item.presetAmount || 0}]</span>}
+                                  </td>
                                   <td>{item.applicationNumber || '-'}</td>
                                   <td className="text-center">{qty}</td>
                                   <td className="text-end">₹{workC + (isAEPS ? 0 : presetAmt)}</td>
@@ -385,6 +391,12 @@ const AllEmployeeWorks = () => {
                         <span>Total Discount:</span>
                         <span>-₹{(selectedWork.totalDiscount || 0).toLocaleString()}</span>
                       </div>
+                      {selectedWork.items?.some(i => i.presetChargeType === 'AEPS') && (
+                        <div className="d-flex justify-content-between mb-2 text-warning">
+                          <span>AEPS Withdrawal:</span>
+                          <span>₹{selectedWork.items.reduce((sum, i) => sum + (i.presetChargeType === 'AEPS' ? (i.presetAmount || 0) : 0), 0).toLocaleString()}</span>
+                        </div>
+                      )}
                       <div className="border-top pt-2 mt-2 d-flex justify-content-between align-items-center">
                         <h5 className="mb-0">FINAL TOTAL</h5>
                         <h4 className="mb-0 text-success">₹{(selectedWork.totalAmount || selectedWork.amount || 0).toLocaleString()}</h4>

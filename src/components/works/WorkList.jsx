@@ -8,6 +8,7 @@ const WorkList = ({
   onEdit,
   onDelete,
   onPrint,
+  onView,
   formatDateTime,
   getStatusBadge,
   editingItemId,
@@ -45,6 +46,7 @@ const WorkList = ({
                   onEdit={onEdit}
                   onDelete={onDelete}
                   onPrint={onPrint}
+                  onView={onView}
                   formatDateTime={formatDateTime}
                   getStatusBadge={getStatusBadge}
                   isAdmin={isAdmin}

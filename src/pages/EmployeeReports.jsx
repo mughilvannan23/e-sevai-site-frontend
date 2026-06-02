@@ -343,7 +343,10 @@ const EmployeeReports = () => {
                             </td>
                             <td style={{ ...styles.td, whiteSpace: 'normal', maxWidth: '200px' }}>
                               {work.items && work.items.length > 0
-                                ? work.items.map(i => `${i.title} (x${i.quantity || 1})`).join(', ')
+                                ? work.items.map(i => {
+                                    const aepsInfo = i.presetChargeType === 'AEPS' ? ` [AEPS: ₹${i.presetAmount || 0}]` : '';
+                                    return `${i.title}${aepsInfo} (x${i.quantity || 1})`;
+                                  }).join(', ')
                                 : work.workTitle}
                             </td>
                             <td style={styles.td}>{formatCurrency(work.amount)}</td>
