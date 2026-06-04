@@ -92,10 +92,10 @@ const SuperAdminDashboard = () => {
   return (
     <div className="container-fluid py-4">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="h4 mb-0 text-gray-800" style={{ color: '#d32f2f' }}>Super Admin - Shop Management</h2>
+        <h2 className="h4 mb-0 text-gray-800" style={{ color: '#e74c3c' }}>Super Admin - Shop Management</h2>
         <button 
           className="btn text-white px-4 py-2" 
-          style={{ backgroundColor: '#d32f2f', borderRadius: '8px', fontWeight: '500' }}
+          style={{ backgroundColor: '#e74c3c', borderRadius: '8px', fontWeight: '500' }}
           onClick={() => {
             resetForm();
             setShowModal(true);
@@ -283,7 +283,7 @@ const SuperAdminDashboard = () => {
                       <button 
                         type="submit" 
                         className="btn flex-grow-1 py-2 fw-semibold text-white"
-                        style={{ backgroundColor: '#d32f2f' }}
+                        style={{ backgroundColor: '#e74c3c' }}
                       >
                         {formData.id ? 'Update Shop' : 'Create Shop'}
                       </button>

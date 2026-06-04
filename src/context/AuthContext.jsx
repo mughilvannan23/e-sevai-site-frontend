@@ -193,7 +193,7 @@ export const AuthProvider = ({ children }) => {
               </button>
               <button 
                 onClick={handleContinueSession}
-                className="btn btn-success"
+                className="btn btn-primary"
                 style={{ minWidth: '100px', backgroundColor: '#3b8132', borderColor: '#3b8132' }}
               >
                 Continue

@@ -203,8 +203,7 @@ const AdminEmployees = () => {
             </button>
             <button
               type="button"
-              style={styles.resetBtn}
-              className="btn w-100 w-sm-auto text-white"
+              style={styles.resetBtn} className="btn w-100 w-sm-auto btn-outline-primary"
               onClick={() => setFilters({
                 page: 1,
                 limit: 10,
@@ -261,15 +260,13 @@ const AdminEmployees = () => {
                   <td style={styles.td}>
                     <div style={styles.actions} className="d-flex gap-2">
                       <button
-                        style={styles.editBtn}
-                        className="btn btn-sm text-white"
+                        className="btn btn-sm btn-primary"
                         onClick={() => handleOpenModal(emp)}
                       >
                         Edit
                       </button>
                       <button
-                        style={styles.deleteBtn}
-                        className="btn btn-sm text-white"
+                        className="btn btn-sm btn-danger"
                         onClick={() => handleDelete(emp._id)}
                       >
                         Delete
@@ -372,7 +369,7 @@ const AdminEmployees = () => {
                 </label>
               </div>
               <div className="d-flex flex-column flex-sm-row gap-2 mt-3 justify-content-end">
-                <button type="button" style={styles.cancelBtn} className="btn w-100 w-sm-auto text-white" onClick={handleCloseModal}>
+                <button type="button" style={styles.cancelBtn} className="btn w-100 w-sm-auto btn-outline-secondary" onClick={handleCloseModal}>
                   Cancel
                 </button>
                 <button type="submit" style={styles.submitBtn} className="btn w-100 w-sm-auto text-white">
@@ -493,8 +490,8 @@ const styles = {
   },
   deleteBtn: {
     padding: '8px 18px',
-    backgroundColor: '#ffffff',
-    color: '#e74c3c',
+    backgroundColor: '#e74c3c',
+    color: 'white',
     border: '1px solid #e74c3c',
     borderRadius: '10px',
     fontSize: '13px',

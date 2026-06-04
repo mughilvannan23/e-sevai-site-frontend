@@ -160,7 +160,7 @@ const EmployeeReports = () => {
     return (
       <span style={{
         ...styles.badge,
-        backgroundColor: isPositive ? '#27ae60' : (status === 'Pending' ? '#e74c3c' : '#f39c12'),
+        backgroundColor: isPositive ? '#3b8132' : (status === 'Pending' ? '#e74c3c' : '#f39c12'),
         color: 'white'
       }}>
         {formatWorkStatus(status)}
@@ -298,7 +298,7 @@ const EmployeeReports = () => {
                 <div className="col-12 col-sm-6 col-lg-3">
                   <div style={styles.summaryItem}>
                     <span style={styles.summaryLabel}>Completed Works</span>
-                    <span style={{ ...styles.summaryValue, color: '#27ae60' }}>
+                    <span style={{ ...styles.summaryValue, color: '#3b8132' }}>
                       {stats?.completedWorks || 0}
                     </span>
                   </div>

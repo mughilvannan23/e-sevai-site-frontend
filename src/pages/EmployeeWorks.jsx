@@ -242,6 +242,21 @@ const EmployeeWorks = () => {
     printWindow.print();
   };
 
+  const handleSendWhatsApp = async (workId) => {
+    try {
+      success('Sending WhatsApp bill...');
+      const res = await workAPI.sendWhatsAppBill(workId);
+      if (res.data.success) {
+        success("WhatsApp bill sent successfully");
+      } else {
+        error(res.data.message || "Failed to send WhatsApp bill");
+      }
+    } catch (err) {
+      console.error(err);
+      error(err.response?.data?.error || err.response?.data?.message || "Failed to send WhatsApp bill");
+    }
+  };
+
     // <div class="center small-text" style="margin-top: 5px;">* Software generated bill *</div>
   // <div class="row small-text">
   //   //   <span>Payment Method:</span>
@@ -342,6 +357,7 @@ const EmployeeWorks = () => {
         onEdit={() => { }} // Disabled for employee
         onDelete={() => { }} // Disabled for employee
         onPrint={handlePrint}
+        onSendWhatsApp={handleSendWhatsApp}
         formatDateTime={formatDateTime}
         getStatusBadge={getStatusBadge}
         isAdmin={false}

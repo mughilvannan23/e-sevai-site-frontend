@@ -488,7 +488,7 @@ const AdminReports = () => {
                   <div className="col-12 col-sm-6 col-md-4 col-lg">
                     <div style={{ ...styles.summaryItem, borderLeft: '4px solid #e67e22' }} className="h-100">
                       <span style={styles.summaryLabel} className="d-block mb-1">Total App Fees (Recharge)</span>
-                      <span style={{ ...styles.summaryValue, color: '#e67e22' }}>
+                      <span style={{ ...styles.summaryValue, color: '#f39c12' }}>
                         {formatCurrency(detailedWorks.reduce((sum, w) => sum + (w.applicationFee || 0), 0))}
                       </span>
                     </div>
@@ -608,7 +608,7 @@ const AdminReports = () => {
                             <td style={styles.td}>{work.employee?.mobile || 'N/A'}</td>
                               <td style={{ ...styles.td, whiteSpace: 'normal', maxWidth: '200px' }}>{getWorkTitles(work)}</td>
                               <td style={styles.td}>{formatCurrency(workCharge)}</td>
-                              <td style={{ ...styles.td, color: '#e67e22', fontWeight: 'bold' }}>{formatCurrency(work.applicationFee || 0)}</td>
+                              <td style={{ ...styles.td, color: '#f39c12', fontWeight: 'bold' }}>{formatCurrency(work.applicationFee || 0)}</td>
                               <td style={{ ...styles.td, color: '#3b8132', fontWeight: 'bold' }}>
                                 {formatCurrency(work.items ? work.items.reduce((sum, i) => sum + (i.presetChargeType === 'AEPS' ? (i.presetAmount || 0) : 0), 0) : 0)}
                               </td>
@@ -619,13 +619,13 @@ const AdminReports = () => {
                             <td style={{ ...styles.td, color: work.paymentStatus === 'Paid' ? 'inherit' : '#e74c3c' }}>
                               {formatCurrency(work.amount)}
                             </td>
-                            <td style={{ ...styles.td, color: netProfit >= 0 ? '#27ae60' : '#e74c3c', fontWeight: 'bold' }}>
+                            <td style={{ ...styles.td, color: netProfit >= 0 ? '#3b8132' : '#e74c3c', fontWeight: 'bold' }}>
                               {netProfit >= 0 ? '+' : ''}{formatCurrency(netProfit)}
                             </td>
-                            <td style={{ ...styles.td, color: work.paymentStatus === 'Paid' ? '#27ae60' : '#e74c3c' }}>
+                            <td style={{ ...styles.td, color: work.paymentStatus === 'Paid' ? '#3b8132' : '#e74c3c' }}>
                               {work.paymentStatus}
                             </td>
-                            <td style={{ ...styles.td, color: work.workStatus === 'Completed' ? '#27ae60' : '#f39c12' }}>
+                            <td style={{ ...styles.td, color: work.workStatus === 'Completed' ? '#3b8132' : '#f39c12' }}>
                               {formatWorkStatus(work.workStatus)}
                             </td>
                             <td style={styles.td}>
@@ -713,7 +713,7 @@ const AdminReports = () => {
                           <div
                             style={{
                               ...styles.progressFill,
-                              backgroundColor: '#27ae60',
+                              backgroundColor: '#3b8132',
                               width: `${emp.stats.totalWorks > 0 ? (emp.stats.completedWorks / emp.stats.totalWorks) * 100 : 0}%`
                             }}
                           ></div>
@@ -729,7 +729,7 @@ const AdminReports = () => {
                           <div
                             style={{
                               ...styles.progressFill,
-                              backgroundColor: '#3498db',
+                              backgroundColor: '#3b8132',
                               width: `${emp.stats.totalAmount > 0 ? (emp.stats.paidAmount / emp.stats.totalAmount) * 100 : 0}%`
                             }}
                           ></div>
@@ -743,7 +743,7 @@ const AdminReports = () => {
                         </div>
                         <div style={styles.amountItem}>
                           <span style={styles.amountLabel}>Paid Amount</span>
-                          <span style={{ ...styles.amountValue, color: '#27ae60' }}>{formatCurrency(emp.stats.paidAmount)}</span>
+                          <span style={{ ...styles.amountValue, color: '#3b8132' }}>{formatCurrency(emp.stats.paidAmount)}</span>
                         </div>
                         <div style={styles.amountItem}>
                           <span style={styles.amountLabel}>Pending Amount</span>

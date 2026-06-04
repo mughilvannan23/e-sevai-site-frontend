@@ -246,3 +246,257 @@ label {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ========================================= */
+/* STRICT THEME CONSISTENCY OVERRIDES        */
+/* ========================================= */
+
+/* UNIVERSAL BUTTON STANDARDIZATION */
+.btn {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  padding: 8px 16px !important;
+  box-shadow: var(--shadow) !important;
+  transition: all 0.2s ease !important;
+  border: 1px solid transparent !important;
+}
+
+.btn-sm {
+  padding: 6px 12px !important;
+  font-size: 14px !important;
+}
+
+/* PRIMARY ACTIONS (Save, Edit, Submit) - GREEN THEME */
+.btn-primary, .btn-success, .btn-info, .btn-warning {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: #ffffff !important;
+}
+
+.btn-primary:hover, .btn-success:hover, .btn-info:hover, .btn-warning:hover {
+  background-color: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 0.25rem rgba(59, 129, 50, 0.25) !important;
+}
+
+.btn-outline-primary, .btn-outline-success {
+  color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  background-color: transparent !important;
+}
+
+.btn-outline-primary:hover, .btn-outline-success:hover {
+  background-color: var(--primary-color) !important;
+  color: #ffffff !important;
+}
+
+/* DELETE ACTIONS - RED THEME */
+.btn-danger {
+  background-color: var(--danger-color) !important;
+  border-color: var(--danger-color) !important;
+  color: #ffffff !important;
+}
+
+.btn-danger:hover {
+  background-color: #c0392b !important;
+  border-color: #c0392b !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 0.25rem rgba(231, 76, 60, 0.25) !important;
+}
+
+.btn-outline-danger {
+  color: var(--danger-color) !important;
+  border-color: var(--danger-color) !important;
+  background-color: transparent !important;
+}
+
+.btn-outline-danger:hover {
+  background-color: var(--danger-color) !important;
+  color: #ffffff !important;
+}
+
+/* SECONDARY ACTIONS - GRAY THEME */
+.btn-secondary, .btn-light, .btn-outline-secondary {
+  background-color: #f8f9fa !important;
+  border-color: #e0e0e0 !important;
+  color: var(--text-color) !important;
+}
+
+.btn-secondary:hover, .btn-light:hover, .btn-outline-secondary:hover {
+  background-color: #e2e6ea !important;
+  border-color: #dae0e5 !important;
+  color: var(--text-color) !important;
+}
+
+/* Fix specific button issue where text color is forced via element style */
+.btn-secondary, .btn-light, .btn-outline-secondary {
+  color: var(--text-color) !important;
+}
+
+/* STATUS BADGES */
+.badge {
+  border-radius: 12px !important;
+  padding: 6px 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+}
+
+.bg-success, .bg-primary {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+}
+
+.bg-danger {
+  background-color: var(--danger-color) !important;
+  color: white !important;
+}
+
+.bg-warning {
+  background-color: var(--warning-color) !important;
+  color: white !important;
+}
+
+.bg-info, .bg-secondary {
+  background-color: #f8f9fa !important;
+  color: var(--text-color) !important;
+  border: 1px solid #e0e0e0 !important;
+}
+
+/* FORMS STANDARDIZATION */
+.form-control, .form-select, textarea {
+  border-radius: 10px !important;
+  border: 1px solid var(--border-color) !important;
+  padding: 10px 15px !important;
+  font-size: 14px !important;
+  transition: all 0.2s ease !important;
+  color: var(--text-color) !important;
+  background-color: #ffffff !important;
+}
+
+.form-control:focus, .form-select:focus, textarea:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 0.25rem rgba(59, 129, 50, 0.25) !important;
+  outline: none !important;
+}
+
+label {
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 6px;
+}
+
+/* CARDS STANDARDIZATION */
+.card {
+  border-radius: 10px !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow) !important;
+  background-color: var(--card-bg) !important;
+  margin-bottom: 20px;
+}
+
+.card-header {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  padding: 16px 20px !important;
+  font-weight: 700;
+  color: var(--text-color);
+  border-radius: 10px 10px 0 0 !important;
+}
+
+.card-body {
+  padding: 20px !important;
+}
+
+/* TABLES STANDARDIZATION */
+.table-responsive {
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  background: white;
+}
+
+.table {
+  margin-bottom: 0 !important;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table thead th {
+  background-color: #f9fafb !important;
+  color: var(--primary-color) !important;
+  border-bottom: 2px solid var(--primary-color) !important;
+  border-top: none !important;
+  font-weight: 700 !important;
+  padding: 14px 16px !important;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.table tbody td {
+  padding: 14px 16px !important;
+  vertical-align: middle !important;
+  color: var(--text-color) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+.table-hover tbody tr:hover td {
+  background-color: rgba(59, 129, 50, 0.05) !important;
+}
+
+/* TEXT CONTRAST FIXES */
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-color);
+  font-weight: 700;
+}
+
+/* MODALS STANDARDIZATION */
+.modal-content {
+  border-radius: 12px !important;
+  border: none !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+}
+
+.modal-header {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  border-bottom: none !important;
+  border-radius: 12px 12px 0 0 !important;
+  padding: 20px !important;
+}
+
+.modal-title {
+  font-weight: 700 !important;
+  color: white !important;
+}
+
+.modal-header .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%) !important;
+  opacity: 0.8;
+}
+
+.modal-header .btn-close:hover {
+  opacity: 1;
+}
+
+.modal-body {
+  padding: 24px !important;
+  background-color: #f8f9fa !important;
+}
+
+.modal-footer {
+  background-color: #ffffff !important;
+  border-top: 1px solid var(--border-color) !important;
+  border-radius: 0 0 12px 12px !important;
+  padding: 16px 24px !important;
+}

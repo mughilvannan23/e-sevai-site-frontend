@@ -790,7 +790,7 @@ const AdminWorks = () => {
                     </td>
                     <td style={styles.td}>
                       <div className="d-flex gap-2 flex-wrap">
-                        <button style={presetStyles.editBtn} className="btn btn-sm text-white" onClick={() => handleEditWorkItem(item)}>
+                        <button className="btn btn-sm btn-primary" onClick={() => handleEditWorkItem(item)}>
                           Edit
                         </button>
                         <button style={presetStyles.toggleBtn} className="btn btn-sm text-white" onClick={() => handleTogglePresetStatus(item)}>
@@ -798,7 +798,7 @@ const AdminWorks = () => {
                         </button>
                         {item.name.toLowerCase().includes('transfer') && (
                           <button
-                            style={{ ...presetStyles.editBtn, backgroundColor: '#3498db' }}
+                            style={{ ...presetStyles.editBtn, backgroundColor: '#3b8132' }}
                             className="btn btn-sm text-white"
                             onClick={() => handleOpenTransferModal(item.name)}
                           >
@@ -807,7 +807,7 @@ const AdminWorks = () => {
                         )}
                         {item.name.toLowerCase().includes('recharge') && (
                           <button
-                            style={{ ...presetStyles.editBtn, backgroundColor: '#e67e22' }}
+                            style={{ ...presetStyles.editBtn, backgroundColor: '#f39c12' }}
                             className="btn btn-sm text-white"
                             onClick={() => handleOpenTransferModal(item.name)}
                           >

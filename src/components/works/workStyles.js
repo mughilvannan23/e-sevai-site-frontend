@@ -324,8 +324,8 @@ export const workStyles = {
   },
   deleteBtn: {
     padding: '8px 18px',
-    backgroundColor: '#ffffff',
-    color: '#e74c3c',
+    backgroundColor: '#e74c3c',
+    color: 'white',
     border: '2px solid #e74c3c',
     borderRadius: '10px',
     fontSize: '13px',

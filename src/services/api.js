@@ -75,6 +75,7 @@ export const workAPI = {
   getMyWorkStats: () => api.get('/works/stats'),
   getActiveWorkItems: () => api.get('/works/items/active'),
   getShopBalance: () => api.get('/works/employee/shop-balance'),
+  sendWhatsAppBill: (id) => api.post(`/works/send-whatsapp-bill/${id}`)
 };
 
 // Admin endpoints

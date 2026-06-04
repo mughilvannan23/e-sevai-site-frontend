@@ -7,6 +7,7 @@ const WorkItem = ({
   onDelete,
   onPrint,
   onView,
+  onSendWhatsApp,
   formatDateTime,
   getStatusBadge,
   isAdmin,
@@ -89,6 +90,15 @@ const WorkItem = ({
               onClick={() => onPrint(work)}
             >
               Print
+            </button>
+          )}
+          {!isAdmin && onSendWhatsApp && (
+            <button
+              style={{ ...styles.editBtn, backgroundColor: '#25D366', borderRadius: '10px' }}
+              className="btn btn-sm text-white w-100 w-md-auto d-flex align-items-center justify-content-center gap-1"
+              onClick={() => onSendWhatsApp(work._id)}
+            >
+              📱 Send WhatsApp
             </button>
           )}
         </div>

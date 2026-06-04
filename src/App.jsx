@@ -5,21 +5,22 @@ import { HashRouter, Routes, Route, Navigate, Outlet, Link, useLocation, useNavi
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/common/Toast';
 import Loading from './components/common/Loading';
-import Login from './components/common/Login';
 import LiveClock from './components/common/LiveClock';
 
+const Login = React.lazy(() => import('./components/common/Login'));
+
 // Import pages with React.lazy
+const AddWorkPage = React.lazy(() => import('./pages/AddWorkPage'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
-const AdminWorks = React.lazy(() => import('./pages/AdminWorks'));
 const AdminEmployees = React.lazy(() => import('./pages/AdminEmployees'));
-const AdminReports = React.lazy(() => import('./pages/AdminReports'));
 const AdminProfile = React.lazy(() => import('./pages/AdminProfile'));
 const AdminPurchases = React.lazy(() => import('./pages/AdminPurchases'));
-const EmployeeDashboard = React.lazy(() => import('./pages/EmployeeDashboard'));
-const EmployeeWorks = React.lazy(() => import('./pages/EmployeeWorks'));
+const AdminReports = React.lazy(() => import('./pages/AdminReports'));
+const AdminWorks = React.lazy(() => import('./pages/AdminWorks'));
 const AllEmployeeWorks = React.lazy(() => import('./pages/AllEmployeeWorks'));
+const EmployeeDashboard = React.lazy(() => import('./pages/EmployeeDashboard'));
 const EmployeeReports = React.lazy(() => import('./pages/EmployeeReports'));
-const AddWorkPage = React.lazy(() => import('./pages/AddWorkPage'));
+const EmployeeWorks = React.lazy(() => import('./pages/EmployeeWorks'));
 const SuperAdminDashboard = React.lazy(() => import('./pages/SuperAdminDashboard'));
 
 const NavLinks = ({ collapsed = false, isSuperAdmin, isAdmin, isEmployee, isActive, handleCloseSidebar }) => (

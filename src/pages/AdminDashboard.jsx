@@ -58,19 +58,19 @@ const AdminDashboard = () => {
 
       {stats && (
         <div className="row g-3 mb-4">
-          <div className="col-12 col-sm-6 col-lg">
+          <div className="col-12 col-sm-6 col-md-6 col-lg-3">
             <StatCard title="Total Employees" value={stats.employees.total} icon="👥" color="#3b8132" />
           </div>
-          <div className="col-12 col-sm-6 col-lg">
+          <div className="col-12 col-sm-6 col-md-6 col-lg-3">
             <StatCard title="Today's Works" value={stats.works.today} icon="📋" color="#3b8132" />
           </div>
-          <div className="col-12 col-sm-6 col-lg">
+          <div className="col-12 col-sm-6 col-md-6 col-lg-3">
             <StatCard title="Today's Revenue" value={`₹${stats.revenue.today.toLocaleString()}`} icon="💰" color="#3b8132" />
           </div>
-          <div className="col-12 col-sm-6 col-lg">
+          <div className="col-12 col-sm-6 col-md-6 col-lg-3">
             <StatCard title="Total Revenue" value={`₹${stats.revenue.total.toLocaleString()}`} icon="📊" color="#3b8132" />
           </div>
-          <div className="col-12 col-sm-6 col-lg">
+          <div className="col-12 col-sm-6 col-md-6 col-lg-3">
             <StatCard
               title="Total Profit"
               value={`${(stats.revenue.profit || 0) >= 0 ? '+' : ''}₹${(stats.revenue.profit || 0).toLocaleString()}`}
@@ -78,7 +78,7 @@ const AdminDashboard = () => {
               color="#3b8132"
             />
           </div>
-          <div className="col-12 col-sm-6 col-lg">
+          <div className="col-12 col-sm-6 col-md-6 col-lg-3">
             <div style={{ ...styles.statCard, borderColor: '#3b8132' }}>
               <div style={{ ...styles.statIcon, backgroundColor: '#3b8132' }}>🏪</div>
               <div style={styles.statContent}>
@@ -96,9 +96,9 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
-          <div className="col-12 col-sm-6 col-lg">
-            <div style={{ ...styles.statCard, borderColor: '#e67e22' }}>
-              <div style={{ ...styles.statIcon, backgroundColor: '#e67e22' }}>💳</div>
+          <div className="col-12 col-sm-6 col-md-6 col-lg-3">
+            <div style={{ ...styles.statCard, borderColor: '#f39c12' }}>
+              <div style={{ ...styles.statIcon, backgroundColor: '#f39c12' }}>💳</div>
               <div style={styles.statContent}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
@@ -106,7 +106,7 @@ const AdminDashboard = () => {
                     <p style={{ ...styles.statTitle, fontSize: '10px' }}>Total Count</p>
                   </div>
                   <div style={{ textAlign: 'right', borderLeft: '1px solid #eee', paddingLeft: '10px' }}>
-                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0', color: '#e67e22' }}>₹{(stats.aeps?.amount || 0).toLocaleString()}</h3>
+                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0', color: '#f39c12' }}>₹{(stats.aeps?.amount || 0).toLocaleString()}</h3>
                     <p style={{ ...styles.statTitle, fontSize: '10px' }}>Total Amount</p>
                   </div>
                 </div>
