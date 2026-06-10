@@ -5,7 +5,7 @@ import Loading from '../components/common/Loading';
 
 const AdminPurchases = () => {
     const [purchases, setPurchases] = useState([]);
-    const [balances, setBalances] = useState({ shopBalance: 0, gpayBalance: 0 });
+    const [balances, setBalances] = useState({ shopBalance: 0, todayGpay: 0 });
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [filter, setFilter] = useState('all');
@@ -30,7 +30,7 @@ const AdminPurchases = () => {
                 setPurchases(response.data.purchases);
                 setBalances({
                     shopBalance: response.data.shopBalance.handCashBalance,
-                    gpayBalance: response.data.shopBalance.gpayBalance
+                    todayGpay: response.data.shopBalance.todayGpay
                 });
             }
         } catch (error) {
@@ -170,8 +170,8 @@ const AdminPurchases = () => {
                                             <p style={{ margin: 0, fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase' }}>Cash Balance</p>
                                         </div>
                                         <div style={{ textAlign: 'right', borderLeft: '1px solid #eee', paddingLeft: '10px' }}>
-                                            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#0dcaf0' }}>₹{(balances.gpayBalance || 0).toLocaleString()}</h3>
-                                            <p style={{ margin: 0, fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase' }}>GPay Balance</p>
+                                            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#0dcaf0' }}>₹{(balances.todayGpay || 0).toLocaleString()}</h3>
+                                            <p style={{ margin: 0, fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase' }}>Today's GPay</p>
                                         </div>
                                     </div>
                                     <p style={{ margin: '5px 0 0 0', fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase', borderTop: '1px solid #eee', paddingTop: '5px' }}>Shop Balance</p>

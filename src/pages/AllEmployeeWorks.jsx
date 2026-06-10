@@ -335,9 +335,6 @@ const AllEmployeeWorks = () => {
                               <th>Title</th>
                               <th>App. No</th>
                               <th className="text-center">Qty</th>
-                              <th className="text-end">Fees</th>
-                              <th className="text-end">Service</th>
-                              <th className="text-end">Other</th>
                               <th className="text-end">Disc.</th>
                               <th className="text-end">Subtotal</th>
                             </tr>
@@ -360,9 +357,6 @@ const AllEmployeeWorks = () => {
                                   </td>
                                   <td>{item.applicationNumber || '-'}</td>
                                   <td className="text-center">{qty}</td>
-                                  <td className="text-end">₹{workC + (isAEPS ? 0 : presetAmt)}</td>
-                                  <td className="text-end">₹{serviceC}</td>
-                                  <td className="text-end">₹{otherC}</td>
                                   <td className="text-end text-danger">-₹{disc}</td>
                                   <td className="text-end fw-bold">₹{subtotal.toLocaleString()}</td>
                                 </tr>
