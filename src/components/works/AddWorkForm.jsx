@@ -248,7 +248,7 @@ const AddWorkForm = ({
                   <tr>
                     <th>Work/Service</th>
                     <th style={{ width: '130px' }}>App. Number</th>
-                    <th style={{ width: '80px' }}>Qty</th>
+                    <th style={{ width: '110px' }}>Qty</th>
                     <th>Total</th>
                     <th><label style={styles.label}><b>Other Charges</b> (₹)</label></th>
                     <th><label style={styles.label}><b>Preset Amt</b> (₹)</label></th>

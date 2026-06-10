@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { workAPI } from '../services/api';
+import { workAPI, apiBaseURL } from '../services/api';
 import Loading from '../components/common/Loading';
 import Pagination from '../components/common/Pagination';
 import { useToast } from '../components/common/Toast';
@@ -243,6 +243,8 @@ const EmployeeWorks = () => {
   };
 
   const handleSendWhatsApp = async (workId) => {
+    const work = works.find(w => w._id === workId);
+    
     try {
       success('Sending WhatsApp bill...');
       const res = await workAPI.sendWhatsAppBill(workId);
@@ -254,6 +256,37 @@ const EmployeeWorks = () => {
     } catch (err) {
       console.error(err);
       error(err.response?.data?.error || err.response?.data?.message || "Failed to send WhatsApp bill");
+    } finally {
+      if (work && work.customerPhone) {
+        const customerPhone = String(work.customerPhone).replace(/[^0-9]/g, '');
+        if (customerPhone) {
+          let itemsList = '';
+          if (work.items && work.items.length > 0) {
+            itemsList = work.items.map(i => {
+              const qty = i.quantity || 1;
+              const price = (i.workChargeAtTime || 0) + (i.serviceChargeAtTime || 0);
+              const presetAmt = i.presetAmount || 0;
+              const otherC = i.otherCharges || 0;
+              const itemDiscount = i.discount || 0;
+              const isAEPS = i.presetChargeType === 'AEPS';
+              const subtotal = (qty * price) + (isAEPS ? 0 : presetAmt) + otherC - itemDiscount;
+              return `- ${i.title}: ₹${subtotal.toLocaleString()}`;
+            }).join('\n');
+          }
+
+          const message = `Hello ${work.customerName || ''},
+
+Here are your bill details:
+${itemsList}
+
+*Total Amount: ₹${(work.totalAmount || work.amount || 0).toLocaleString()}*
+
+Thank You! 🙏`;
+
+          const whatsappUrl = `https://wa.me/91${customerPhone}?text=${encodeURIComponent(message)}`;
+          window.open(whatsappUrl, "whatsapp_window");
+        }
+      }
     }
   };
 

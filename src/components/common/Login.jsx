@@ -67,7 +67,7 @@ const Login = () => {
       <div style={styles.container}>
         <div style={styles.card} className="p-4 p-md-5">
           <div style={styles.header}>
-            <h1 style={styles.title}>SEVAGAN CSC & <br/>E-SEVA CENTRE</h1>
+            <h1 style={styles.title}>Welcome </h1>
             <p style={styles.subtitle}>Employee Management System</p>
           </div>
 
