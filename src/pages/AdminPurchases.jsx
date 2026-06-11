@@ -19,7 +19,14 @@ const AdminPurchases = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editId, setEditId] = useState(null);
 
-    const { showToast } = useToast();
+    const { success, error, warning, info } = useToast();
+
+    const showToast = useCallback((message, type) => {
+        if (type === 'success') success(message);
+        else if (type === 'error') error(message);
+        else if (type === 'warning') warning(message);
+        else info(message);
+    }, [success, error, warning, info]);
 
     const fetchPurchases = useCallback(async () => {
         try {

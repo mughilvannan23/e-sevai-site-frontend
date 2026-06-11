@@ -559,8 +559,8 @@ const AdminReports = () => {
 
               <div style={styles.tableCard} className="p-3 p-md-4">
                 <h3 style={styles.tableTitle} className="fs-5 mb-3">Detailed Report</h3>
-                <div className="table-responsive">
-                  <table className="table table-hover mb-0" style={styles.table}>
+                <div className="table-responsive" style={{ overflowX: 'auto', width: '100%', WebkitOverflowScrolling: 'touch' }}>
+                  <table className="table table-hover mb-0" style={{ width: '100%', borderCollapse: 'collapse', whiteSpace: 'nowrap' }}>
                     <thead>
                       <tr>
                         <th style={styles.th}>Date</th>
@@ -1099,13 +1099,15 @@ const styles = {
     fontWeight: '600',
     color: '#3b8132',
     borderBottom: '2px solid #3b8132',
-    fontSize: '14px'
+    fontSize: '14px',
+    whiteSpace: 'nowrap'
   },
   td: {
     padding: '12px',
     borderBottom: '1px solid #e0e0e0',
     fontSize: '14px',
-    color: '#2c3e50'
+    color: '#2c3e50',
+    whiteSpace: 'nowrap'
   },
   noData: {
     padding: '40px',
