@@ -173,11 +173,11 @@ const AdminPurchases = () => {
                                 <div className="flex-grow-1">
                                     <div className="d-flex justify-content-between align-items-center">
                                         <div>
-                                            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#3b8132' }}>₹{(balances.shopBalance || 0).toLocaleString()}</h3>
+                                            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#3b8132' }}>₹{(balances.shopBalance || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</h3>
                                             <p style={{ margin: 0, fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase' }}>Cash Balance</p>
                                         </div>
                                         <div style={{ textAlign: 'right', borderLeft: '1px solid #eee', paddingLeft: '10px' }}>
-                                            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#0dcaf0' }}>₹{(balances.todayGpay || 0).toLocaleString()}</h3>
+                                            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#0dcaf0' }}>₹{(balances.todayGpay || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</h3>
                                             <p style={{ margin: 0, fontSize: '10px', fontWeight: '600', color: '#666', textTransform: 'uppercase' }}>Today's GPay</p>
                                         </div>
                                     </div>

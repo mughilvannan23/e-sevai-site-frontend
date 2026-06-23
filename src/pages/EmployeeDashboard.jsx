@@ -74,11 +74,11 @@ const EmployeeDashboard = () => {
               <div style={styles.statContent}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0' }}>₹{(balances.shopBalance || 0).toLocaleString()}</h3>
+                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0' }}>₹{(balances.shopBalance || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</h3>
                     <p style={{ ...styles.statTitle, fontSize: '10px' }}>Cash Balance</p>
                   </div>
                   <div style={{ textAlign: 'right', borderLeft: '1px solid #eee', paddingLeft: '10px' }}>
-                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0', color: '#0dcaf0' }}>₹{(balances.todayGpay || 0).toLocaleString()}</h3>
+                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0', color: '#0dcaf0' }}>₹{(balances.todayGpay || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</h3>
                     <p style={{ ...styles.statTitle, fontSize: '10px' }}>Today's GPay</p>
                   </div>
                 </div>
@@ -90,7 +90,7 @@ const EmployeeDashboard = () => {
             <StatCard title="Today's Tasks" value={stats.todayWorks} icon="📋" color="#3b8132" />
           </div>
           <div className="col-12 col-sm-6 col-md-6 col-lg-3">
-            <StatCard title="Today's Earnings" value={`₹${stats.todayEarnings.toLocaleString()}`} icon="💰" color="#3b8132" />
+            <StatCard title="Today's Earnings" value={`₹${stats.todayEarnings.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`} icon="💰" color="#3b8132" />
           </div>
           <div className="col-12 col-sm-6 col-md-6 col-lg-3">
             <StatCard title="Total Works" value={stats.totalWorks} icon="📊" color="#f39c12" />
@@ -105,7 +105,7 @@ const EmployeeDashboard = () => {
                     <p style={{ ...styles.statTitle, fontSize: '10px' }}>Today's Count</p>
                   </div>
                   <div style={{ textAlign: 'right', borderLeft: '1px solid #eee', paddingLeft: '10px' }}>
-                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0', color: '#f39c12' }}>₹{(stats.aeps?.amount || 0).toLocaleString()}</h3>
+                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0', color: '#f39c12' }}>₹{(stats.aeps?.amount || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</h3>
                     <p style={{ ...styles.statTitle, fontSize: '10px' }}>Today's Amount</p>
                   </div>
                 </div>
@@ -151,7 +151,7 @@ const EmployeeDashboard = () => {
             <div style={{ ...styles.detailCard, borderColor: '#e74c3c' }} className="h-100 p-3 p-md-4">
               <h3 style={{ ...styles.detailTitle, color: '#e74c3c' }}>Pending Payments</h3>
               <div style={{ ...styles.detailValue, color: '#e74c3c' }}>
-                ₹{stats?.pendingAmount?.toLocaleString() || '0'}
+                ₹{stats?.pendingAmount?.toLocaleString('en-IN', { maximumFractionDigits: 0 }) || '0'}
               </div>
               <div style={styles.detailSubtext}>
                 Follow up required

@@ -251,7 +251,14 @@ const AllEmployeeWorks = () => {
                       : work.workTitle}
                   </div>
                 </td>
-                <td style={{ ...styles.td, fontWeight: '700', color: '#2c3e50' }}>₹{(work.totalAmount || work.amount || 0).toLocaleString()}</td>
+                <td style={{ ...styles.td, fontWeight: '700', color: '#2c3e50' }}>
+                  <div>₹{(work.totalAmount || work.amount || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+                  {work.paymentStatus === 'Split' && (
+                    <div style={{ fontSize: '11px', color: '#e74c3c' }}>
+                      Pending: ₹{(work.pendingAmount || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                    </div>
+                  )}
+                </td>
                 <td style={styles.td}>{getStatusBadge(work.paymentStatus, 'payment')}</td>
                 <td style={styles.td}>{getStatusBadge(work.workStatus, 'work')}</td>
                 <td style={styles.td}>{formatTimeOnly(work.createdAt)}</td>
@@ -358,7 +365,7 @@ const AllEmployeeWorks = () => {
                                   <td>{item.applicationNumber || '-'}</td>
                                   <td className="text-center">{qty}</td>
                                   <td className="text-end text-danger">-₹{disc}</td>
-                                  <td className="text-end fw-bold">₹{subtotal.toLocaleString()}</td>
+                                  <td className="text-end fw-bold">₹{subtotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                                 </tr>
                               );
                             })}
@@ -379,21 +386,21 @@ const AllEmployeeWorks = () => {
                     <div className="p-3 bg-dark text-white rounded shadow-sm h-100 d-flex flex-column justify-content-center">
                       <div className="d-flex justify-content-between mb-2">
                         <span>Base Amount:</span>
-                        <span>₹{(selectedWork.amount + (selectedWork.totalDiscount || 0)).toLocaleString()}</span>
+                        <span>₹{(selectedWork.amount + (selectedWork.totalDiscount || 0)).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                       </div>
                       <div className="d-flex justify-content-between mb-2 text-danger">
                         <span>Total Discount:</span>
-                        <span>-₹{(selectedWork.totalDiscount || 0).toLocaleString()}</span>
+                        <span>-₹{(selectedWork.totalDiscount || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                       </div>
                       {selectedWork.items?.some(i => i.presetChargeType === 'AEPS') && (
                         <div className="d-flex justify-content-between mb-2 text-warning">
                           <span>AEPS Withdrawal:</span>
-                          <span>₹{selectedWork.items.reduce((sum, i) => sum + (i.presetChargeType === 'AEPS' ? (i.presetAmount || 0) : 0), 0).toLocaleString()}</span>
+                          <span>₹{selectedWork.items.reduce((sum, i) => sum + (i.presetChargeType === 'AEPS' ? (i.presetAmount || 0) : 0), 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                         </div>
                       )}
                       <div className="border-top pt-2 mt-2 d-flex justify-content-between align-items-center">
                         <h5 className="mb-0">FINAL TOTAL</h5>
-                        <h4 className="mb-0 text-success">₹{(selectedWork.totalAmount || selectedWork.amount || 0).toLocaleString()}</h4>
+                        <h4 className="mb-0 text-success">₹{(selectedWork.totalAmount || selectedWork.amount || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</h4>
                       </div>
                       {selectedWork.paymentMethod === 'Both' && (
                         <div className="mt-3 pt-2 border-top small text-muted">

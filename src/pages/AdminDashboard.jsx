@@ -65,15 +65,15 @@ const AdminDashboard = () => {
             <StatCard title="Today's Works" value={stats.works.today} icon="📋" color="#3b8132" />
           </div>
           <div className="col-12 col-sm-6 col-md-6 col-lg-3">
-            <StatCard title="Today's Revenue" value={`₹${stats.revenue.today.toLocaleString()}`} icon="💰" color="#3b8132" />
+            <StatCard title="Today's Revenue" value={`₹${stats.revenue.today.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`} icon="💰" color="#3b8132" />
           </div>
           <div className="col-12 col-sm-6 col-md-6 col-lg-3">
-            <StatCard title="Total Revenue" value={`₹${stats.revenue.total.toLocaleString()}`} icon="📊" color="#3b8132" />
+            <StatCard title="Total Revenue" value={`₹${stats.revenue.total.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`} icon="📊" color="#3b8132" />
           </div>
           <div className="col-12 col-sm-6 col-md-6 col-lg-3">
             <StatCard
               title="Total Profit"
-              value={`${(stats.revenue.profit || 0) >= 0 ? '+' : ''}₹${(stats.revenue.profit || 0).toLocaleString()}`}
+              value={`${(stats.revenue.profit || 0) >= 0 ? '+' : ''}₹${(stats.revenue.profit || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
               icon="💎"
               color="#3b8132"
             />
@@ -84,11 +84,11 @@ const AdminDashboard = () => {
               <div style={styles.statContent}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0' }}>₹{(stats.revenue.shopBalance || 0).toLocaleString()}</h3>
+                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0' }}>₹{(stats.revenue.shopBalance || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</h3>
                     <p style={{ ...styles.statTitle, fontSize: '10px' }}>Cash Balance</p>
                   </div>
                   <div style={{ textAlign: 'right', borderLeft: '1px solid #eee', paddingLeft: '10px' }}>
-                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0', color: '#0dcaf0' }}>₹{(stats.revenue.todayGpay || 0).toLocaleString()}</h3>
+                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0', color: '#0dcaf0' }}>₹{(stats.revenue.todayGpay || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</h3>
                     <p style={{ ...styles.statTitle, fontSize: '10px' }}>Today's GPay</p>
                   </div>
                 </div>
@@ -106,7 +106,7 @@ const AdminDashboard = () => {
                     <p style={{ ...styles.statTitle, fontSize: '10px' }}>Today's Count</p>
                   </div>
                   <div style={{ textAlign: 'right', borderLeft: '1px solid #eee', paddingLeft: '10px' }}>
-                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0', color: '#f39c12' }}>₹{(stats.aeps?.amount || 0).toLocaleString()}</h3>
+                    <h3 style={{ ...styles.statValue, fontSize: '20px', marginBottom: '0', color: '#f39c12' }}>₹{(stats.aeps?.amount || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</h3>
                     <p style={{ ...styles.statTitle, fontSize: '10px' }}>Today's Amount</p>
                   </div>
                 </div>
@@ -124,7 +124,7 @@ const AdminDashboard = () => {
             <div style={styles.revenueCard} className="p-3 p-md-4 h-100">
               <h3 style={styles.revenueTitle}>This Month</h3>
               <div style={styles.revenueValue}>
-                ₹{stats?.revenue.month.toLocaleString() || '0'}
+                ₹{stats?.revenue.month.toLocaleString('en-IN', { maximumFractionDigits: 0 }) || '0'}
               </div>
               <div style={styles.revenueWorks}>
                 {stats?.works.month || 0} works completed

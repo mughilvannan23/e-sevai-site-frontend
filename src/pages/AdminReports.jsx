@@ -138,8 +138,14 @@ const AdminReports = () => {
       }
 
       // Payment Status filter
-      if (filters.paymentStatus && work.paymentStatus !== filters.paymentStatus) {
-        return false;
+      if (filters.paymentStatus) {
+        if (filters.paymentStatus === 'Pending') {
+          if (work.paymentStatus !== 'Pending' && work.paymentStatus !== 'Split') {
+            return false;
+          }
+        } else if (work.paymentStatus !== filters.paymentStatus) {
+          return false;
+        }
       }
 
       // Work Status filter
@@ -219,7 +225,7 @@ const AdminReports = () => {
   };
 
   const formatCurrency = (amount) => {
-    return `₹${amount.toLocaleString()}`;
+    return `₹${amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
   };
 
   const calculateWorkCharge = (work) => {
@@ -235,7 +241,10 @@ const AdminReports = () => {
   };
 
   const calculateNetProfit = (work) => {
-    if (work.paymentStatus !== 'Paid') return 0;
+    if (work.paymentStatus === 'Pending') return 0;
+    if (work.paymentStatus === 'Split') {
+      return (work.allocatedServiceCharge || 0) - (work.totalDiscount || 0);
+    }
     const serviceCharge = calculateServiceCharge(work);
     const otherCharges = work.otherCharges || 0;
     const totalDiscount = work.totalDiscount || 0;
@@ -569,6 +578,8 @@ const AdminReports = () => {
                         <th style={styles.th}>GPay Amount</th>
                         <th style={styles.th}>Cash Amount</th>
                         <th style={styles.th}>Total Amount</th>
+                        <th style={styles.th}>Paid Amount</th>
+                        <th style={styles.th}>Pending Amount</th>
                         <th style={styles.th}>Employee Name</th>
                         <th style={styles.th}>Mobile</th>
                         <th style={styles.th}>Service Name</th>
@@ -603,7 +614,9 @@ const AdminReports = () => {
                             <td style={styles.td}>{work.paymentMethod || 'Cash'}</td>
                             <td style={styles.td}>{formatCurrency(work.gpayAmount || 0)}</td>
                             <td style={styles.td}>{formatCurrency(work.cashAmount || 0)}</td>
-                            <td style={{ ...styles.td, fontWeight: 'bold' }}>{formatCurrency(work.totalAmount || work.amount || 0)}</td>
+                            <td style={{ ...styles.td, fontWeight: 'bold' }}>{formatCurrency(work.amount || 0)}</td>
+                            <td style={{ ...styles.td, color: '#3b8132' }}>{formatCurrency(work.paidAmount !== undefined ? work.paidAmount : (work.paymentStatus === 'Paid' ? work.amount : 0))}</td>
+                            <td style={{ ...styles.td, color: '#e74c3c' }}>{formatCurrency(work.pendingAmount !== undefined ? work.pendingAmount : (work.paymentStatus === 'Pending' ? work.amount : 0))}</td>
                             <td style={styles.td}>{work.employee?.name || 'Unknown'}</td>
                             <td style={styles.td}>{work.employee?.mobile || 'N/A'}</td>
                               <td style={{ ...styles.td, whiteSpace: 'normal', maxWidth: '200px' }}>{getWorkTitles(work)}</td>
@@ -616,13 +629,13 @@ const AdminReports = () => {
                               <td style={styles.td}>{formatCurrency(expectedBaseCost)}</td>
                             <td style={styles.td}>{formatCurrency(work.otherCharges || 0)}</td>
                             <td style={{ ...styles.td, color: '#e74c3c' }}>{formatCurrency(work.totalDiscount || 0)}</td>
-                            <td style={{ ...styles.td, color: work.paymentStatus === 'Paid' ? 'inherit' : '#e74c3c' }}>
-                              {formatCurrency(work.amount)}
+                            <td style={{ ...styles.td, color: (work.paymentStatus === 'Paid' || work.paymentStatus === 'Split') ? 'inherit' : '#e74c3c' }}>
+                              {formatCurrency(work.paidAmount !== undefined ? work.paidAmount : (work.paymentStatus === 'Paid' ? work.amount : 0))}
                             </td>
                             <td style={{ ...styles.td, color: netProfit >= 0 ? '#3b8132' : '#e74c3c', fontWeight: 'bold' }}>
                               {netProfit >= 0 ? '+' : ''}{formatCurrency(netProfit)}
                             </td>
-                            <td style={{ ...styles.td, color: work.paymentStatus === 'Paid' ? '#3b8132' : '#e74c3c' }}>
+                            <td style={{ ...styles.td, color: work.paymentStatus === 'Paid' ? '#3b8132' : (work.paymentStatus === 'Split' ? '#f39c12' : '#e74c3c') }}>
                               {work.paymentStatus}
                             </td>
                             <td style={{ ...styles.td, color: work.workStatus === 'Completed' ? '#3b8132' : '#f39c12' }}>
@@ -821,7 +834,7 @@ const AdminReports = () => {
                           <td>{item.applicationNumber || '-'}</td>
                           <td>{item.quantity}</td>
                           <td>
-                            ₹{((item.workChargeAtTime + item.serviceChargeAtTime) * item.quantity + (item.presetAmount || 0) + (item.otherCharges || 0) - (item.discount || 0)).toFixed(2)}
+                            ₹{Math.round(((item.workChargeAtTime + item.serviceChargeAtTime) * item.quantity + (item.presetAmount || 0) + (item.otherCharges || 0) - (item.discount || 0)))}
                             {item.discount > 0 && <span className="text-danger small ms-1">(-₹{item.discount})</span>}
                           </td>
                         </tr>

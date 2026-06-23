@@ -22,6 +22,7 @@ const EmployeeDashboard = React.lazy(() => import('./pages/EmployeeDashboard'));
 const EmployeeReports = React.lazy(() => import('./pages/EmployeeReports'));
 const EmployeeWorks = React.lazy(() => import('./pages/EmployeeWorks'));
 const SuperAdminDashboard = React.lazy(() => import('./pages/SuperAdminDashboard'));
+const DurationTracking = React.lazy(() => import('./pages/DurationTracking'));
 
 const NavLinks = ({ collapsed = false, isSuperAdmin, isAdmin, isEmployee, isActive, handleCloseSidebar }) => (
   <div style={{ opacity: collapsed ? 0 : 1, transition: 'opacity 0.2s ease', pointerEvents: collapsed ? 'none' : 'auto' }}>
@@ -51,6 +52,10 @@ const NavLinks = ({ collapsed = false, isSuperAdmin, isAdmin, isEmployee, isActi
         <Link to="/admin/reports" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/reports') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Reports">
           <span style={styles.navIcon}>📈</span>
           <span>Reports</span>
+        </Link>
+        <Link to="/admin/durations" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/durations') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Duration Tracking">
+          <span style={styles.navIcon}>⏳</span>
+          <span>Expiry Tracking</span>
         </Link>
         <Link to="/admin/purchases" className="nav-link" style={{ ...styles.navLink, ...(isActive('/admin/purchases') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Purchase">
           <span style={styles.navIcon}>🛒</span>
@@ -84,6 +89,10 @@ const NavLinks = ({ collapsed = false, isSuperAdmin, isAdmin, isEmployee, isActi
         <Link to="/employee/reports" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/reports') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Reports">
           <span style={styles.navIcon}>📉</span>
           <span>Reports</span>
+        </Link>
+        <Link to="/employee/durations" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/durations') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Duration Tracking">
+          <span style={styles.navIcon}>⏳</span>
+          <span>Expiry Tracking</span>
         </Link>
       </>
     )}
@@ -280,6 +289,7 @@ function App() {
                   <Route path="/admin/works" element={<AdminWorks />} />
                   <Route path="/admin/employees" element={<AdminEmployees />} />
                   <Route path="/admin/reports" element={<AdminReports />} />
+                  <Route path="/admin/durations" element={<DurationTracking />} />
                   <Route path="/admin/purchases" element={<AdminPurchases />} />
                   <Route path="/admin/profile" element={<AdminProfile />} />
                 </Route>
@@ -295,6 +305,7 @@ function App() {
                   <Route path="/employee/works" element={<EmployeeWorks />} />
                   <Route path="/employee/all-works" element={<AllEmployeeWorks />} />
                   <Route path="/employee/reports" element={<EmployeeReports />} />
+                  <Route path="/employee/durations" element={<DurationTracking />} />
                   <Route path="/add-work" element={<AddWorkPage />} />
                 </Route>
 

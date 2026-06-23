@@ -23,7 +23,8 @@ const defaultFormData = {
   paymentStatus: 'Pending',
   workStatus: 'In Progress',
   notes: '',
-  applicationFee: 0
+  applicationFee: 0,
+  durationMonths: 0
 };
 
 const AddWorkPage = () => {
@@ -104,41 +105,51 @@ const AddWorkPage = () => {
           updated.paymentMethod = '';
           updated.gpayAmount = '';
           updated.cashAmount = '';
-        } else if (value === 'Paid' && !prev.paymentMethod) {
+        } else if ((value === 'Paid' || value === 'Split') && !prev.paymentMethod) {
           updated.paymentMethod = 'Cash';
-          updated.cashAmount = currentAmount.toString();
-          updated.gpayAmount = '0';
+          if (value === 'Paid') {
+             updated.cashAmount = currentAmount.toString();
+             updated.gpayAmount = '0';
+          } else {
+             updated.cashAmount = '';
+             updated.gpayAmount = '';
+          }
         }
       }
 
       if (name === 'paymentMethod') {
-        if (value === 'GPay') {
-          updated.gpayAmount = currentAmount.toString();
-          updated.cashAmount = '0';
-        } else if (value === 'Cash') {
-          updated.cashAmount = currentAmount.toString();
-          updated.gpayAmount = '0';
-        } else if (value === 'Both') {
+        if (updated.paymentStatus === 'Paid') {
+          if (value === 'GPay') {
+            updated.gpayAmount = currentAmount.toString();
+            updated.cashAmount = '0';
+          } else if (value === 'Cash') {
+            updated.cashAmount = currentAmount.toString();
+            updated.gpayAmount = '0';
+          } else if (value === 'Both') {
+            updated.gpayAmount = '';
+            updated.cashAmount = '';
+          }
+        } else if (updated.paymentStatus === 'Split') {
           updated.gpayAmount = '';
           updated.cashAmount = '';
         }
       }
 
-      // Handle split logic: if one changes, the other takes the remainder
-      if (updated.paymentMethod === 'Both') {
+      // Handle split/both logic: if one changes, the other takes the remainder (ONLY for Paid)
+      if (updated.paymentMethod === 'Both' && updated.paymentStatus === 'Paid') {
         if (name === 'gpayAmount') {
           const gpayVal = Math.min(parseFloat(value) || 0, currentAmount);
           updated.gpayAmount = gpayVal.toString();
-          updated.cashAmount = (currentAmount - gpayVal).toFixed(2);
+          updated.cashAmount = Math.round(currentAmount - gpayVal).toString();
         } else if (name === 'cashAmount') {
           const cashVal = Math.min(parseFloat(value) || 0, currentAmount);
           updated.cashAmount = cashVal.toString();
-          updated.gpayAmount = (currentAmount - cashVal).toFixed(2);
+          updated.gpayAmount = Math.round(currentAmount - cashVal).toString();
         }
       }
 
       // Sync totalAmount state
-      if (updated.paymentMethod === 'Both') {
+      if (updated.paymentStatus === 'Split' || updated.paymentMethod === 'Both') {
         updated.totalAmount = (parseFloat(updated.gpayAmount || 0) + parseFloat(updated.cashAmount || 0)).toString();
       } else {
         updated.totalAmount = currentAmount.toString();
@@ -204,6 +215,10 @@ const AddWorkPage = () => {
           const cash = parseFloat(updated.cashAmount) || 0;
           updated.totalAmount = (gpay + cash).toString();
         }
+      } else if (updated.paymentStatus === 'Split') {
+         const gpay = parseFloat(updated.gpayAmount) || 0;
+         const cash = parseFloat(updated.cashAmount) || 0;
+         updated.totalAmount = (gpay + cash).toString();
       }
 
       return updated;
@@ -281,9 +296,21 @@ const AddWorkPage = () => {
         const gpay = parseFloat(formData.gpayAmount) || 0;
         const cash = parseFloat(formData.cashAmount) || 0;
         if (Math.abs((gpay + cash) - currentAmount) > 0.01) {
-          error(`GPay + Cash (₹${(gpay + cash).toFixed(2)}) must equal Final Amount (₹${currentAmount.toFixed(2)})`);
+          error(`GPay + Cash (₹${Math.round(gpay + cash)}) must equal Final Amount (₹${Math.round(currentAmount)})`);
           return;
         }
+      }
+    } else if (formData.paymentStatus === 'Split') {
+      const gpay = parseFloat(formData.gpayAmount) || 0;
+      const cash = parseFloat(formData.cashAmount) || 0;
+      const totalPaid = gpay + cash;
+      if (totalPaid <= 0) {
+        error(`Split payment requires a valid paid amount greater than 0.`);
+        return;
+      }
+      if (totalPaid > currentAmount) {
+        error(`Paid amount (₹${Math.round(totalPaid)}) cannot exceed Final Amount (₹${Math.round(currentAmount)})`);
+        return;
       }
     }
 
@@ -308,6 +335,15 @@ const AddWorkPage = () => {
         finalGpay = parseFloat(formData.gpayAmount) || 0;
         finalCash = parseFloat(formData.cashAmount) || 0;
       }
+    } else if (formData.paymentStatus === 'Split') {
+      if (formData.paymentMethod === 'GPay') {
+        finalGpay = parseFloat(formData.gpayAmount) || 0;
+      } else if (formData.paymentMethod === 'Cash') {
+        finalCash = parseFloat(formData.cashAmount) || 0;
+      } else if (formData.paymentMethod === 'Both') {
+        finalGpay = parseFloat(formData.gpayAmount) || 0;
+        finalCash = parseFloat(formData.cashAmount) || 0;
+      }
     }
 
     try {
@@ -316,7 +352,7 @@ const AddWorkPage = () => {
         ...formData,
         gpayAmount: finalGpay,
         cashAmount: finalCash,
-        totalAmount: formData.paymentStatus === 'Paid' ? currentAmount : 0,
+        totalAmount: formData.paymentStatus === 'Paid' ? currentAmount : (formData.paymentStatus === 'Split' ? finalGpay + finalCash : 0),
         amount: currentAmount,
         date: new Date(`${formData.date}T${formData.time || '00:00'}`)
       };

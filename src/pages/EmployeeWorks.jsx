@@ -173,12 +173,12 @@ const EmployeeWorks = () => {
         return `
           <div class="row">
             <span class="bold">${i.title}</span>
-            <span class="bold">₹${subtotal.toLocaleString()}</span>
+            <span class="bold">₹${subtotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
           </div>
           ${price > 0 ? `<div class="row small-text"><span>Rate:</span><span>${qty} x ₹${price} = ₹${qty * price}</span></div>` : ''}
-          ${presetAmt > 0 ? `<div class="row small-text"><span>${chargeLabel}:</span><span>₹${presetAmt.toLocaleString()}</span></div>` : ''}
-          ${otherC > 0 ? `<div class="row small-text"><span>Other:</span><span>₹${otherC.toLocaleString()}</span></div>` : ''}
-          ${itemDiscount > 0 ? `<div class="row small-text"><span>Discount:</span><span>-₹${itemDiscount.toLocaleString()}</span></div>` : ''}
+          ${presetAmt > 0 ? `<div class="row small-text"><span>${chargeLabel}:</span><span>₹${presetAmt.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>` : ''}
+          ${otherC > 0 ? `<div class="row small-text"><span>Other:</span><span>₹${otherC.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>` : ''}
+          ${itemDiscount > 0 ? `<div class="row small-text"><span>Discount:</span><span>-₹${itemDiscount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>` : ''}
           ${i.applicationNumber
             ? `<div class="row small-text"><span>App No:</span><span>${i.applicationNumber}</span></div>`
             : ''
@@ -222,10 +222,11 @@ const EmployeeWorks = () => {
     ${itemsHtml}
 
     <div class="total-section">
-      ${totalPresetAmount > 0 ? `<div class="row"><span>Recharge/Transfer Total:</span><span>₹${totalPresetAmount.toLocaleString()}</span></div>` : ''}
-      ${work.totalDiscount > 0 ? `<div class="row"><span>Total Discount:</span><span>-₹${work.totalDiscount.toLocaleString()}</span></div>` : ''}
-      ${totalAepsAmount > 0 ? `<div class="row" style="color: #444;"><span>AEPS Withdrawal:</span><span>₹${totalAepsAmount.toLocaleString()}</span></div>` : ''}
-      <div class="row bold" style="font-size: 14px; margin-top: 5px;"><span>FINAL PAYABLE</span><span>₹${(work.totalAmount || work.amount || 0).toLocaleString()}</span></div>
+      ${totalPresetAmount > 0 ? `<div class="row"><span>Recharge/Transfer Total:</span><span>₹${totalPresetAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>` : ''}
+      ${work.totalDiscount > 0 ? `<div class="row"><span>Total Discount:</span><span>-₹${work.totalDiscount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>` : ''}
+      ${totalAepsAmount > 0 ? `<div class="row" style="color: #444;"><span>AEPS Withdrawal:</span><span>₹${totalAepsAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>` : ''}
+      <div class="row bold" style="font-size: 14px; margin-top: 5px;"><span>FINAL PAYABLE</span><span>₹${(work.totalAmount || work.amount || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>
+      ${work.paymentStatus === 'Split' ? `<div class="row bold" style="font-size: 12px; margin-top: 2px; color: red;"><span>PENDING</span><span>₹${(work.pendingAmount || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span></div>` : ''}
     </div>
 
     <div class="line"></div>
@@ -270,7 +271,7 @@ const EmployeeWorks = () => {
               const itemDiscount = i.discount || 0;
               const isAEPS = i.presetChargeType === 'AEPS';
               const subtotal = (qty * price) + (isAEPS ? 0 : presetAmt) + otherC - itemDiscount;
-              return `- ${i.title}: ₹${subtotal.toLocaleString()}`;
+              return `- ${i.title}: ₹${subtotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
             }).join('\n');
           }
 
@@ -279,8 +280,8 @@ const EmployeeWorks = () => {
 Here are your bill details:
 ${itemsList}
 
-*Total Amount: ₹${(work.totalAmount || work.amount || 0).toLocaleString()}*
-
+*Total Amount: ₹${(work.totalAmount || work.amount || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}*
+${work.paymentStatus === 'Split' ? `*Pending Amount: ₹${(work.pendingAmount || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}*\n` : ''}
 Thank You! 🙏`;
 
           const whatsappUrl = `https://wa.me/91${customerPhone}?text=${encodeURIComponent(message)}`;

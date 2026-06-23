@@ -41,7 +41,12 @@ const WorkItem = ({
         </div>
       </td>
       <td style={{ ...styles.td, fontWeight: '700', color: '#2c3e50' }}>
-        ₹{(work.totalAmount || work.amount || 0).toLocaleString()}
+        <div>₹{(work.totalAmount || work.amount || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+        {work.paymentStatus === 'Split' && (
+          <div style={{ fontSize: '11px', color: '#e74c3c' }}>
+            Pending: ₹{(work.pendingAmount || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+          </div>
+        )}
       </td>
       <td style={styles.td}>{getStatusBadge(work.paymentStatus, 'payment')}</td>
       <td style={styles.td}>{getStatusBadge(work.workStatus, 'work')}</td>

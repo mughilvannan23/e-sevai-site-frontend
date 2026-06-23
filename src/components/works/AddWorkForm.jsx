@@ -380,17 +380,17 @@ const AddWorkForm = ({
             <div className="col-12 col-md-12 mt-3 text-end d-flex flex-column align-items-end gap-1">
               {formData.totalDiscount > 0 && (
                 <span style={{ fontSize: '1rem', color: '#e74c3c', fontWeight: '500' }}>
-                  Total Discount: -₹{(parseFloat(formData.totalDiscount) || 0).toFixed(2)}
+                  Total Discount: -₹{Math.round(parseFloat(formData.totalDiscount) || 0)}
                 </span>
               )}
               <strong style={{ fontSize: '1.25rem', color: '#3b8132', fontWeight: '800' }}>
-                Final Amount: ₹{(parseFloat(formData.amount) || 0).toFixed(2)}
+                Final Amount: ₹{Math.round(parseFloat(formData.amount) || 0)}
               </strong>
 
               {formData.items.some(item => (item.presetChargeType === 'Hand Cash' || item.presetChargeType === 'GPay' || item.presetChargeType === 'Recharge' || item.presetChargeType === 'AEPS' || (workItems.find(w => w._id === item.workItemId)?.chargeType === 'AEPS'))) && (
                 <div className="mt-2 p-2 rounded bg-light d-flex justify-content-between" style={{ fontSize: '0.85rem', border: '1px solid #ddd' }}>
-                  <div><strong>Cash Balance:</strong> ₹{(shopBalance || 0).toLocaleString()}</div>
-                  <div className="ms-3" style={{ color: '#0dcaf0' }}><strong>GPay Balance:</strong> ₹{(gpayBalance || 0).toLocaleString()}</div>
+                  <div><strong>Cash Balance:</strong> ₹{(shopBalance || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+                  <div className="ms-3" style={{ color: '#0dcaf0' }}><strong>GPay Balance:</strong> ₹{(gpayBalance || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
                 </div>
               )}
             </div>
@@ -411,10 +411,11 @@ const AddWorkForm = ({
               >
                 <option value="Paid">Paid</option>
                 <option value="Pending">Pending</option>
+                <option value="Split">Split</option>
               </select>
             </div>
 
-            {formData.paymentStatus === 'Paid' && (
+            {(formData.paymentStatus === 'Paid' || formData.paymentStatus === 'Split') && (
               <div className="col-12 col-md-3">
                 <label style={styles.label}>Payment Method</label>
                 <select
@@ -445,7 +446,26 @@ const AddWorkForm = ({
               </select>
             </div>
 
-            {formData.paymentStatus === 'Paid' && formData.paymentMethod === 'Both' && (
+            <div className="col-12 col-md-3">
+              <label style={styles.label}>Duration (Months)</label>
+              <select
+                name="durationMonths"
+                value={formData.durationMonths || 0}
+                onChange={onInputChange}
+                className="form-select form-select-sm"
+              >
+                <option value={0}>None</option>
+                <option value={1}>1 Month</option>
+                <option value={3}>3 Months</option>
+                <option value={6}>6 Months</option>
+                <option value={12}>12 Months (1 Year)</option>
+                <option value={24}>24 Months (2 Years)</option>
+                <option value={36}>36 Months (3 Years)</option>
+                <option value={60}>60 Months (5 Years)</option>
+              </select>
+            </div>
+
+            {(formData.paymentStatus === 'Paid' || formData.paymentStatus === 'Split') && formData.paymentMethod === 'Both' && (
               <>
                 <div className="col-6 col-md-3">
                   <label style={styles.label}>GPay Amount (₹)</label>
@@ -478,6 +498,50 @@ const AddWorkForm = ({
                   />
                 </div>
               </>
+            )}
+
+            {formData.paymentStatus === 'Split' && formData.paymentMethod === 'GPay' && (
+              <div className="col-6 col-md-3">
+                <label style={styles.label}>Paid Amount (GPay) (₹)</label>
+                <input
+                  type="number"
+                  name="gpayAmount"
+                  value={formData.gpayAmount || ''}
+                  onChange={onInputChange}
+                  className="form-control form-control-sm"
+                  placeholder="0.00"
+                  min="0"
+                  max={formData.amount}
+                  step="0.01"
+                  required
+                />
+              </div>
+            )}
+
+            {formData.paymentStatus === 'Split' && formData.paymentMethod === 'Cash' && (
+              <div className="col-6 col-md-3">
+                <label style={styles.label}>Paid Amount (Cash) (₹)</label>
+                <input
+                  type="number"
+                  name="cashAmount"
+                  value={formData.cashAmount || ''}
+                  onChange={onInputChange}
+                  className="form-control form-control-sm"
+                  placeholder="0.00"
+                  min="0"
+                  max={formData.amount}
+                  step="0.01"
+                  required
+                />
+              </div>
+            )}
+            
+            {formData.paymentStatus === 'Split' && (
+              <div className="col-12 mt-2">
+                <div className="alert alert-info py-1 px-2 m-0 d-inline-block" style={{ fontSize: '0.85rem' }}>
+                  <strong>Pending Amount:</strong> ₹{Math.round(Math.max(0, (parseFloat(formData.amount) || 0) - (parseFloat(formData.gpayAmount) || 0) - (parseFloat(formData.cashAmount) || 0)))}
+                </div>
+              </div>
             )}
 
             <div className="col-12">

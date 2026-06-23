@@ -51,8 +51,16 @@ const EmployeeReports = () => {
       // Calculate stats
       const allWorks = worksData.flatMap(d => d.works);
       const totalWorks = allWorks.length;
-      const totalEarnings = allWorks.filter(w => w.paymentStatus === 'Paid').reduce((sum, w) => sum + w.amount, 0);
-      const pendingAmount = allWorks.filter(w => w.paymentStatus === 'Pending').reduce((sum, w) => sum + w.amount, 0);
+      const totalEarnings = allWorks.reduce((sum, w) => {
+        if (w.paymentStatus === 'Paid') return sum + w.amount;
+        if (w.paymentStatus === 'Split') return sum + (w.paidAmount || 0);
+        return sum;
+      }, 0);
+      const pendingAmount = allWorks.reduce((sum, w) => {
+        if (w.paymentStatus === 'Pending') return sum + w.amount;
+        if (w.paymentStatus === 'Split') return sum + (w.pendingAmount || 0);
+        return sum;
+      }, 0);
 
       const completedWorks = allWorks.filter(w => w.workStatus === 'Completed').length;
       const inProgressWorks = allWorks.filter(w => w.workStatus === 'In Progress').length;
@@ -106,8 +114,16 @@ const EmployeeReports = () => {
 
         // Calculate stats
         const totalWorks = response.data.works.length;
-        const totalEarnings = response.data.works.filter(w => w.paymentStatus === 'Paid').reduce((sum, w) => sum + w.amount, 0);
-        const pendingAmount = response.data.works.filter(w => w.paymentStatus === 'Pending').reduce((sum, w) => sum + w.amount, 0);
+        const totalEarnings = response.data.works.reduce((sum, w) => {
+          if (w.paymentStatus === 'Paid') return sum + w.amount;
+          if (w.paymentStatus === 'Split') return sum + (w.paidAmount || 0);
+          return sum;
+        }, 0);
+        const pendingAmount = response.data.works.reduce((sum, w) => {
+          if (w.paymentStatus === 'Pending') return sum + w.amount;
+          if (w.paymentStatus === 'Split') return sum + (w.pendingAmount || 0);
+          return sum;
+        }, 0);
         const completedWorks = response.data.works.filter(w => w.workStatus === 'Completed').length;
         const inProgressWorks = response.data.works.filter(w => w.workStatus === 'In Progress').length;
 
@@ -138,7 +154,7 @@ const EmployeeReports = () => {
   };
 
   const formatCurrency = (amount) => {
-    return `₹${amount.toLocaleString()}`;
+    return `₹${amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
   };
 
   const handleFilterChange = (e) => {
@@ -160,7 +176,7 @@ const EmployeeReports = () => {
     return (
       <span style={{
         ...styles.badge,
-        backgroundColor: isPositive ? '#3b8132' : (status === 'Pending' ? '#e74c3c' : '#f39c12'),
+        backgroundColor: isPositive ? '#3b8132' : (status === 'Pending' ? '#e74c3c' : (status === 'Split' ? '#f39c12' : '#f39c12')),
         color: 'white'
       }}>
         {formatWorkStatus(status)}
@@ -281,7 +297,7 @@ const EmployeeReports = () => {
                     <span style={styles.summaryLabel}>Collection Rate</span>
                     <span style={styles.summaryValue}>
                       {stats?.totalEarnings > 0
-                        ? ((stats.totalEarnings / (stats.totalEarnings + stats.pendingAmount)) * 100).toFixed(1) + '%'
+                        ? ((stats.totalEarnings / (stats.totalEarnings + stats.pendingAmount)) * 100).toFixed(0) + '%'
                         : '0%'
                       }
                     </span>
@@ -349,7 +365,14 @@ const EmployeeReports = () => {
                                   }).join(', ')
                                 : work.workTitle}
                             </td>
-                            <td style={styles.td}>{formatCurrency(work.amount)}</td>
+                            <td style={styles.td}>
+                              <div>{formatCurrency(work.totalAmount || work.amount || 0)}</div>
+                              {work.paymentStatus === 'Split' && (
+                                <div style={{ fontSize: '11px', color: '#e74c3c' }}>
+                                  Pending: {formatCurrency(work.pendingAmount || 0)}
+                                </div>
+                              )}
+                            </td>
                             <td style={styles.td}>
                               {getStatusBadge(work.paymentStatus)}
                             </td>

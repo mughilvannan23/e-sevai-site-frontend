@@ -26,7 +26,8 @@ const defaultFormData = {
   paymentStatus: 'Pending',
   workStatus: 'In Progress',
   notes: '',
-  applicationFee: 0
+  applicationFee: 0,
+  durationMonths: 0
 };
 
 const AdminWorks = () => {
@@ -214,11 +215,11 @@ const AdminWorks = () => {
         if (name === 'gpayAmount') {
           const gpayVal = Math.min(parseFloat(value) || 0, currentAmount);
           updated.gpayAmount = gpayVal.toString();
-          updated.cashAmount = (currentAmount - gpayVal).toFixed(2);
+          updated.cashAmount = Math.round(currentAmount - gpayVal).toString();
         } else if (name === 'cashAmount') {
           const cashVal = Math.min(parseFloat(value) || 0, currentAmount);
           updated.cashAmount = cashVal.toString();
-          updated.gpayAmount = (currentAmount - cashVal).toFixed(2);
+          updated.gpayAmount = Math.round(currentAmount - cashVal).toString();
         }
       }
 
@@ -354,7 +355,7 @@ const AdminWorks = () => {
         finalCash = parseFloat(editFormData.cashAmount) || 0;
 
         if (Math.abs((finalGpay + finalCash) - currentAmount) > 0.01) {
-          error(`GPay + Cash (₹${(finalGpay + finalCash).toFixed(2)}) must equal Final Amount (₹${currentAmount.toFixed(2)})`);
+          error(`GPay + Cash (₹${Math.round(finalGpay + finalCash)}) must equal Final Amount (₹${Math.round(currentAmount)})`);
           return;
         }
       }
@@ -413,7 +414,8 @@ const AdminWorks = () => {
       paymentStatus: work.paymentStatus,
       workStatus: work.workStatus,
       notes: work.notes || '',
-      applicationFee: work.applicationFee || 0
+      applicationFee: work.applicationFee || 0,
+      durationMonths: work.durationMonths || 0
     });
     setEditingItemId(work._id);
   };
@@ -767,9 +769,9 @@ const AdminWorks = () => {
                 {workItems.map(item => (
                   <tr key={item._id}>
                     <td style={styles.td}><strong>{item.name}</strong></td>
-                    <td style={styles.td}>₹{item.workCharge?.toLocaleString() || '0'}</td>
-                    <td style={styles.td}>₹{item.serviceCharge?.toLocaleString() || '0'}</td>
-                    <td style={styles.td}><strong>₹{(item.workCharge + item.serviceCharge)?.toLocaleString() || '0'}</strong></td>
+                    <td style={styles.td}>₹{item.workCharge?.toLocaleString('en-IN', { maximumFractionDigits: 0 }) || '0'}</td>
+                    <td style={styles.td}>₹{item.serviceCharge?.toLocaleString('en-IN', { maximumFractionDigits: 0 }) || '0'}</td>
+                    <td style={styles.td}><strong>₹{(item.workCharge + item.serviceCharge)?.toLocaleString('en-IN', { maximumFractionDigits: 0 }) || '0'}</strong></td>
                     <td style={styles.td}>
                       <span style={{
                         ...styles.badge,
@@ -841,7 +843,7 @@ const AdminWorks = () => {
                   <div className="mb-4 text-center">
                     <div className="text-muted small fw-bold mb-1">AVAILABLE HANDCASH BALANCE</div>
                     <div style={{ fontSize: '24px', fontWeight: '800', color: '#3b8132' }}>
-                      ₹{shopBalance.toLocaleString()}
+                      ₹{shopBalance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                     </div>
                   </div>
 
@@ -981,7 +983,7 @@ const AdminWorks = () => {
                                   <td className="text-end">₹{serviceC}</td>
                                   <td className="text-end">₹{otherC}</td>
                                   <td className="text-end text-danger">-₹{disc}</td>
-                                  <td className="text-end fw-bold">₹{subtotal.toLocaleString()}</td>
+                                  <td className="text-end fw-bold">₹{subtotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                                 </tr>
                               );
                             })}
@@ -1002,21 +1004,21 @@ const AdminWorks = () => {
                     <div className="p-3 bg-dark text-white rounded shadow-sm h-100 d-flex flex-column justify-content-center">
                       <div className="d-flex justify-content-between mb-2">
                         <span>Base Amount:</span>
-                        <span>₹{(selectedWork.amount + (selectedWork.totalDiscount || 0)).toLocaleString()}</span>
+                        <span>₹{(selectedWork.amount + (selectedWork.totalDiscount || 0)).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                       </div>
                       <div className="d-flex justify-content-between mb-2 text-danger">
                         <span>Total Discount:</span>
-                        <span>-₹{(selectedWork.totalDiscount || 0).toLocaleString()}</span>
+                        <span>-₹{(selectedWork.totalDiscount || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                       </div>
                       {selectedWork.items?.some(i => i.presetChargeType === 'AEPS') && (
                         <div className="d-flex justify-content-between mb-2 text-warning">
                           <span>AEPS Withdrawal:</span>
-                          <span>₹{selectedWork.items.reduce((sum, i) => sum + (i.presetChargeType === 'AEPS' ? (i.presetAmount || 0) : 0), 0).toLocaleString()}</span>
+                          <span>₹{selectedWork.items.reduce((sum, i) => sum + (i.presetChargeType === 'AEPS' ? (i.presetAmount || 0) : 0), 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                         </div>
                       )}
                       <div className="border-top pt-2 mt-2 d-flex justify-content-between align-items-center">
                         <h5 className="mb-0">FINAL TOTAL</h5>
-                        <h4 className="mb-0 text-success">₹{(selectedWork.totalAmount || selectedWork.amount || 0).toLocaleString()}</h4>
+                        <h4 className="mb-0 text-success">₹{(selectedWork.totalAmount || selectedWork.amount || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</h4>
                       </div>
                       {selectedWork.paymentMethod === 'Both' && (
                         <div className="mt-3 pt-2 border-top small text-muted">
