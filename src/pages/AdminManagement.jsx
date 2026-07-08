@@ -204,13 +204,14 @@ const AdminManagement = () => {
                   />
                 </div>
                 <div style={styles.formGroup}>
-                  <label style={styles.label}>Email Address (Optional)</label>
+                  <label style={styles.label}>Email Address</label>
                   <input
                     style={styles.input}
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     placeholder="admin@example.com"
+                    required
                   />
                 </div>
               </div>

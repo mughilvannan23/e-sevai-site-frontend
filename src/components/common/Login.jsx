@@ -3,22 +3,26 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from './Toast';
 import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
+const Login = ({ variant = 'default', initialMobile = '' }) => {
   const navigate = useNavigate();
 
-
-  const [formData, setFormData] = useState({ mobile: '', password: '' });
+  const [formData, setFormData] = useState({ loginId: initialMobile, password: '' });
   const [loading, setLoading] = useState(false);
 
   const { login, error, clearError } = useAuth();
   const { error: toastError, success } = useToast();
 
+  React.useEffect(() => {
+    if (initialMobile) {
+      setFormData((prev) => ({ ...prev, loginId: initialMobile }));
+    }
+  }, [initialMobile]);
+
   // Handle login input
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'mobile') {
-      const numericValue = value.replace(/[^0-9]/g, '').substring(0, 10);
-      setFormData(prev => ({ ...prev, [name]: numericValue }));
+    if (name === 'loginId') {
+      setFormData(prev => ({ ...prev, [name]: value }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -28,8 +32,12 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (formData.mobile.length !== 10) {
-      toastError('Please enter a valid 10-digit mobile number');
+    const trimmedId = formData.loginId.trim();
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedId);
+    const isMobile = /^\d{10}$/.test(trimmedId);
+
+    if (!isEmail && !isMobile) {
+      toastError('Please enter a valid Email Address or 10-digit Mobile Number');
       return;
     }
 
@@ -53,6 +61,8 @@ const Login = () => {
     }
   };
 
+  const isLandingVariant = variant === 'landing';
+
   return (
     <>
       <style>{`
@@ -64,8 +74,8 @@ const Login = () => {
           background-color: #2e6427 !important;
         }
       `}</style>
-      <div style={styles.container}>
-        <div style={styles.card} className="p-4 p-md-5">
+      <div style={{ ...styles.container, minHeight: isLandingVariant ? 'auto' : '100vh', backgroundColor: isLandingVariant ? 'transparent' : '#ffffff', background: isLandingVariant ? 'transparent' : 'radial-gradient(circle at top right, #eaf4e9, #ffffff)' }}>
+        <div style={{ ...styles.card, width: isLandingVariant ? '100%' : '100%', maxWidth: isLandingVariant ? '460px' : '420px', boxShadow: isLandingVariant ? '0 16px 40px rgba(15, 23, 42, 0.08)' : '0 10px 25px rgba(0, 0, 0, 0.05)', border: isLandingVariant ? '1px solid rgba(59, 129, 50, 0.12)' : '1px solid #e0e0e0' }} className="p-4 p-md-5">
           <div style={styles.header}>
             <h1 style={styles.title}>SEVAGAN CSC & <br/>E-SEVA CENTRE</h1>
             <p style={styles.subtitle}>Employee Management System</p>
@@ -75,18 +85,17 @@ const Login = () => {
           <form onSubmit={handleSubmit} style={styles.form}>
 
 
-            {/* Mobile Input */}
+            {/* Identifier Input */}
             <div style={styles.formGroup}>
-              <label style={styles.label} htmlFor="mobile">Mobile Number</label>
+              <label style={styles.label} htmlFor="loginId">Email Address or Mobile Number</label>
               <input
-                id="mobile"
+                id="loginId"
                 type="text"
-                name="mobile"
-                placeholder="Enter 10-digit mobile number"
-                value={formData.mobile}
+                name="loginId"
+                placeholder="Enter Email or Mobile Number"
+                value={formData.loginId}
                 onChange={handleInputChange}
                 required
-                maxLength="10"
                 className="form-control w-100 login-input"
                 style={styles.input}
               />
@@ -94,7 +103,10 @@ const Login = () => {
 
             {/* Password Input */}
             <div style={styles.formGroup}>
-              <label style={styles.label} htmlFor="password">Password</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                <label style={{ ...styles.label, marginBottom: 0 }} htmlFor="password">Password</label>
+                <a href="#/forgot-password" style={{ fontSize: '13px', color: '#3b8132', textDecoration: 'none', fontWeight: '500' }}>Forgot Password?</a>
+              </div>
               <input
                 id="password"
                 type="password"
@@ -122,6 +134,27 @@ const Login = () => {
           </form>
         </div>
       </div>
+
+      {!isLandingVariant && (
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          className="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+          style={{
+            position: 'fixed',
+            top: 20,
+            right: 20,
+            zIndex: 2000,
+            borderRadius: 999,
+            padding: '10px 14px',
+            boxShadow: '0 8px 18px rgba(0,0,0,0.12)'
+          }}
+          title="Back to Home"
+        >
+          Back to Home
+        </button>
+      )}
+
     </>
   );
 };

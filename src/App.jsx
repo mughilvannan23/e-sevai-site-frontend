@@ -7,7 +7,9 @@ import { ToastProvider } from './components/common/Toast';
 import Loading from './components/common/Loading';
 import LiveClock from './components/common/LiveClock';
 
+const LandingPage = React.lazy(() => import('./components/common/LandingPage'));
 const Login = React.lazy(() => import('./components/common/Login'));
+const ForgotPassword = React.lazy(() => import('./components/common/ForgotPassword'));
 
 // Import pages with React.lazy
 const AddWorkPage = React.lazy(() => import('./pages/AddWorkPage'));
@@ -281,7 +283,10 @@ function App() {
             <React.Suspense fallback={<Loading text="Loading..." />}>
               <Routes>
                 {/* Public */}
+                <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/landing" element={<LandingPage />} />
 
                 {/* Admin */}
                 <Route element={<ProtectedRoute requiredRole="admin" />}>
@@ -310,8 +315,7 @@ function App() {
                 </Route>
 
                 {/* Redirects */}
-                <Route path="/" element={<Navigate to="/login" replace />} />
-                <Route path="*" element={<Navigate to="/login" replace />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </React.Suspense>
             <LiveClock />

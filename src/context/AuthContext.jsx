@@ -1,7 +1,16 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { authAPI } from '../services/api';
 
 const AuthContext = createContext();
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+
+const navigateToLogin = () => {
+  const loginHash = '#/login';
+  if (window.location.hash !== loginHash) {
+    window.location.hash = loginHash;
+  }
+};
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -16,6 +25,23 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showWarning, setShowWarning] = useState(false);
+  const inactivityTimerRef = useRef(null);
+
+  const clearInactivityTimer = useCallback(() => {
+    if (inactivityTimerRef.current) {
+      window.clearTimeout(inactivityTimerRef.current);
+      inactivityTimerRef.current = null;
+    }
+  }, []);
+
+  const resetInactivityTimer = useCallback(() => {
+    if (!user || showWarning) return;
+
+    clearInactivityTimer();
+    inactivityTimerRef.current = window.setTimeout(() => {
+      setShowWarning(true);
+    }, SESSION_TIMEOUT_MS);
+  }, [clearInactivityTimer, showWarning, user]);
 
   // Check if user is authenticated on mount
   useEffect(() => {
@@ -46,53 +72,58 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  // Periodic check for token expiration
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setShowWarning(false);
+      clearInactivityTimer();
+      return;
+    }
 
-    const checkToken = () => {
-      const token = localStorage.getItem('token');
-      if (token) {
-        try {
-          const jwtPayload = JSON.parse(atob(token.split('.')[1]));
-          const timeUntilExpiry = jwtPayload.exp * 1000 - Date.now();
-          
-          if (timeUntilExpiry <= 0) {
-            setShowWarning(false);
-            logout();
-            window.location.href = '/#/login';
-          } else if (timeUntilExpiry <= 60000 && timeUntilExpiry > 0) { // 1 minute before expiry
-            setShowWarning(true);
-          }
-        } catch (e) {
-          // ignore
-        }
-      }
+    const handleActivity = () => {
+      resetInactivityTimer();
     };
 
-    const intervalId = setInterval(checkToken, 10000); // Check every 10 seconds
-    return () => clearInterval(intervalId);
-  }, [user]);
+    ACTIVITY_EVENTS.forEach((eventName) => {
+      window.addEventListener(eventName, handleActivity, { passive: true });
+    });
+
+    resetInactivityTimer();
+
+    return () => {
+      ACTIVITY_EVENTS.forEach((eventName) => {
+        window.removeEventListener(eventName, handleActivity);
+      });
+      clearInactivityTimer();
+    };
+  }, [clearInactivityTimer, resetInactivityTimer, user]);
 
   const handleContinueSession = async () => {
     try {
+      setShowWarning(false);
+      clearInactivityTimer();
+
       const response = await authAPI.refreshToken();
-      if (response.data.success) {
-        localStorage.setItem('token', response.data.token);
-        setShowWarning(false);
+      if (response?.data?.success) {
+        if (response.data.token) {
+          localStorage.setItem('token', response.data.token);
+        }
+        resetInactivityTimer();
+      } else {
+        throw new Error(response?.data?.message || 'Unable to refresh session');
       }
     } catch (error) {
       console.error('Failed to refresh token', error);
       setShowWarning(false);
       logout();
-      window.location.href = '/#/login';
+      navigateToLogin();
     }
   };
 
   const handleLogoutNow = () => {
+    clearInactivityTimer();
     setShowWarning(false);
     logout();
-    window.location.href = '/#/login';
+    navigateToLogin();
   };
 
   const login = async (loginData) => {
@@ -126,10 +157,12 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     console.log('[AuthContext] logout called');
+    clearInactivityTimer();
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
     setError(null);
+    setShowWarning(false);
   };
 
   const updateUser = (updatedUserData) => {
@@ -178,10 +211,10 @@ export const AuthProvider = ({ children }) => {
             maxWidth: '400px',
             textAlign: 'center'
           }}>
-            <h4 style={{ color: '#e74c3c', marginBottom: '16px' }}>Session Expiring</h4>
+            <h4 style={{ color: '#e74c3c', marginBottom: '16px' }}>Are you still there?</h4>
             <p style={{ marginBottom: '24px', color: '#555' }}>
-              Your session is about to expire.<br/>
-              Do you want to continue your session?
+              Your session is about to expire due to inactivity.<br/>
+              Continue Login to stay on this page without losing any changes.
             </p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
               <button 
@@ -194,9 +227,9 @@ export const AuthProvider = ({ children }) => {
               <button 
                 onClick={handleContinueSession}
                 className="btn btn-primary"
-                style={{ minWidth: '100px', backgroundColor: '#3b8132', borderColor: '#3b8132' }}
+                style={{ minWidth: '120px', backgroundColor: '#3b8132', borderColor: '#3b8132' }}
               >
-                Continue
+                Continue Login
               </button>
             </div>
           </div>

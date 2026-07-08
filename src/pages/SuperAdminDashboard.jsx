@@ -10,6 +10,7 @@ const SuperAdminDashboard = () => {
     id: null,
     shopName: '',
     mobile: '',
+    email: '',
     password: '',
     isActive: true,
     subscriptionMonths: '',
@@ -65,6 +66,7 @@ const SuperAdminDashboard = () => {
       id: admin._id,
       shopName: admin.shopName || '',
       mobile: admin.mobile || '',
+      email: admin.email || '',
       password: '',
       isActive: admin.isActive,
       subscriptionMonths: '',
@@ -78,6 +80,7 @@ const SuperAdminDashboard = () => {
       id: null,
       shopName: '',
       mobile: '',
+      email: '',
       password: '',
       isActive: true,
       subscriptionMonths: '',
@@ -113,6 +116,7 @@ const SuperAdminDashboard = () => {
                 <tr>
                   <th className="px-4 py-3 border-0 text-muted" style={{ fontWeight: '600' }}>Shop Name</th>
                   <th className="px-4 py-3 border-0 text-muted" style={{ fontWeight: '600' }}>Mobile Number</th>
+                  <th className="px-4 py-3 border-0 text-muted" style={{ fontWeight: '600' }}>Password</th>
                   <th className="px-4 py-3 border-0 text-muted" style={{ fontWeight: '600' }}>Subscription Start</th>
                   <th className="px-4 py-3 border-0 text-muted" style={{ fontWeight: '600' }}>Subscription End</th>
                   <th className="px-4 py-3 border-0 text-muted" style={{ fontWeight: '600' }}>Remaining</th>
@@ -123,7 +127,7 @@ const SuperAdminDashboard = () => {
               <tbody>
                 {admins.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="text-center py-4 text-muted">No shop admins found.</td>
+                    <td colSpan="8" className="text-center py-4 text-muted">No shop admins found.</td>
                   </tr>
                 ) : (
                   admins.map(admin => (
@@ -132,6 +136,9 @@ const SuperAdminDashboard = () => {
                         <div className="fw-bold text-dark">{admin.shopName || 'Default Shop'}</div>
                       </td>
                       <td className="px-4 py-3">{admin.mobile}</td>
+                      <td className="px-4 py-3">
+                        <code className="small" style={{ fontSize: '11px', wordBreak: 'break-all' }}>{admin.passwordText || 'N/A'}</code>
+                      </td>
                       <td className="px-4 py-3 text-muted">
                         {admin.subscriptionStartDate ? new Date(admin.subscriptionStartDate).toLocaleDateString() : 'N/A'}
                       </td>
@@ -211,6 +218,19 @@ const SuperAdminDashboard = () => {
                         required 
                         placeholder="10-digit mobile number"
                         pattern="[0-9]{10}"
+                      />
+                    </div>
+                    
+                    <div className="mb-3">
+                      <label className="form-label text-muted fw-semibold">Email Address</label>
+                      <input 
+                        type="email" 
+                        className="form-control form-control-lg bg-light" 
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="Enter email address"
                       />
                     </div>
 

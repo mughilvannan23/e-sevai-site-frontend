@@ -49,9 +49,14 @@ api.interceptors.response.use(
 // Auth endpoints
 export const authAPI = {
   login: (data) => api.post('/auth/login', data),
+  register: (data) => api.post('/auth/register', data),
   getProfile: () => api.get('/auth/profile'),
   changePassword: (data) => api.put('/auth/change-password', data),
   refreshToken: () => api.post('/auth/refresh-token'),
+  forgotPassword: (data) => api.post('/auth/forgot-password', data),
+  verifyOTP: (data) => api.post('/auth/verify-otp', data),
+  resendOTP: (data) => api.post('/auth/resend-otp', data),
+  resetPassword: (data) => api.post('/auth/reset-password', data),
 };
 
 // User endpoints

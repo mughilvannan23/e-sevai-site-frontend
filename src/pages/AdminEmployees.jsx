@@ -225,6 +225,7 @@ const AdminEmployees = () => {
                 <th style={styles.th}>Employee ID</th>
                 <th style={styles.th}>Name</th>
                 <th style={styles.th}>Mobile</th>
+                <th style={styles.th}>Email</th>
                 <th style={styles.th}>Status</th>
                 <th style={styles.th}>Last Login</th>
                 <th style={styles.th}>Actions</th>
@@ -236,6 +237,7 @@ const AdminEmployees = () => {
                   <td style={styles.td}>{emp.employeeId}</td>
                   <td style={styles.td}>{emp.name}</td>
                   <td style={styles.td}>{emp.mobile}</td>
+                  <td style={styles.td}>{emp.email || '-'}</td>
                   <td style={styles.td}>
                     <span style={{
                       ...styles.badge,
@@ -332,7 +334,7 @@ const AdminEmployees = () => {
                 />
               </div>
               <div style={styles.formGroup}>
-                <label style={styles.label}>Email (Optional)</label>
+                <label style={styles.label}>Email</label>
                 <input
                   type="email"
                   name="email"
@@ -340,6 +342,7 @@ const AdminEmployees = () => {
                   onChange={handleInputChange}
                   className="form-control"
                   placeholder="Enter email"
+                  required
                 />
               </div>
               <div style={styles.formGroup}>
