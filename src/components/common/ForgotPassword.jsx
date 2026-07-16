@@ -123,7 +123,7 @@ const ForgotPassword = () => {
       });
       if (response.data.success) {
         success('Password changed successfully');
-        navigate('/login');
+        navigate('/');
       }
     } catch (err) {
       toastError(err.response?.data?.message || 'Failed to reset password');
@@ -262,7 +262,7 @@ const ForgotPassword = () => {
           )}
 
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
-            <a href="#/login" style={{ color: '#666', textDecoration: 'none', fontSize: '14px' }}>
+            <a href="#/" style={{ color: '#666', textDecoration: 'none', fontSize: '14px' }}>
               ← Back to Login
             </a>
           </div>

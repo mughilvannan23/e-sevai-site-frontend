@@ -25,6 +25,7 @@ const EmployeeReports = React.lazy(() => import('./pages/EmployeeReports'));
 const EmployeeWorks = React.lazy(() => import('./pages/EmployeeWorks'));
 const SuperAdminDashboard = React.lazy(() => import('./pages/SuperAdminDashboard'));
 const DurationTracking = React.lazy(() => import('./pages/DurationTracking'));
+const QuickLinks = React.lazy(() => import('./pages/QuickLinks'));
 
 const NavLinks = ({ collapsed = false, isSuperAdmin, isAdmin, isEmployee, isActive, handleCloseSidebar }) => (
   <div style={{ opacity: collapsed ? 0 : 1, transition: 'opacity 0.2s ease', pointerEvents: collapsed ? 'none' : 'auto' }}>
@@ -95,6 +96,10 @@ const NavLinks = ({ collapsed = false, isSuperAdmin, isAdmin, isEmployee, isActi
         <Link to="/employee/durations" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/durations') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Duration Tracking">
           <span style={styles.navIcon}>⏳</span>
           <span>Expiry Tracking</span>
+        </Link>
+        <Link to="/employee/quick-links" className="nav-link" style={{ ...styles.navLink, ...(isActive('/employee/quick-links') ? styles.activeNavLink : {}) }} onClick={handleCloseSidebar} title="Quick Links">
+          <span style={styles.navIcon}>🔗</span>
+          <span>Quick Links</span>
         </Link>
       </>
     )}
@@ -184,7 +189,7 @@ const ProtectedRoute = ({ requiredRole }) => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
   };
 
   const handleCloseSidebar = () => setSidebarOpen(false);
@@ -311,6 +316,7 @@ function App() {
                   <Route path="/employee/all-works" element={<AllEmployeeWorks />} />
                   <Route path="/employee/reports" element={<EmployeeReports />} />
                   <Route path="/employee/durations" element={<DurationTracking />} />
+                  <Route path="/employee/quick-links" element={<QuickLinks />} />
                   <Route path="/add-work" element={<AddWorkPage />} />
                 </Route>
 

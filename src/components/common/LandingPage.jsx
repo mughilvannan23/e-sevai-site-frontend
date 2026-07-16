@@ -3,6 +3,7 @@ import emailjs from '@emailjs/browser';
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import heroBg from '../../assets/hero-bg.png';
 import { authAPI } from '../../services/api';
 import { useToast } from './Toast';
@@ -308,11 +309,16 @@ const faqs = [
 
 const LandingPage = () => {
     const navigate = useNavigate();
+    const { login, error: authError, clearError } = useAuth();
     const { success, error: showError } = useToast();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [authTab, setAuthTab] = useState('login');
     const [formData, setFormData] = useState({ shopName: '', mobile: '', email: '', password: '' });
+    const [loginData, setLoginData] = useState({ loginId: '', password: '' });
     const [submitting, setSubmitting] = useState(false);
+    const [loginSubmitting, setLoginSubmitting] = useState(false);
     const [formError, setFormError] = useState('');
+    const [loginFormError, setLoginFormError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [activeTab, setActiveTab] = useState('employee');
     const [selectedImageIndex, setSelectedImageIndex] = useState(null);
@@ -395,6 +401,47 @@ const LandingPage = () => {
             setFormData((prev) => ({ ...prev, [name]: value }));
         }
         if (formError) setFormError('');
+    };
+
+    const handleLoginInputChange = (event) => {
+        const { name, value } = event.target;
+        setLoginData((prev) => ({ ...prev, [name]: value }));
+        if (loginFormError) setLoginFormError('');
+    };
+
+    const handleLoginSubmit = async (event) => {
+        event.preventDefault();
+        const trimmedId = loginData.loginId.trim();
+        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedId);
+        const isMobile = /^\d{10}$/.test(trimmedId);
+
+        if (!isEmail && !isMobile) {
+            setLoginFormError('Please enter a valid Email Address or 10-digit Mobile Number.');
+            return;
+        }
+        if (!loginData.password) {
+            setLoginFormError('Password is required.');
+            return;
+        }
+
+        clearError();
+        setLoginSubmitting(true);
+        setLoginFormError('');
+        try {
+            const result = await login(loginData);
+            success('Login successful!');
+            if (result.user.role === 'admin') {
+                navigate('/admin/dashboard');
+            } else {
+                navigate('/employee/dashboard');
+            }
+        } catch (err) {
+            const message = err.response?.data?.message || err.message || 'Invalid credentials. Please try again.';
+            setLoginFormError(message);
+            showError(message);
+        } finally {
+            setLoginSubmitting(false);
+        }
     };
 
     const handleContactChange = (e) => {
@@ -574,7 +621,7 @@ const LandingPage = () => {
                     <button className="navbar-brand btn btn-link p-0 border-0 text-decoration-none d-flex align-items-center gap-2" onClick={() => scrollToSection('home')}>
                         {/* <div style={styles.logo}>E</div> */}
                         <div>
-                            <div style={styles.brandName}>E-Sevai</div>
+                            <div style={styles.brandName}>E-Service</div>
                             {/* <div style={styles.brandSub}>Office Suite</div> */}
                         </div>
                     </button>
@@ -595,11 +642,11 @@ const LandingPage = () => {
                                     </li>
                                 );
                             })}
-                            <li className="nav-item">
+                            {/* <li className="nav-item">
                                 <button className="btn btn-success rounded-pill px-3 shadow-sm" onClick={() => navigate('/login')}>
                                     Login
                                 </button>
-                            </li>
+                            </li> */}
                         </ul>
                     </div>
                 </nav>
@@ -615,16 +662,16 @@ const LandingPage = () => {
                                     Premium SaaS for Shop & Office Operations
                                 </div>
                                 <h1 className="display-4 fw-bold mb-4" style={styles.heroTitle}>
-                                    Complete e-Sevai Office Management System
+                                    Customer E-Service Management System
                                 </h1>
                                 <p className="lead mb-4" style={styles.heroText}>
                                     Simplify employee management, work tracking, billing, reports, analytics, and shop operations from one elegant portal.
                                 </p>
                                 <div className="d-flex flex-wrap gap-3 mb-4">
-                                    <button className="btn btn-success btn-lg px-4 py-3 rounded-pill shadow" onClick={() => scrollToSection('hero-login')}>
+                                    <button className="btn btn-success btn-lg px-4 py-3 rounded-pill shadow" onClick={() => { setAuthTab('register'); scrollToSection('hero-login'); }}>
                                         Start Free Demo
                                     </button>
-                                    <button className="btn btn-outline-secondary btn-lg px-4 py-3 rounded-pill" onClick={() => navigate('/login')}>
+                                    <button className="btn btn-outline-secondary btn-lg px-4 py-3 rounded-pill" onClick={() => { setAuthTab('login'); scrollToSection('hero-login'); }}>
                                         Login
                                     </button>
                                 </div>
@@ -646,64 +693,143 @@ const LandingPage = () => {
                                                 {successMessage}
                                             </div>
                                         )}
+                                        {/* Tab Toggle - Login / Register */}
+                                        <div className="d-flex mb-4" style={{ borderBottom: '2px solid #e5e7eb' }}>
+                                            
+                                            <button
+                                                type="button"
+                                                onClick={() => { setAuthTab('register'); setFormError(''); setLoginFormError(''); }}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '10px 0',
+                                                    border: 'none',
+                                                    background: 'none',
+                                                    fontWeight: 700,
+                                                    fontSize: '1rem',
+                                                    color: authTab === 'register' ? '#3b8132' : '#9ca3af',
+                                                    borderBottom: authTab === 'register' ? '3px solid #3b8132' : '3px solid transparent',
+                                                    marginBottom: '-2px',
+                                                    transition: 'all 0.2s ease',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Register
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => { setAuthTab('login'); setLoginFormError(''); setFormError(''); }}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '10px 0',
+                                                    border: 'none',
+                                                    background: 'none',
+                                                    fontWeight: 700,
+                                                    fontSize: '1rem',
+                                                    color: authTab === 'login' ? '#3b8132' : '#9ca3af',
+                                                    borderBottom: authTab === 'login' ? '3px solid #3b8132' : '3px solid transparent',
+                                                    marginBottom: '-2px',
+                                                    transition: 'all 0.2s ease',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Login
+                                            </button>
+                                        </div>
+
                                         <div style={styles.tabContent}>
-                                            <form onSubmit={handleDemoSubmit}>
-                                                <div className="mb-3">
-                                                    <h3 className='text-center pb-3'>Register For Free Trial </h3>
-                                                    <label className="form-label fw-semibold">Shop Name</label>
-                                                    <input
-                                                        type="text"
-                                                        name="shopName"
-                                                        className="form-control"
-                                                        placeholder="Enter shop name"
-                                                        value={formData.shopName}
-                                                        onChange={handleInputChange}
-                                                    />
-                                                </div>
-                                                <div className="mb-3">
-                                                    <label className="form-label fw-semibold">Mobile Number</label>
-                                                    <input
-                                                        type="text"
-                                                        name="mobile"
-                                                        className="form-control"
-                                                        placeholder="Enter 10-digit mobile number"
-                                                        value={formData.mobile}
-                                                        onChange={handleInputChange}
-                                                        maxLength="10"
-                                                    />
-                                                </div>
-                                                <div className="mb-3">
-                                                    <label className="form-label fw-semibold">Email Address (Optional)</label>
-                                                    <input
-                                                        type="email"
-                                                        name="email"
-                                                        className="form-control"
-                                                        placeholder="Enter email address"
-                                                        value={formData.email}
-                                                        onChange={handleInputChange}
-                                                    />
-                                                </div>
-                                                <div className="mb-3">
-                                                    <label className="form-label fw-semibold">Password</label>
-                                                    <input
-                                                        type="password"
-                                                        name="password"
-                                                        className="form-control"
-                                                        placeholder="Create a strong password"
-                                                        value={formData.password}
-                                                        onChange={handleInputChange}
-                                                    />
-                                                </div>
-                                                {formError && <div className="alert alert-danger py-2" role="alert">{formError}</div>}
-                                                <div className="d-flex gap-2 mt-4 flex-wrap">
-                                                    <button type="submit" className="btn btn-success flex-grow-1" disabled={submitting}>
-                                                        {submitting ? 'Creating account...' : 'Create Free Account'}
-                                                    </button>
-                                                    <button type="button" className="btn btn-outline-secondary" onClick={() => navigate('/login')}>
-                                                        Go to Login
-                                                    </button>
-                                                </div>
-                                            </form>
+                                            {authTab === 'login' ? (
+                                                <form onSubmit={handleLoginSubmit}>
+                                                    <div className="mb-3">
+                                                        <h5 className='text-center pb-2 fw-bold' style={{ color: '#18391a' }}>Welcome Back</h5>
+                                                        <label className="form-label fw-semibold">Email Address or Mobile Number</label>
+                                                        <input
+                                                            type="text"
+                                                            name="loginId"
+                                                            className="form-control"
+                                                            placeholder="Enter Email or Mobile Number"
+                                                            value={loginData.loginId}
+                                                            onChange={handleLoginInputChange}
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="mb-3">
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                            <label className="form-label fw-semibold mb-0">Password</label>
+                                                            <a href="#/forgot-password" style={{ fontSize: '13px', color: '#3b8132', textDecoration: 'none', fontWeight: '500' }}>Forgot Password?</a>
+                                                        </div>
+                                                        <input
+                                                            type="password"
+                                                            name="password"
+                                                            className="form-control mt-1"
+                                                            placeholder="Enter your password"
+                                                            value={loginData.password}
+                                                            onChange={handleLoginInputChange}
+                                                            required
+                                                        />
+                                                    </div>
+                                                    {loginFormError && <div className="alert alert-danger py-2" role="alert">{loginFormError}</div>}
+                                                    <div className="d-flex gap-2 mt-4 flex-wrap">
+                                                        <button type="submit" className="btn btn-success flex-grow-1" disabled={loginSubmitting}>
+                                                            {loginSubmitting ? 'Logging in...' : 'Login'}
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            ) : (
+                                                <form onSubmit={handleDemoSubmit}>
+                                                    <div className="mb-3">
+                                                        <h5 className='text-center pb-2 fw-bold' style={{ color: '#18391a' }}>Register For Free Trial</h5>
+                                                        <label className="form-label fw-semibold">Shop Name</label>
+                                                        <input
+                                                            type="text"
+                                                            name="shopName"
+                                                            className="form-control"
+                                                            placeholder="Enter shop name"
+                                                            value={formData.shopName}
+                                                            onChange={handleInputChange}
+                                                        />
+                                                    </div>
+                                                    <div className="mb-3">
+                                                        <label className="form-label fw-semibold">Mobile Number</label>
+                                                        <input
+                                                            type="text"
+                                                            name="mobile"
+                                                            className="form-control"
+                                                            placeholder="Enter 10-digit mobile number"
+                                                            value={formData.mobile}
+                                                            onChange={handleInputChange}
+                                                            maxLength="10"
+                                                        />
+                                                    </div>
+                                                    <div className="mb-3">
+                                                        <label className="form-label fw-semibold">Email Address </label>
+                                                        <input
+                                                            type="email"
+                                                            name="email"
+                                                            className="form-control"
+                                                            placeholder="Enter email address"
+                                                            value={formData.email}
+                                                            onChange={handleInputChange}
+                                                        />
+                                                    </div>
+                                                    <div className="mb-3">
+                                                        <label className="form-label fw-semibold">Password</label>
+                                                        <input
+                                                            type="password"
+                                                            name="password"
+                                                            className="form-control"
+                                                            placeholder="Create a strong password"
+                                                            value={formData.password}
+                                                            onChange={handleInputChange}
+                                                        />
+                                                    </div>
+                                                    {formError && <div className="alert alert-danger py-2" role="alert">{formError}</div>}
+                                                    <div className="d-flex gap-2 mt-4 flex-wrap">
+                                                        <button type="submit" className="btn btn-success flex-grow-1" disabled={submitting}>
+                                                            {submitting ? 'Creating account...' : 'Create Free Account'}
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -1361,6 +1487,13 @@ const styles = {
     contactCard: {
         backgroundColor: 'white',
         border: '1px solid rgba(59,129,50,0.14)'
+    },
+    authCard: {
+        backgroundColor: 'white',
+        border: '1px solid rgba(59,129,50,0.1)'
+    },
+    tabContent: {
+        position: 'relative'
     }
 };
 
