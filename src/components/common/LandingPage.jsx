@@ -1243,8 +1243,8 @@ const LandingPage = () => {
                                 <h2 className="display-6 fw-bold mb-3">Let’s connect</h2>
                                 <p style={{ color: '#6b7280' }}>Reach out for a demo, support, or product guidance.</p>
                                 <div className="mt-4">
-                                    <p className="mb-2"><strong>Email:</strong> support@sevagan.com</p>
-                                    <p className="mb-2"><strong>Phone:</strong> +91 98765 43210</p>
+                                    <p className="mb-2"><strong>Email:</strong> tnsevagan.vle@gmail.com</p>
+                                    <p className="mb-2"><strong>Phone:</strong> +91 9789683106</p>
                                     <p className="mb-2"><strong>Address:</strong> Trichy, Tamil Nadu, India</p>
                                 </div>
                             </div>

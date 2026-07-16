@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './components/common/Toast';
 import Loading from './components/common/Loading';
 import LiveClock from './components/common/LiveClock';
+import FloatingContact from './components/common/FloatingContact';
 
 const LandingPage = React.lazy(() => import('./components/common/LandingPage'));
 const Login = React.lazy(() => import('./components/common/Login'));
@@ -325,6 +326,7 @@ function App() {
               </Routes>
             </React.Suspense>
             <LiveClock />
+            <FloatingContact />
           </div>
         </HashRouter>
       </ToastProvider>
